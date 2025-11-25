@@ -414,6 +414,14 @@ export default function Entregadores() {
               </div>
             </div>
 
+            {/* Info de Vinculação */}
+            <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
+              <p className="text-sm text-blue-300 font-medium mb-1">📱 Como vincular ao app:</p>
+              <p className="text-xs text-slate-400">
+                O entregador faz login no app e informa o <strong className="text-white">telefone cadastrado</strong> ({form.telefone || '(00) 00000-0000'}) para vincular sua conta e receber entregas.
+              </p>
+            </div>
+
             <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
               <Button 
                 variant="outline" 
