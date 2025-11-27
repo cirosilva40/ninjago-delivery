@@ -16,6 +16,8 @@ import {
   Map as MapIcon,
   Circle,
   ExternalLink,
+  Route,
+  Play,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -102,6 +104,8 @@ const statusConfig = {
 export default function MapaTempoReal() {
   const [viewMode, setViewMode] = useState('map');
   const [selectedEntrega, setSelectedEntrega] = useState(null);
+  const [gerandoRota, setGerandoRota] = useState(false);
+  const [rotaOtimizada, setRotaOtimizada] = useState(null);
 
   // Coordenadas padrão (São Paulo)
   const defaultCenter = [-23.5505, -46.6333];
@@ -139,6 +143,58 @@ export default function MapaTempoReal() {
     window.open(url, '_blank');
   };
 
+  // Buscar pedidos prontos para gerar rota
+  const { data: pedidosProntos = [] } = useQuery({
+    queryKey: ['pedidos-prontos-rota'],
+    queryFn: () => base44.entities.Pedido.filter({ status: 'pronto' }, '-created_date', 50),
+    refetchInterval: 10000,
+  });
+
+  // Gerar melhor rota
+  const gerarMelhorRota = async () => {
+    if (pedidosProntos.length === 0) return;
+    
+    setGerandoRota(true);
+    try {
+      // Ordenar por bairro/região para agrupar entregas próximas
+      const pedidosOrdenados = [...pedidosProntos].sort((a, b) => {
+        const bairroA = a.cliente_bairro || '';
+        const bairroB = b.cliente_bairro || '';
+        return bairroA.localeCompare(bairroB);
+      });
+
+      // Calcular distância estimada e tempo
+      const distanciaEstimada = pedidosOrdenados.length * 2.5; // Média 2.5km por entrega
+      const tempoEstimado = pedidosOrdenados.length * 8; // Média 8 min por entrega
+
+      setRotaOtimizada({
+        pedidos: pedidosOrdenados,
+        distanciaTotal: distanciaEstimada,
+        tempoEstimado: tempoEstimado,
+      });
+    } catch (error) {
+      console.error('Erro ao gerar rota:', error);
+    } finally {
+      setGerandoRota(false);
+    }
+  };
+
+  // Abrir rota completa no Google Maps
+  const abrirRotaGoogleMaps = () => {
+    if (!rotaOtimizada || rotaOtimizada.pedidos.length === 0) return;
+
+    const waypoints = rotaOtimizada.pedidos
+      .map(p => encodeURIComponent(p.cliente_endereco + ', ' + p.cliente_cidade))
+      .join('|');
+    
+    const destino = encodeURIComponent(
+      rotaOtimizada.pedidos[rotaOtimizada.pedidos.length - 1].cliente_endereco
+    );
+
+    const url = `https://www.google.com/maps/dir/?api=1&origin=Sua+Localização&destination=${destino}&waypoints=${waypoints}&travelmode=driving`;
+    window.open(url, '_blank');
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -149,7 +205,15 @@ export default function MapaTempoReal() {
             {entregadores.filter(e => e.status === 'em_entrega').length} entregadores em rota • {entregas.length} entregas ativas
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            onClick={gerarMelhorRota}
+            disabled={pedidosProntos.length === 0 || gerandoRota}
+            className="bg-gradient-to-r from-emerald-500 to-green-600"
+          >
+            <Route className="w-4 h-4 mr-2" />
+            {gerandoRota ? 'Gerando...' : `Gerar Rota (${pedidosProntos.length} prontos)`}
+          </Button>
           <div className="flex rounded-lg bg-white/5 p-1">
             <Button
               variant="ghost"
@@ -180,6 +244,65 @@ export default function MapaTempoReal() {
           </Button>
         </div>
       </div>
+
+      {/* Card de Rota Otimizada */}
+      {rotaOtimizada && (
+        <Card className="bg-gradient-to-r from-emerald-500/10 to-green-500/10 border-emerald-500/30 p-4 mb-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                <Route className="w-6 h-6 text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-white">Rota Otimizada</h3>
+                <p className="text-sm text-slate-400">{rotaOtimizada.pedidos.length} paradas</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-center">
+              <div>
+                <p className="text-xl font-bold text-white">{rotaOtimizada.distanciaTotal.toFixed(1)} km</p>
+                <p className="text-xs text-slate-400">Distância</p>
+              </div>
+              <div>
+                <p className="text-xl font-bold text-white">{rotaOtimizada.tempoEstimado} min</p>
+                <p className="text-xs text-slate-400">Tempo Est.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-2 mb-4 max-h-40 overflow-y-auto">
+            {rotaOtimizada.pedidos.map((pedido, index) => (
+              <div key={pedido.id} className="flex items-center gap-3 p-2 rounded-lg bg-white/5">
+                <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-white text-xs font-bold">
+                  {index + 1}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-white">#{pedido.numero_pedido} - {pedido.cliente_nome}</p>
+                  <p className="text-xs text-slate-400">{pedido.cliente_bairro}</p>
+                </div>
+                <p className="text-sm font-bold text-emerald-400">R$ {pedido.valor_total?.toFixed(2)}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              onClick={abrirRotaGoogleMaps}
+              className="flex-1 bg-blue-500 hover:bg-blue-600"
+            >
+              <Play className="w-4 h-4 mr-2" />
+              Iniciar Rota no Maps
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setRotaOtimizada(null)}
+              className="border-slate-600 text-slate-300"
+            >
+              Fechar
+            </Button>
+          </div>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Map */}
