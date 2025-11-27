@@ -21,6 +21,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import {
   Select,
   SelectContent,
@@ -325,12 +327,17 @@ export default function Entregadores() {
                   </div>
 
                   <div className="mt-4 flex gap-2">
+                    <Link 
+                      to={createPageUrl('EntregadorDetalhe') + `?id=${entregador.id}`}
+                      className="flex-1 py-2 rounded-lg bg-orange-500/20 hover:bg-orange-500/30 transition-colors text-center text-orange-400 text-sm"
+                    >
+                      Ver Detalhes
+                    </Link>
                     <a 
                       href={`tel:${entregador.telefone}`}
-                      className="flex-1 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-center text-white text-sm"
+                      className="py-2 px-4 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-center text-white text-sm"
                     >
-                      <Phone className="w-4 h-4 inline mr-2" />
-                      Ligar
+                      <Phone className="w-4 h-4 inline" />
                     </a>
                   </div>
                 </motion.div>

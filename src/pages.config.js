@@ -8,6 +8,7 @@ import AppEntregador from './pages/AppEntregador';
 import Produtos from './pages/Produtos';
 import NovoPedido from './pages/NovoPedido';
 import EntregadorDetalhe from './pages/EntregadorDetalhe';
+import Pagamentos from './pages/Pagamentos';
 import __Layout from './Layout.jsx';
 
 
@@ -22,6 +23,7 @@ export const PAGES = {
     "Produtos": Produtos,
     "NovoPedido": NovoPedido,
     "EntregadorDetalhe": EntregadorDetalhe,
+    "Pagamentos": Pagamentos,
 }
 
 export const pagesConfig = {

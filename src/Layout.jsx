@@ -28,9 +28,12 @@ import { Badge } from '@/components/ui/badge';
 
 const menuItems = [
   { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+  { name: 'Novo Pedido', icon: ClipboardList, page: 'NovoPedido' },
   { name: 'Pedidos', icon: ClipboardList, page: 'Pedidos' },
+  { name: 'Produtos', icon: Pizza, page: 'Produtos' },
   { name: 'Mapa ao Vivo', icon: MapPin, page: 'MapaTempoReal' },
   { name: 'Entregadores', icon: Bike, page: 'Entregadores' },
+  { name: 'Pagamentos', icon: Users, page: 'Pagamentos' },
   { name: 'Relatórios', icon: BarChart3, page: 'Relatorios' },
   { name: 'Configurações', icon: Settings, page: 'Configuracoes' },
 ];
