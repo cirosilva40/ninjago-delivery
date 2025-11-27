@@ -5,6 +5,9 @@ import MapaTempoReal from './pages/MapaTempoReal';
 import Relatorios from './pages/Relatorios';
 import Configuracoes from './pages/Configuracoes';
 import AppEntregador from './pages/AppEntregador';
+import Produtos from './pages/Produtos';
+import NovoPedido from './pages/NovoPedido';
+import EntregadorDetalhe from './pages/EntregadorDetalhe';
 import __Layout from './Layout.jsx';
 
 
@@ -16,6 +19,9 @@ export const PAGES = {
     "Relatorios": Relatorios,
     "Configuracoes": Configuracoes,
     "AppEntregador": AppEntregador,
+    "Produtos": Produtos,
+    "NovoPedido": NovoPedido,
+    "EntregadorDetalhe": EntregadorDetalhe,
 }
 
 export const pagesConfig = {
