@@ -19,14 +19,12 @@ import { Button } from '@/components/ui/button';
 import StatsCard from '@/components/dashboard/StatsCard';
 import EntregaCard from '@/components/dashboard/EntregaCard';
 import EntregadorCard from '@/components/dashboard/EntregadorCard';
-import PedidoModal from '@/components/pedidos/PedidoModal';
 import AtribuirEntregaModal from '@/components/pedidos/AtribuirEntregaModal';
 import moment from 'moment';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [pizzariaId, setPizzariaId] = useState(null);
-  const [showPedidoModal, setShowPedidoModal] = useState(false);
   const [showAtribuirModal, setShowAtribuirModal] = useState(false);
   const [selectedPedido, setSelectedPedido] = useState(null);
 
@@ -56,6 +54,33 @@ export default function Dashboard() {
     queryFn: () => base44.entities.Pedido.list('-created_date', 50),
     refetchInterval: 10000,
   });
+
+  // Auto-mudar status de "novo" para "em_preparo" após 2 minutos
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const agora = new Date();
+      const pedidosNovos = pedidos.filter(p => p.status === 'novo');
+      
+      for (const pedido of pedidosNovos) {
+        const criado = new Date(pedido.horario_pedido || pedido.created_date);
+        const diffMinutos = (agora - criado) / 1000 / 60;
+        
+        if (diffMinutos >= 2) {
+          try {
+            await base44.entities.Pedido.update(pedido.id, { status: 'em_preparo' });
+          } catch (e) {
+            console.error('Erro ao atualizar status:', e);
+          }
+        }
+      }
+      
+      if (pedidosNovos.length > 0) {
+        refetchPedidos();
+      }
+    }, 30000); // Verifica a cada 30 segundos
+    
+    return () => clearInterval(interval);
+  }, [pedidos, refetchPedidos]);
 
   const { data: entregadores = [] } = useQuery({
     queryKey: ['entregadores'],
@@ -105,13 +130,6 @@ export default function Dashboard() {
             className="border-slate-700 text-slate-400 hover:text-white"
           >
             <RefreshCw className="w-4 h-4" />
-          </Button>
-          <Button 
-            onClick={() => setShowPedidoModal(true)}
-            className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Novo Pedido
           </Button>
         </div>
       </div>
@@ -296,13 +314,6 @@ export default function Dashboard() {
       </div>
 
       {/* Modais */}
-      <PedidoModal
-        open={showPedidoModal}
-        onClose={() => setShowPedidoModal(false)}
-        pizzariaId={pizzariaId}
-        onSave={refetchPedidos}
-      />
-
       <AtribuirEntregaModal
         open={showAtribuirModal}
         onClose={() => {

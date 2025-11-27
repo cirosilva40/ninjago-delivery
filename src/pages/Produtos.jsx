@@ -21,6 +21,8 @@ import {
   IceCream,
   Sandwich,
   Wine,
+  Upload,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -76,6 +78,22 @@ export default function Produtos() {
     disponivel: true,
     destaque: false,
   });
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setForm({ ...form, imagem_url: file_url });
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const { data: produtos = [], refetch } = useQuery({
     queryKey: ['produtos'],
@@ -395,13 +413,53 @@ export default function Produtos() {
             </div>
 
             <div>
-              <Label className="text-slate-400">URL da Imagem (opcional)</Label>
-              <Input
-                value={form.imagem_url}
-                onChange={(e) => setForm({ ...form, imagem_url: e.target.value })}
-                className="bg-slate-800 border-slate-700 text-white"
-                placeholder="https://..."
-              />
+              <Label className="text-slate-400">Imagem do Produto</Label>
+              <div className="space-y-3">
+                {form.imagem_url && (
+                  <div className="relative w-full h-32 rounded-lg overflow-hidden bg-slate-800">
+                    <img 
+                      src={form.imagem_url} 
+                      alt="Preview" 
+                      className="w-full h-full object-cover"
+                    />
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => setForm({ ...form, imagem_url: '' })}
+                      className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white h-8 w-8"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <label className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    <div className="flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-dashed border-slate-600 bg-slate-800 text-slate-300 cursor-pointer hover:bg-slate-700 transition-colors">
+                      {uploadingImage ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4" />
+                      )}
+                      <span className="text-sm">
+                        {uploadingImage ? 'Enviando...' : 'Upload de Imagem'}
+                      </span>
+                    </div>
+                  </label>
+                </div>
+                <Input
+                  value={form.imagem_url}
+                  onChange={(e) => setForm({ ...form, imagem_url: e.target.value })}
+                  className="bg-slate-800 border-slate-700 text-white"
+                  placeholder="Ou cole a URL da imagem aqui..."
+                />
+              </div>
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-lg bg-white/5">

@@ -22,6 +22,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import moment from 'moment';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -106,9 +112,21 @@ export default function MapaTempoReal() {
   const [selectedEntrega, setSelectedEntrega] = useState(null);
   const [gerandoRota, setGerandoRota] = useState(false);
   const [rotaOtimizada, setRotaOtimizada] = useState(null);
+  const [showAtribuirRotaModal, setShowAtribuirRotaModal] = useState(false);
+  const [atribuindoRota, setAtribuindoRota] = useState(false);
 
-  // Coordenadas padrão (São Paulo)
-  const defaultCenter = [-23.5505, -46.6333];
+  // Buscar configurações da pizzaria para pegar coordenadas
+  const { data: pizzarias = [] } = useQuery({
+    queryKey: ['pizzaria-config'],
+    queryFn: () => base44.entities.Pizzaria.list('-created_date', 1),
+  });
+
+  // Coordenadas do estabelecimento (ou padrão São Paulo)
+  const pizzaria = pizzarias[0];
+  const defaultCenter = [
+    pizzaria?.latitude || -23.5505, 
+    pizzaria?.longitude || -46.6333
+  ];
 
   const { data: entregas = [], refetch } = useQuery({
     queryKey: ['entregas-mapa'],
@@ -287,11 +305,19 @@ export default function MapaTempoReal() {
 
           <div className="flex gap-2">
             <Button
+              onClick={() => setShowAtribuirRotaModal(true)}
+              className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
+            >
+              <Bike className="w-4 h-4 mr-2" />
+              Atribuir ao Motoboy
+            </Button>
+            <Button
               onClick={abrirRotaGoogleMaps}
-              className="flex-1 bg-blue-500 hover:bg-blue-600"
+              variant="outline"
+              className="border-blue-500/50 text-blue-400"
             >
               <Play className="w-4 h-4 mr-2" />
-              Iniciar Rota no Maps
+              Abrir Maps
             </Button>
             <Button
               variant="outline"
@@ -325,8 +351,11 @@ export default function MapaTempoReal() {
               <Marker position={defaultCenter} icon={pizzariaIcon}>
                 <Popup>
                   <div className="p-2">
-                    <p className="font-bold">🍕 Pizzaria</p>
+                    <p className="font-bold">🚀 {pizzaria?.nome || 'NinjaGO Delivery'}</p>
                     <p className="text-sm text-gray-600">Ponto de origem</p>
+                    {pizzaria?.endereco && (
+                      <p className="text-xs text-gray-500">{pizzaria.endereco}</p>
+                    )}
                   </div>
                 </Popup>
               </Marker>
