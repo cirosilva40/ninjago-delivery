@@ -575,6 +575,126 @@ export default function MapaTempoReal() {
           </div>
         </div>
       </div>
+
+      {/* Modal Atribuir Rota ao Motoboy */}
+      <Dialog open={showAtribuirRotaModal} onOpenChange={setShowAtribuirRotaModal}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Bike className="w-6 h-6 text-orange-500" />
+              Atribuir Rota ao Motoboy
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            {/* Resumo da Rota */}
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-slate-400">Total de entregas:</span>
+                <span className="text-white font-bold">{rotaOtimizada?.pedidos?.length || 0}</span>
+              </div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-slate-400">Distância estimada:</span>
+                <span className="text-white font-bold">{rotaOtimizada?.distanciaTotal?.toFixed(1)} km</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Tempo estimado:</span>
+                <span className="text-white font-bold">{rotaOtimizada?.tempoEstimado} min</span>
+              </div>
+            </div>
+
+            {/* Lista de Motoboys Disponíveis */}
+            <div>
+              <h4 className="text-sm font-medium text-slate-400 mb-3">Selecione o Motoboy:</h4>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {entregadores.filter(e => e.status === 'disponivel').length === 0 ? (
+                  <div className="text-center py-6 text-slate-400">
+                    <Bike className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p>Nenhum motoboy disponível</p>
+                  </div>
+                ) : (
+                  entregadores.filter(e => e.status === 'disponivel').map((motoboy) => (
+                    <button
+                      key={motoboy.id}
+                      onClick={async () => {
+                        setAtribuindoRota(true);
+                        try {
+                          // Criar entregas para cada pedido da rota
+                          for (const pedido of rotaOtimizada.pedidos) {
+                            // Criar registro de entrega
+                            await base44.entities.Entrega.create({
+                              pizzaria_id: pizzaria?.id || 'default',
+                              pedido_id: pedido.id,
+                              entregador_id: motoboy.id,
+                              numero_pedido: pedido.numero_pedido,
+                              cliente_nome: pedido.cliente_nome,
+                              cliente_telefone: pedido.cliente_telefone,
+                              endereco_completo: `${pedido.cliente_endereco}, ${pedido.cliente_numero} - ${pedido.cliente_bairro}`,
+                              bairro: pedido.cliente_bairro,
+                              valor_pedido: pedido.valor_total,
+                              taxa_entregador: pizzaria?.taxa_entrega_base || 5,
+                              forma_pagamento: pedido.forma_pagamento,
+                              troco_para: pedido.troco_para,
+                              status: 'pendente',
+                              horario_atribuicao: new Date().toISOString(),
+                              itens_resumo: pedido.itens?.map(i => `${i.quantidade}x ${i.nome}`).join(', '),
+                            });
+
+                            // Atualizar status do pedido
+                            await base44.entities.Pedido.update(pedido.id, { status: 'em_entrega' });
+                          }
+
+                          // Atualizar status do motoboy
+                          await base44.entities.Entregador.update(motoboy.id, { status: 'em_entrega' });
+
+                          // Criar notificação
+                          await base44.entities.Notificacao.create({
+                            pizzaria_id: pizzaria?.id,
+                            destinatario_id: motoboy.id,
+                            tipo: 'nova_entrega',
+                            titulo: 'Novas Entregas Atribuídas',
+                            mensagem: `Você recebeu ${rotaOtimizada.pedidos.length} entregas. Abra o app para ver a rota.`,
+                            dados: { quantidade: rotaOtimizada.pedidos.length },
+                          });
+
+                          setShowAtribuirRotaModal(false);
+                          setRotaOtimizada(null);
+                          refetch();
+                        } catch (error) {
+                          console.error('Erro ao atribuir rota:', error);
+                        } finally {
+                          setAtribuindoRota(false);
+                        }
+                      }}
+                      disabled={atribuindoRota}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all text-left"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">{motoboy.nome?.charAt(0)}</span>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-white">{motoboy.nome}</p>
+                        <p className="text-sm text-slate-400">{motoboy.telefone}</p>
+                      </div>
+                      <Badge className="bg-emerald-500/20 text-emerald-400">Disponível</Badge>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowAtribuirRotaModal(false)}
+                className="border-slate-600 text-slate-300"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
