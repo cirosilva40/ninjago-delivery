@@ -6,19 +6,12 @@ import {
   Bike,
   ArrowLeft,
   Phone,
-  Star,
-  MapPin,
   Clock,
   DollarSign,
   Package,
-  TrendingUp,
-  Calendar,
   Edit,
-  Save,
   Plus,
   Minus,
-  History,
-  Route,
   Timer,
   CheckCircle2,
 } from 'lucide-react';
@@ -51,10 +44,15 @@ export default function EntregadorDetalhe() {
   const entregadorId = urlParams.get('id');
 
   const [showAjusteModal, setShowAjusteModal] = useState(false);
+  const [showPagamentoModal, setShowPagamentoModal] = useState(false);
   const [ajusteForm, setAjusteForm] = useState({
     tipo: 'bonus',
     valor: '',
     motivo: '',
+  });
+  const [pagamentoForm, setPagamentoForm] = useState({
+    forma: 'pix',
+    observacao: '',
   });
   const [periodoFiltro, setPeriodoFiltro] = useState('mes');
   const [salvando, setSalvando] = useState(false);
@@ -160,17 +158,28 @@ export default function EntregadorDetalhe() {
           <h1 className="text-2xl font-bold text-white">{entregador.nome}</h1>
           <p className="text-slate-400">{entregador.telefone}</p>
         </div>
-        <Button 
-          onClick={() => setShowAjusteModal(true)}
-          className="bg-gradient-to-r from-blue-500 to-indigo-600"
-        >
-          <Edit className="w-4 h-4 mr-2" />
-          Ajuste Manual
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setShowAjusteModal(true)}
+            variant="outline"
+            className="border-blue-500/50 text-blue-400"
+          >
+            <Edit className="w-4 h-4 mr-2" />
+            Ajuste
+          </Button>
+          <Button 
+            onClick={() => setShowPagamentoModal(true)}
+            disabled={(entregador.saldo_taxas || 0) <= 0}
+            className="bg-gradient-to-r from-emerald-500 to-green-600"
+          >
+            <DollarSign className="w-4 h-4 mr-2" />
+            Realizar Pagamento
+          </Button>
+        </div>
       </div>
 
       {/* Cards de Resumo */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="bg-white/5 border-white/10 p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
@@ -196,22 +205,11 @@ export default function EntregadorDetalhe() {
         <Card className="bg-white/5 border-white/10 p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-              <Route className="w-5 h-5 text-blue-400" />
+              <Clock className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{totalKm.toFixed(1)} km</p>
-              <p className="text-xs text-slate-400">Distância (período)</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="bg-white/5 border-white/10 p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
-              <Star className="w-5 h-5 text-yellow-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">{(entregador.avaliacao_media || 5).toFixed(1)}</p>
-              <p className="text-xs text-slate-400">Avaliação</p>
+              <p className="text-2xl font-bold text-white">{Math.round(tempoMedio)} min</p>
+              <p className="text-xs text-slate-400">Tempo Médio</p>
             </div>
           </div>
         </Card>
@@ -262,10 +260,6 @@ export default function EntregadorDetalhe() {
             <Package className="w-4 h-4 mr-2" />
             Entregas
           </TabsTrigger>
-          <TabsTrigger value="rotas" className="data-[state=active]:bg-orange-500">
-            <Route className="w-4 h-4 mr-2" />
-            Rotas
-          </TabsTrigger>
           <TabsTrigger value="financeiro" className="data-[state=active]:bg-orange-500">
             <DollarSign className="w-4 h-4 mr-2" />
             Financeiro
@@ -298,12 +292,6 @@ export default function EntregadorDetalhe() {
                             {entrega.tempo_entrega_minutos} min
                           </span>
                         )}
-                        {entrega.distancia_km && (
-                          <span className="flex items-center gap-1">
-                            <Route className="w-3 h-3" />
-                            {entrega.distancia_km.toFixed(1)} km
-                          </span>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -315,15 +303,6 @@ export default function EntregadorDetalhe() {
               </Card>
             ))
           )}
-        </TabsContent>
-
-        {/* Rotas */}
-        <TabsContent value="rotas" className="space-y-3">
-          <Card className="bg-white/5 border-white/10 p-6 text-center">
-            <Route className="w-12 h-12 mx-auto text-slate-600 mb-3" />
-            <p className="text-slate-400">Histórico de rotas em desenvolvimento</p>
-            <p className="text-sm text-slate-500">Em breve você poderá ver todas as rotas realizadas</p>
-          </Card>
         </TabsContent>
 
         {/* Financeiro */}
@@ -465,6 +444,95 @@ export default function EntregadorDetalhe() {
                 className="bg-gradient-to-r from-blue-500 to-indigo-600"
               >
                 {salvando ? 'Salvando...' : 'Salvar Ajuste'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Pagamento */}
+      <Dialog open={showPagamentoModal} onOpenChange={setShowPagamentoModal}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <DollarSign className="w-6 h-6 text-emerald-500" />
+              Realizar Pagamento
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-500/30">
+              <p className="text-slate-400 text-sm">Valor a Pagar</p>
+              <p className="text-4xl font-bold text-emerald-400">R$ {(entregador.saldo_taxas || 0).toFixed(2)}</p>
+              <p className="text-sm text-slate-400 mt-1">{entregasConcluidas.length} entregas realizadas</p>
+            </div>
+
+            <div>
+              <Label className="text-slate-400">Forma de Pagamento</Label>
+              <Select value={pagamentoForm.forma} onValueChange={(v) => setPagamentoForm({ ...pagamentoForm, forma: v })}>
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectItem value="pix">PIX</SelectItem>
+                  <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                  <SelectItem value="transferencia">Transferência Bancária</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-slate-400">Observação (opcional)</Label>
+              <Textarea
+                value={pagamentoForm.observacao}
+                onChange={(e) => setPagamentoForm({ ...pagamentoForm, observacao: e.target.value })}
+                className="bg-slate-800 border-slate-700 text-white"
+                placeholder="Observações sobre o pagamento..."
+                rows={2}
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowPagamentoModal(false)}
+                className="border-slate-600 text-slate-300"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={async () => {
+                  setSalvando(true);
+                  try {
+                    // Criar registro de pagamento
+                    await base44.entities.Pagamento.create({
+                      pizzaria_id: 'default',
+                      entregador_id: entregadorId,
+                      valor: entregador.saldo_taxas || 0,
+                      periodo_inicio: moment().subtract(30, 'days').format('YYYY-MM-DD'),
+                      periodo_fim: moment().format('YYYY-MM-DD'),
+                      quantidade_entregas: entregasConcluidas.length,
+                      status: 'pago',
+                      data_pagamento: new Date().toISOString(),
+                      observacoes: `${pagamentoForm.forma.toUpperCase()} - ${pagamentoForm.observacao || 'Pagamento realizado'}`,
+                    });
+
+                    // Zerar saldo do entregador
+                    await base44.entities.Entregador.update(entregadorId, { saldo_taxas: 0 });
+
+                    refetchEntregador();
+                    setShowPagamentoModal(false);
+                    setPagamentoForm({ forma: 'pix', observacao: '' });
+                  } catch (error) {
+                    console.error('Erro ao realizar pagamento:', error);
+                  } finally {
+                    setSalvando(false);
+                  }
+                }}
+                disabled={salvando || (entregador.saldo_taxas || 0) <= 0}
+                className="bg-gradient-to-r from-emerald-500 to-green-600"
+              >
+                {salvando ? 'Processando...' : 'Confirmar Pagamento'}
               </Button>
             </div>
           </div>
