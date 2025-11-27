@@ -9,6 +9,8 @@ import Produtos from './pages/Produtos';
 import NovoPedido from './pages/NovoPedido';
 import EntregadorDetalhe from './pages/EntregadorDetalhe';
 import Pagamentos from './pages/Pagamentos';
+import Cozinha from './pages/Cozinha';
+import EntregasHoje from './pages/EntregasHoje';
 import __Layout from './Layout.jsx';
 
 
@@ -24,6 +26,8 @@ export const PAGES = {
     "NovoPedido": NovoPedido,
     "EntregadorDetalhe": EntregadorDetalhe,
     "Pagamentos": Pagamentos,
+    "Cozinha": Cozinha,
+    "EntregasHoje": EntregasHoje,
 }
 
 export const pagesConfig = {
