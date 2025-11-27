@@ -28,8 +28,8 @@ import { Badge } from '@/components/ui/badge';
 
 const menuItems = [
   { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
-  { name: 'Novo Pedido', icon: ClipboardList, page: 'NovoPedido' },
   { name: 'Pedidos', icon: ClipboardList, page: 'Pedidos' },
+  { name: 'Novo Pedido', icon: ClipboardList, page: 'NovoPedido' },
   { name: 'Produtos', icon: Pizza, page: 'Produtos' },
   { name: 'Mapa ao Vivo', icon: MapPin, page: 'MapaTempoReal' },
   { name: 'Entregadores', icon: Bike, page: 'Entregadores' },
@@ -118,12 +118,14 @@ export default function Layout({ children, currentPageName }) {
           {/* Logo */}
           <div className="p-6 border-b border-white/5">
             <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center glow-orange">
-                <Pizza className="w-7 h-7 text-white" />
-              </div>
+              <img 
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6925e1fdd6376091844799ad/74cee5df9_WhatsAppImage2025-11-26at115948.jpeg" 
+                alt="NinjaGO Delivery"
+                className="w-12 h-12 rounded-2xl object-cover"
+              />
               <div>
-                <h1 className="text-xl font-bold text-white">DeliveryPizza</h1>
-                <p className="text-xs text-slate-400">Gestão de Entregas</p>
+                <h1 className="text-xl font-bold text-white">NinjaGO</h1>
+                <p className="text-xs text-slate-400">Delivery</p>
               </div>
             </Link>
           </div>
