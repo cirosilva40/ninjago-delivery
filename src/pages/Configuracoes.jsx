@@ -133,6 +133,10 @@ export default function Configuracoes() {
             <Bell className="w-4 h-4 mr-2" />
             Notificações
           </TabsTrigger>
+          <TabsTrigger value="aparencia" className="data-[state=active]:bg-white/10">
+            <Settings className="w-4 h-4 mr-2" />
+            Aparência
+          </TabsTrigger>
         </TabsList>
 
         {/* Tab Geral */}
@@ -506,6 +510,60 @@ export default function Configuracoes() {
                   </div>
                   <Switch />
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tab Aparência */}
+        <TabsContent value="aparencia" className="space-y-6">
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Settings className="w-5 h-5 text-purple-500" />
+                Tema do Sistema
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                Escolha o tema visual da interface
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => {
+                    localStorage.setItem('theme', 'dark');
+                    window.location.reload();
+                  }}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    (localStorage.getItem('theme') || 'dark') === 'dark'
+                      ? 'border-orange-500 bg-orange-500/10'
+                      : 'border-white/10 bg-white/5 hover:bg-white/10'
+                  }`}
+                >
+                  <div className="w-full h-20 rounded-lg bg-slate-900 border border-slate-700 mb-3 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded bg-orange-500" />
+                  </div>
+                  <p className="font-medium text-white">Tema Escuro</p>
+                  <p className="text-xs text-slate-400">Interface escura padrão</p>
+                </button>
+
+                <button
+                  onClick={() => {
+                    localStorage.setItem('theme', 'light');
+                    window.location.reload();
+                  }}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    localStorage.getItem('theme') === 'light'
+                      ? 'border-orange-500 bg-orange-500/10'
+                      : 'border-white/10 bg-white/5 hover:bg-white/10'
+                  }`}
+                >
+                  <div className="w-full h-20 rounded-lg bg-gray-100 border border-gray-300 mb-3 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded bg-orange-500" />
+                  </div>
+                  <p className="font-medium text-white">Tema Claro</p>
+                  <p className="text-xs text-slate-400">Interface clara</p>
+                </button>
               </div>
             </CardContent>
           </Card>

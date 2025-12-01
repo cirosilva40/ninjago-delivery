@@ -79,6 +79,30 @@ export default function Produtos() {
     destaque: false,
   });
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [showCategoriaModal, setShowCategoriaModal] = useState(false);
+  const [novaCategoria, setNovaCategoria] = useState({ key: '', label: '' });
+  const [categoriasCustom, setCategoriasCustom] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('categoriasCustom') || '{}');
+    } catch {
+      return {};
+    }
+  });
+
+  const todasCategorias = { ...categoriaConfig, ...categoriasCustom };
+
+  const salvarNovaCategoria = () => {
+    if (!novaCategoria.key || !novaCategoria.label) return;
+    const key = novaCategoria.key.toLowerCase().replace(/\s+/g, '_').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const novasCategorias = {
+      ...categoriasCustom,
+      [key]: { label: novaCategoria.label, icon: Package, color: 'bg-slate-500' }
+    };
+    setCategoriasCustom(novasCategorias);
+    localStorage.setItem('categoriasCustom', JSON.stringify(novasCategorias));
+    setNovaCategoria({ key: '', label: '' });
+    setShowCategoriaModal(false);
+  };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -184,16 +208,26 @@ export default function Produtos() {
           <h1 className="text-3xl font-bold text-white">Produtos Cadastrados</h1>
           <p className="text-slate-400 mt-1">{produtos.length} produtos no cardápio</p>
         </div>
-        <Button 
-          onClick={() => {
-            resetForm();
-            setShowModal(true);
-          }}
-          className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Produto
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => setShowCategoriaModal(true)}
+            variant="outline"
+            className="border-slate-600 text-slate-300 hover:text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Nova Categoria
+          </Button>
+          <Button 
+            onClick={() => {
+              resetForm();
+              setShowModal(true);
+            }}
+            className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Produto
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -214,7 +248,7 @@ export default function Produtos() {
           </SelectTrigger>
           <SelectContent className="bg-slate-900 border-slate-700">
             <SelectItem value="todas">Todas Categorias</SelectItem>
-            {Object.entries(categoriaConfig).map(([key, config]) => (
+            {Object.entries(todasCategorias).map(([key, config]) => (
               <SelectItem key={key} value={key}>{config.label}</SelectItem>
             ))}
           </SelectContent>
@@ -223,7 +257,7 @@ export default function Produtos() {
 
       {/* Stats por Categoria */}
       <div className="flex flex-wrap gap-2">
-        {Object.entries(categoriaConfig).map(([key, config]) => {
+        {Object.entries(todasCategorias).map(([key, config]) => {
           const count = produtos.filter(p => p.categoria === key).length;
           if (count === 0) return null;
           const Icon = config.icon;
@@ -254,7 +288,7 @@ export default function Produtos() {
       ) : (
         <div className="space-y-8">
           {Object.entries(produtosPorCategoria).map(([categoria, items]) => {
-            const config = categoriaConfig[categoria] || categoriaConfig.outro;
+            const config = todasCategorias[categoria] || categoriaConfig.outro;
             const Icon = config.icon;
             return (
               <div key={categoria}>
@@ -382,7 +416,7 @@ export default function Produtos() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-700">
-                    {Object.entries(categoriaConfig).map(([key, config]) => (
+                    {Object.entries(todasCategorias).map(([key, config]) => (
                       <SelectItem key={key} value={key}>{config.label}</SelectItem>
                     ))}
                   </SelectContent>
@@ -498,6 +532,50 @@ export default function Produtos() {
                 className="bg-gradient-to-r from-orange-500 to-red-600"
               >
                 {editingProduto ? 'Salvar' : 'Cadastrar'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Nova Categoria */}
+      <Dialog open={showCategoriaModal} onOpenChange={setShowCategoriaModal}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Tag className="w-6 h-6 text-orange-500" />
+              Nova Categoria
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label className="text-slate-400">Nome da Categoria</Label>
+              <Input
+                value={novaCategoria.label}
+                onChange={(e) => setNovaCategoria({ 
+                  key: e.target.value.toLowerCase().replace(/\s+/g, '_'),
+                  label: e.target.value 
+                })}
+                className="bg-slate-800 border-slate-700 text-white"
+                placeholder="Ex: Massas, Saladas, etc."
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCategoriaModal(false)}
+                className="border-slate-600 text-slate-300"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={salvarNovaCategoria}
+                disabled={!novaCategoria.label}
+                className="bg-gradient-to-r from-orange-500 to-red-600"
+              >
+                Criar Categoria
               </Button>
             </div>
           </div>
