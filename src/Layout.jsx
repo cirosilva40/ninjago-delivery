@@ -43,6 +43,7 @@ export default function Layout({ children, currentPageName }) {
   const [user, setUser] = useState(null);
   const [notificacoes, setNotificacoes] = useState([]);
   const navigate = useNavigate();
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
 
   useEffect(() => {
     loadUser();
@@ -74,22 +75,24 @@ export default function Layout({ children, currentPageName }) {
     return <>{children}</>;
   }
 
+  const isLight = theme === 'light';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className={`min-h-screen ${isLight ? 'bg-gray-50' : 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'}`}>
       <style>{`
         :root {
           --primary: 24 100% 50%;
           --primary-foreground: 0 0% 100%;
         }
         .glass-card {
-          background: rgba(255, 255, 255, 0.03);
+          background: ${isLight ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.03)'};
           backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          border: 1px solid ${isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.08)'};
         }
         .glass-sidebar {
-          background: rgba(15, 23, 42, 0.8);
+          background: ${isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 23, 42, 0.8)'};
           backdrop-filter: blur(20px);
-          border-right: 1px solid rgba(255, 255, 255, 0.05);
+          border-right: 1px solid ${isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.05)'};
         }
         .gradient-text {
           background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
@@ -124,8 +127,8 @@ export default function Layout({ children, currentPageName }) {
                 className="w-12 h-12 rounded-2xl object-cover"
               />
               <div>
-                <h1 className="text-xl font-bold text-white">NinjaGO</h1>
-                <p className="text-xs text-slate-400">Delivery</p>
+                <h1 className={`text-xl font-bold ${isLight ? 'text-gray-900' : 'text-white'}`}>NinjaGO</h1>
+                <p className={`text-xs ${isLight ? 'text-gray-500' : 'text-slate-400'}`}>Delivery</p>
               </div>
             </Link>
           </div>
@@ -142,12 +145,14 @@ export default function Layout({ children, currentPageName }) {
                   className={`
                     flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
                     ${isActive 
-                      ? 'bg-gradient-to-r from-orange-500/20 to-red-500/10 text-orange-400 border border-orange-500/20' 
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
+                      ? 'bg-gradient-to-r from-orange-500/20 to-red-500/10 text-orange-500 border border-orange-500/20' 
+                      : isLight 
+                        ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
                     }
                   `}
                 >
-                  <item.icon className={`w-5 h-5 ${isActive ? 'text-orange-400' : ''}`} />
+                  <item.icon className={`w-5 h-5 ${isActive ? 'text-orange-500' : ''}`} />
                   <span className="font-medium">{item.name}</span>
                 </Link>
               );
@@ -156,16 +161,16 @@ export default function Layout({ children, currentPageName }) {
 
           {/* User Section */}
           {user && (
-            <div className="p-4 border-t border-white/5">
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+            <div className={`p-4 border-t ${isLight ? 'border-gray-200' : 'border-white/5'}`}>
+              <div className={`flex items-center gap-3 p-3 rounded-xl ${isLight ? 'bg-gray-100' : 'bg-white/5'}`}>
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
                   <span className="text-white font-semibold">
                     {user.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">{user.full_name || 'Usuário'}</p>
-                  <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                  <p className={`text-sm font-medium truncate ${isLight ? 'text-gray-900' : 'text-white'}`}>{user.full_name || 'Usuário'}</p>
+                  <p className={`text-xs truncate ${isLight ? 'text-gray-500' : 'text-slate-400'}`}>{user.email}</p>
                 </div>
               </div>
             </div>
@@ -176,18 +181,18 @@ export default function Layout({ children, currentPageName }) {
       {/* Main Content */}
       <div className="lg:ml-72">
         {/* Top Bar */}
-        <header className="sticky top-0 z-30 glass-card border-b border-white/5">
+        <header className={`sticky top-0 z-30 glass-card border-b ${isLight ? 'border-gray-200' : 'border-white/5'}`}>
           <div className="flex items-center justify-between px-4 lg:px-8 h-16">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden text-white"
+                className={`lg:hidden ${isLight ? 'text-gray-700' : 'text-white'}`}
                 onClick={() => setSidebarOpen(true)}
               >
                 <Menu className="w-6 h-6" />
               </Button>
-              <h2 className="text-lg font-semibold text-white hidden sm:block">
+              <h2 className={`text-lg font-semibold hidden sm:block ${isLight ? 'text-gray-900' : 'text-white'}`}>
                 {menuItems.find(m => m.page === currentPageName)?.name || currentPageName}
               </h2>
             </div>
@@ -196,7 +201,7 @@ export default function Layout({ children, currentPageName }) {
               {/* Notifications */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="relative text-slate-400 hover:text-white">
+                  <Button variant="ghost" size="icon" className={`relative ${isLight ? 'text-gray-500 hover:text-gray-700' : 'text-slate-400 hover:text-white'}`}>
                     <Bell className="w-5 h-5" />
                     {notificacoes.length > 0 && (
                       <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center bg-orange-500 text-white text-xs">
@@ -229,7 +234,7 @@ export default function Layout({ children, currentPageName }) {
               {/* User Menu */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="gap-2 text-slate-400 hover:text-white">
+                  <Button variant="ghost" className={`gap-2 ${isLight ? 'text-gray-500 hover:text-gray-700' : 'text-slate-400 hover:text-white'}`}>
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
                       <span className="text-white text-sm font-semibold">
                         {user?.full_name?.charAt(0) || 'U'}
