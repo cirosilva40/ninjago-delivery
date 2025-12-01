@@ -99,16 +99,7 @@ export default function Pedidos() {
           <h1 className="text-3xl font-bold text-white">Pedidos</h1>
           <p className="text-slate-400 mt-1">{pedidos.length} pedidos no total</p>
         </div>
-        <Button 
-          onClick={() => {
-            setEditingPedido(null);
-            setShowPedidoModal(true);
-          }}
-          className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Pedido
-        </Button>
+
       </div>
 
       {/* Filters */}
