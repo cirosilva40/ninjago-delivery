@@ -136,7 +136,13 @@ export default function Layout({ children, currentPageName }) {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {menuItems.map((item) => {
+            {menuItems.filter(item => {
+              // Filtrar "Usuários" apenas para admins
+              if (item.page === 'AdminUsers') {
+                return user?.role === 'admin';
+              }
+              return true;
+            }).map((item) => {
               const isActive = currentPageName === item.page;
               return (
                 <Link
