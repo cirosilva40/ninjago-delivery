@@ -34,6 +34,7 @@ const menuItems = [
   { name: 'Produtos', icon: Pizza, page: 'Produtos' },
   { name: 'Mapa ao Vivo', icon: MapPin, page: 'MapaTempoReal' },
   { name: 'Entregadores', icon: Bike, page: 'Entregadores' },
+  { name: 'Usuários', icon: Users, page: 'AdminUsers' },
   { name: 'Relatórios', icon: BarChart3, page: 'Relatorios' },
   { name: 'Configurações', icon: Settings, page: 'Configuracoes' },
 ];
