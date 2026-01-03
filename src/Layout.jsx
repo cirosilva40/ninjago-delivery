@@ -34,7 +34,6 @@ const menuItems = [
   { name: 'Produtos', icon: Pizza, page: 'Produtos' },
   { name: 'Mapa ao Vivo', icon: MapPin, page: 'MapaTempoReal' },
   { name: 'Entregadores', icon: Bike, page: 'Entregadores' },
-  { name: 'Usuários', icon: Users, page: 'AdminUsers' },
   { name: 'Relatórios', icon: BarChart3, page: 'Relatorios' },
   { name: 'Configurações', icon: Settings, page: 'Configuracoes' },
 ];
@@ -71,8 +70,8 @@ export default function Layout({ children, currentPageName }) {
     base44.auth.logout();
   };
 
-  // Páginas do entregador não usam o layout padrão
-  if (currentPageName === 'AppEntregador') {
+  // Páginas que não usam o layout padrão
+  if (currentPageName === 'AppEntregador' || currentPageName === 'AdminUsers') {
     return <>{children}</>;
   }
 
@@ -136,13 +135,7 @@ export default function Layout({ children, currentPageName }) {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {menuItems.filter(item => {
-              // Filtrar "Usuários" apenas para admins
-              if (item.page === 'AdminUsers') {
-                return user?.role === 'admin';
-              }
-              return true;
-            }).map((item) => {
+            {menuItems.map((item) => {
               const isActive = currentPageName === item.page;
               return (
                 <Link
