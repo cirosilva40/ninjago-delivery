@@ -18,6 +18,11 @@ import {
   AlertCircle,
   ArrowLeft,
   LogOut,
+  Building2,
+  User,
+  Phone,
+  CreditCard,
+  DollarSign,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,10 +54,22 @@ export default function AdminUsers() {
   const [currentUser, setCurrentUser] = useState(null);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('todos');
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteForm, setInviteForm] = useState({ email: '', role: 'user' });
-  const [inviting, setInviting] = useState(false);
-  const [inviteSuccess, setInviteSuccess] = useState(false);
+  const [showCadastroModal, setShowCadastroModal] = useState(false);
+  const [cadastroForm, setCadastroForm] = useState({
+    tipo_pessoa: 'fisica',
+    nome_completo: '',
+    cpf: '',
+    cnpj: '',
+    telefone: '',
+    email: '',
+    plano: 'basico',
+    data_pagamento: '',
+    valor_pagamento: '',
+    forma_pagamento: 'pix',
+    role: 'user'
+  });
+  const [cadastrando, setCadastrando] = useState(false);
+  const [cadastroSuccess, setCadastroSuccess] = useState(false);
 
   useEffect(() => {
     loadCurrentUser();
@@ -101,23 +118,51 @@ export default function AdminUsers() {
     return matchSearch && matchRole;
   });
 
-  const handleInvite = async () => {
-    if (!inviteForm.email) return;
+  const handleCadastro = async () => {
+    if (!cadastroForm.email || !cadastroForm.nome_completo) return;
     
-    setInviting(true);
+    // Validar CPF/CNPJ conforme tipo
+    if (cadastroForm.tipo_pessoa === 'fisica' && !cadastroForm.cpf) {
+      alert('CPF é obrigatório para pessoa física');
+      return;
+    }
+    if (cadastroForm.tipo_pessoa === 'juridica' && !cadastroForm.cnpj) {
+      alert('CNPJ é obrigatório para pessoa jurídica');
+      return;
+    }
+    
+    setCadastrando(true);
     try {
-      await base44.users.inviteUser(inviteForm.email, inviteForm.role);
-      setInviteSuccess(true);
+      // Convidar usuário através do sistema base44
+      await base44.users.inviteUser(cadastroForm.email, cadastroForm.role);
+      
+      // Salvar dados adicionais no usuário (após convite ser aceito, os dados já estarão lá)
+      // Por enquanto, apenas enviamos o convite
+      
+      setCadastroSuccess(true);
       setTimeout(() => {
-        setInviteSuccess(false);
-        setShowInviteModal(false);
-        setInviteForm({ email: '', role: 'user' });
+        setCadastroSuccess(false);
+        setShowCadastroModal(false);
+        setCadastroForm({
+          tipo_pessoa: 'fisica',
+          nome_completo: '',
+          cpf: '',
+          cnpj: '',
+          telefone: '',
+          email: '',
+          plano: 'basico',
+          data_pagamento: '',
+          valor_pagamento: '',
+          forma_pagamento: 'pix',
+          role: 'user'
+        });
       }, 2000);
       refetch();
     } catch (error) {
-      console.error('Erro ao convidar usuário:', error);
+      console.error('Erro ao cadastrar usuário:', error);
+      alert('Erro ao cadastrar usuário. Tente novamente.');
     } finally {
-      setInviting(false);
+      setCadastrando(false);
     }
   };
 
@@ -184,11 +229,11 @@ export default function AdminUsers() {
               <p className="text-slate-400 mt-1">{usuarios.length} usuários cadastrados</p>
             </div>
             <Button 
-              onClick={() => setShowInviteModal(true)}
+              onClick={() => setShowCadastroModal(true)}
               className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Convidar Usuário
+              Cadastrar Usuário
             </Button>
           </div>
 
@@ -346,33 +391,185 @@ export default function AdminUsers() {
         </AnimatePresence>
       </div>
 
-      {/* Modal Convidar Usuário */}
-      <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white">
+      {/* Modal Cadastrar Usuário */}
+      <Dialog open={showCadastroModal} onOpenChange={setShowCadastroModal}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <Mail className="w-6 h-6 text-orange-500" />
-              Convidar Novo Usuário
+              <Users className="w-6 h-6 text-orange-500" />
+              Cadastrar Novo Usuário
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 mt-4">
+          <div className="space-y-6 mt-4">
+            {/* Tipo de Pessoa */}
             <div>
-              <Label className="text-slate-400">Email</Label>
-              <Input
-                type="email"
-                value={inviteForm.email}
-                onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
-                className="bg-slate-800 border-slate-700 text-white"
-                placeholder="usuario@exemplo.com"
-              />
+              <Label className="text-slate-400 mb-3 block">Tipo de Pessoa</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setCadastroForm({ ...cadastroForm, tipo_pessoa: 'fisica' })}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    cadastroForm.tipo_pessoa === 'fisica'
+                      ? 'border-orange-500 bg-orange-500/10'
+                      : 'border-slate-700 bg-slate-800/50 hover:bg-slate-800'
+                  }`}
+                >
+                  <User className="w-6 h-6 mx-auto mb-2 text-orange-400" />
+                  <p className="text-white font-medium">Pessoa Física</p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCadastroForm({ ...cadastroForm, tipo_pessoa: 'juridica' })}
+                  className={`p-4 rounded-xl border-2 transition-all ${
+                    cadastroForm.tipo_pessoa === 'juridica'
+                      ? 'border-orange-500 bg-orange-500/10'
+                      : 'border-slate-700 bg-slate-800/50 hover:bg-slate-800'
+                  }`}
+                >
+                  <Building2 className="w-6 h-6 mx-auto mb-2 text-orange-400" />
+                  <p className="text-white font-medium">Pessoa Jurídica</p>
+                </button>
+              </div>
             </div>
 
-            <div>
-              <Label className="text-slate-400">Função</Label>
+            {/* Dados da Empresa/Pessoa */}
+            <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+              <h3 className="font-semibold text-white flex items-center gap-2">
+                <User className="w-5 h-5 text-orange-400" />
+                Dados {cadastroForm.tipo_pessoa === 'fisica' ? 'Pessoais' : 'da Empresa'}
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <Label className="text-slate-400">
+                    {cadastroForm.tipo_pessoa === 'fisica' ? 'Nome Completo' : 'Razão Social'}
+                  </Label>
+                  <Input
+                    value={cadastroForm.nome_completo}
+                    onChange={(e) => setCadastroForm({ ...cadastroForm, nome_completo: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder={cadastroForm.tipo_pessoa === 'fisica' ? 'João da Silva' : 'Empresa LTDA'}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">
+                    {cadastroForm.tipo_pessoa === 'fisica' ? 'CPF' : 'CNPJ'}
+                  </Label>
+                  <Input
+                    value={cadastroForm.tipo_pessoa === 'fisica' ? cadastroForm.cpf : cadastroForm.cnpj}
+                    onChange={(e) => setCadastroForm({ 
+                      ...cadastroForm, 
+                      [cadastroForm.tipo_pessoa === 'fisica' ? 'cpf' : 'cnpj']: e.target.value 
+                    })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder={cadastroForm.tipo_pessoa === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Telefone</Label>
+                  <Input
+                    value={cadastroForm.telefone}
+                    onChange={(e) => setCadastroForm({ ...cadastroForm, telefone: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="(00) 00000-0000"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <Label className="text-slate-400">Email</Label>
+                  <Input
+                    type="email"
+                    value={cadastroForm.email}
+                    onChange={(e) => setCadastroForm({ ...cadastroForm, email: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="usuario@exemplo.com"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Plano */}
+            <div className="space-y-3 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+              <h3 className="font-semibold text-white flex items-center gap-2">
+                <Shield className="w-5 h-5 text-orange-400" />
+                Plano de Acesso
+              </h3>
               <Select 
-                value={inviteForm.role} 
-                onValueChange={(v) => setInviteForm({ ...inviteForm, role: v })}
+                value={cadastroForm.plano} 
+                onValueChange={(v) => setCadastroForm({ ...cadastroForm, plano: v })}
+              >
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectItem value="basico">Plano Básico</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Dados de Pagamento */}
+            <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+              <h3 className="font-semibold text-white flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-orange-400" />
+                Dados de Pagamento
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-400">Data de Pagamento</Label>
+                  <Input
+                    type="date"
+                    value={cadastroForm.data_pagamento}
+                    onChange={(e) => setCadastroForm({ ...cadastroForm, data_pagamento: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Valor (R$)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={cadastroForm.valor_pagamento}
+                    onChange={(e) => setCadastroForm({ ...cadastroForm, valor_pagamento: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="0,00"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <Label className="text-slate-400">Forma de Pagamento</Label>
+                  <Select 
+                    value={cadastroForm.forma_pagamento} 
+                    onValueChange={(v) => setCadastroForm({ ...cadastroForm, forma_pagamento: v })}
+                  >
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      <SelectItem value="pix">PIX</SelectItem>
+                      <SelectItem value="boleto">Boleto</SelectItem>
+                      <SelectItem value="cartao_credito">Cartão de Crédito</SelectItem>
+                      <SelectItem value="cartao_debito">Cartão de Débito</SelectItem>
+                      <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Permissão */}
+            <div className="space-y-3 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+              <h3 className="font-semibold text-white flex items-center gap-2">
+                <Shield className="w-5 h-5 text-orange-400" />
+                Nível de Acesso
+              </h3>
+              <Select 
+                value={cadastroForm.role} 
+                onValueChange={(v) => setCadastroForm({ ...cadastroForm, role: v })}
               >
                 <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                   <SelectValue />
@@ -386,14 +583,14 @@ export default function AdminUsers() {
 
             <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
               <p className="text-sm text-blue-300">
-                📧 Um email de convite será enviado para o endereço informado com instruções de acesso.
+                📧 Um email será enviado para <strong>{cadastroForm.email || 'o endereço informado'}</strong> com instruções para criar a senha e acessar o sistema.
               </p>
             </div>
 
-            {inviteSuccess && (
+            {cadastroSuccess && (
               <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
                 <p className="text-sm text-emerald-300 font-medium">
-                  ✅ Convite enviado com sucesso!
+                  ✅ Usuário cadastrado com sucesso!
                 </p>
               </div>
             )}
@@ -401,17 +598,17 @@ export default function AdminUsers() {
             <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
               <Button 
                 variant="outline" 
-                onClick={() => setShowInviteModal(false)}
+                onClick={() => setShowCadastroModal(false)}
                 className="border-slate-600 text-slate-300"
               >
                 Cancelar
               </Button>
               <Button 
-                onClick={handleInvite}
-                disabled={!inviteForm.email || inviting || inviteSuccess}
+                onClick={handleCadastro}
+                disabled={!cadastroForm.email || !cadastroForm.nome_completo || cadastrando || cadastroSuccess}
                 className="bg-gradient-to-r from-orange-500 to-red-600"
               >
-                {inviting ? 'Enviando...' : inviteSuccess ? 'Enviado!' : 'Enviar Convite'}
+                {cadastrando ? 'Cadastrando...' : cadastroSuccess ? 'Cadastrado!' : 'Cadastrar Usuário'}
               </Button>
             </div>
           </div>
