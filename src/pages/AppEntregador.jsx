@@ -92,6 +92,12 @@ export default function AppEntregador() {
 
   const loadUser = async () => {
     try {
+      const isAuth = await base44.auth.isAuthenticated();
+      if (!isAuth) {
+        setUser(null);
+        return;
+      }
+
       const userData = await base44.auth.me();
       setUser(userData);
       
@@ -101,7 +107,7 @@ export default function AppEntregador() {
         setEntregador(entregadores[0]);
       }
     } catch (e) {
-      // Usuário não está logado, não fazer nada
+      console.log('User not logged');
       setUser(null);
     }
   };
