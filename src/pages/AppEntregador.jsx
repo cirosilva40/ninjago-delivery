@@ -101,7 +101,8 @@ export default function AppEntregador() {
         setEntregador(entregadores[0]);
       }
     } catch (e) {
-      console.log('User not logged');
+      // Usuário não está logado, não fazer nada
+      setUser(null);
     }
   };
 

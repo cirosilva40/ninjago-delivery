@@ -1,3 +1,4 @@
+import AdminUsers from './pages/AdminUsers';
 import AppEntregador from './pages/AppEntregador';
 import Configuracoes from './pages/Configuracoes';
 import Cozinha from './pages/Cozinha';
@@ -12,11 +13,11 @@ import Pagamentos from './pages/Pagamentos';
 import Pedidos from './pages/Pedidos';
 import Produtos from './pages/Produtos';
 import Relatorios from './pages/Relatorios';
-import AdminUsers from './pages/AdminUsers';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AdminUsers": AdminUsers,
     "AppEntregador": AppEntregador,
     "Configuracoes": Configuracoes,
     "Cozinha": Cozinha,
@@ -31,7 +32,6 @@ export const PAGES = {
     "Pedidos": Pedidos,
     "Produtos": Produtos,
     "Relatorios": Relatorios,
-    "AdminUsers": AdminUsers,
 }
 
 export const pagesConfig = {
