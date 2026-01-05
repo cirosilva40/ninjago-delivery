@@ -13,6 +13,8 @@ import Pagamentos from './pages/Pagamentos';
 import Pedidos from './pages/Pedidos';
 import Produtos from './pages/Produtos';
 import Relatorios from './pages/Relatorios';
+import CardapioCliente from './pages/CardapioCliente';
+import AcompanharPedido from './pages/AcompanharPedido';
 import __Layout from './Layout.jsx';
 
 
@@ -32,6 +34,8 @@ export const PAGES = {
     "Pedidos": Pedidos,
     "Produtos": Produtos,
     "Relatorios": Relatorios,
+    "CardapioCliente": CardapioCliente,
+    "AcompanharPedido": AcompanharPedido,
 }
 
 export const pagesConfig = {
