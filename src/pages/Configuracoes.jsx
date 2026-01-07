@@ -121,6 +121,10 @@ export default function Configuracoes() {
             <Store className="w-4 h-4 mr-2" />
             Geral
           </TabsTrigger>
+          <TabsTrigger value="loja" className="data-[state=active]:bg-white/10">
+            <Pizza className="w-4 h-4 mr-2" />
+            Personalizar Minha Loja
+          </TabsTrigger>
           <TabsTrigger value="entrega" className="data-[state=active]:bg-white/10">
             <Truck className="w-4 h-4 mr-2" />
             Entrega
@@ -350,6 +354,127 @@ export default function Configuracoes() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* Tab Personalizar Minha Loja */}
+        <TabsContent value="loja" className="space-y-6">
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Store className="w-5 h-5 text-orange-500" />
+                Personalizar Minha Loja
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                Configure a aparência da sua loja para os clientes
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Logo */}
+              <div>
+                <Label className="text-slate-400">Logo da Loja</Label>
+                <div className="flex items-center gap-4 mt-2">
+                  {pizzaria.logo_url && (
+                    <img 
+                      src={pizzaria.logo_url} 
+                      alt="Logo" 
+                      className="w-20 h-20 rounded-xl object-cover border-2 border-white/10"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <Input
+                      value={pizzaria.logo_url || ''}
+                      onChange={(e) => setPizzaria({ ...pizzaria, logo_url: e.target.value })}
+                      className="bg-slate-800 border-slate-700 text-white"
+                      placeholder="URL da logo (ex: https://exemplo.com/logo.png)"
+                    />
+                    <p className="text-xs text-slate-500 mt-1">
+                      Cole a URL da imagem da sua logo
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Nome de Exibição */}
+              <div>
+                <Label className="text-slate-400">Nome da Loja (exibido para clientes)</Label>
+                <Input
+                  value={pizzaria.nome_exibicao_cliente || pizzaria.nome}
+                  onChange={(e) => setPizzaria({ ...pizzaria, nome_exibicao_cliente: e.target.value })}
+                  className="bg-slate-800 border-slate-700 text-white"
+                  placeholder="Ex: Pizzaria do João"
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  Este nome aparecerá no cardápio para os clientes
+                </p>
+              </div>
+
+              {/* Tema do Cliente */}
+              <div>
+                <Label className="text-slate-400 mb-3 block">Tema da Loja do Cliente</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={() => setPizzaria({ ...pizzaria, tema_cliente: 'dark' })}
+                    className={`p-4 rounded-xl border-2 transition-all ${
+                      (pizzaria.tema_cliente || 'dark') === 'dark'
+                        ? 'border-orange-500 bg-orange-500/10'
+                        : 'border-white/10 bg-white/5 hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="w-full h-20 rounded-lg bg-slate-900 border border-slate-700 mb-3 flex items-center justify-center">
+                      <Pizza className="w-8 h-8 text-orange-500" />
+                    </div>
+                    <p className="font-medium text-white">Tema Escuro</p>
+                    <p className="text-xs text-slate-400">Fundo escuro, letras claras</p>
+                  </button>
+
+                  <button
+                    onClick={() => setPizzaria({ ...pizzaria, tema_cliente: 'light' })}
+                    className={`p-4 rounded-xl border-2 transition-all ${
+                      pizzaria.tema_cliente === 'light'
+                        ? 'border-orange-500 bg-orange-500/10'
+                        : 'border-white/10 bg-white/5 hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="w-full h-20 rounded-lg bg-gray-50 border border-gray-300 mb-3 flex items-center justify-center">
+                      <Pizza className="w-8 h-8 text-orange-600" />
+                    </div>
+                    <p className="font-medium text-white">Tema Claro</p>
+                    <p className="text-xs text-slate-400">Fundo claro, letras escuras</p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Cor Primária */}
+              <div>
+                <Label className="text-slate-400">Cor Primária da Loja</Label>
+                <div className="flex items-center gap-4 mt-2">
+                  <Input
+                    type="color"
+                    value={pizzaria.cor_primaria_cliente || '#f97316'}
+                    onChange={(e) => setPizzaria({ ...pizzaria, cor_primaria_cliente: e.target.value })}
+                    className="w-20 h-12 bg-slate-800 border-slate-700 cursor-pointer"
+                  />
+                  <Input
+                    value={pizzaria.cor_primaria_cliente || '#f97316'}
+                    onChange={(e) => setPizzaria({ ...pizzaria, cor_primaria_cliente: e.target.value })}
+                    className="flex-1 bg-slate-800 border-slate-700 text-white"
+                    placeholder="#f97316"
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Esta cor será usada nos botões e destaques da loja
+                </p>
+              </div>
+
+              {/* Preview */}
+              <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                <p className="text-sm text-blue-300 mb-2">💡 Prévia</p>
+                <p className="text-xs text-slate-400">
+                  Após salvar, acesse a página de cardápio do cliente para ver as mudanças aplicadas.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Tab Entrega */}

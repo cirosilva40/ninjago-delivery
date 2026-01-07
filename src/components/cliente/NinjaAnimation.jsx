@@ -7,6 +7,24 @@ const foodIcons = [Pizza, Utensils, Cookie, IceCream, Beef];
 export default function NinjaAnimation({ status }) {
   const isActive = status !== 'entregue' && status !== 'cancelado';
 
+  // Valores fixos para posições aleatórias (evita recalcular a cada render)
+  const [randomPositions] = React.useState(() => 
+    Array.from({ length: 5 }, () => ({
+      x: Math.random() * 100 - 50,
+      y: Math.random() * 100 - 50,
+      rotate: Math.random() * 360,
+    }))
+  );
+
+  const [particlePositions] = React.useState(() =>
+    Array.from({ length: 5 }, () => ({
+      x1: Math.random() * 400,
+      y1: Math.random() * 250,
+      x2: Math.random() * 400,
+      y2: Math.random() * 250,
+    }))
+  );
+
   return (
     <div className="relative w-full h-64 rounded-2xl bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/30 overflow-hidden">
       {/* Fundo animado */}
@@ -71,18 +89,18 @@ export default function NinjaAnimation({ status }) {
           {isActive && foodIcons.map((Icon, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+              initial={{ opacity: 0, scale: 0, x: 0, y: 0, rotate: 0 }}
               animate={{
-                opacity: [0, 1, 1, 0],
-                scale: [0, 1.2, 1, 0.8],
-                x: [0, Math.random() * 100 - 50],
-                y: [0, Math.random() * 100 - 50],
-                rotate: [0, Math.random() * 360],
+                opacity: [0, 1, 1, 0.5, 0],
+                scale: [0, 1.2, 1.1, 0.9, 0.5],
+                x: [0, randomPositions[index].x],
+                y: [0, randomPositions[index].y],
+                rotate: [0, randomPositions[index].rotate],
               }}
               transition={{
-                duration: 1.5,
+                duration: 2,
                 repeat: Infinity,
-                delay: index * 0.3,
+                delay: index * 0.4,
                 ease: 'easeOut',
               }}
               className="absolute top-1/2 left-1/2"
@@ -112,19 +130,21 @@ export default function NinjaAnimation({ status }) {
       {/* Partículas de fundo */}
       {isActive && (
         <>
-          {[...Array(5)].map((_, i) => (
+          {particlePositions.map((pos, i) => (
             <motion.div
               key={i}
-              className="absolute w-2 h-2 bg-orange-500/30 rounded-full"
+              className="absolute w-2 h-2 bg-orange-500/40 rounded-full"
               animate={{
-                x: [Math.random() * 400, Math.random() * 400],
-                y: [Math.random() * 250, Math.random() * 250],
-                opacity: [0, 1, 0],
+                x: [pos.x1, pos.x2],
+                y: [pos.y1, pos.y2],
+                opacity: [0, 0.8, 0],
+                scale: [1, 1.5, 1],
               }}
               transition={{
                 duration: 3,
                 repeat: Infinity,
-                delay: i * 0.5,
+                delay: i * 0.6,
+                ease: 'easeInOut',
               }}
             />
           ))}
