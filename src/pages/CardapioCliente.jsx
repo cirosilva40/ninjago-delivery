@@ -40,6 +40,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import ProductDetailModal from '../components/cliente/ProductDetailModal';
 
 export default function CardapioCliente() {
   const navigate = useNavigate();
