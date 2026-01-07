@@ -214,7 +214,16 @@ export default function Pedidos() {
                           <Phone className="w-5 h-5 text-white" />
                         </a>
 
-                        {(pedido.status === 'novo' || pedido.status === 'pronto') && (
+                        {pedido.status === 'novo' && pedido.origem === 'site' ? (
+                          <Button
+                            size="sm"
+                            onClick={() => updateStatus(pedido, 'em_preparo')}
+                            className="bg-gradient-to-r from-emerald-500 to-green-600"
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            Aceitar Pedido
+                          </Button>
+                        ) : (pedido.status === 'novo' || pedido.status === 'pronto') && (
                           <Button
                             size="sm"
                             onClick={() => handleAtribuir(pedido)}
