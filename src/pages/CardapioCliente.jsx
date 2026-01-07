@@ -288,7 +288,7 @@ export default function CardapioCliente() {
 
   return (
     <div className={`min-h-screen ${isLight ? 'bg-gradient-to-br from-gray-50 to-gray-100' : 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'}`}
-      style={{ '--cor-primaria': corPrimaria } as React.CSSProperties}>
+      style={{ '--cor-primaria': corPrimaria }}>
       {/* Header */}
       <header className={`sticky top-0 z-50 backdrop-blur-xl ${isLight ? 'bg-white/90 border-gray-200' : 'bg-slate-900/80 border-white/10'} border-b`}>
         <div className="max-w-7xl mx-auto px-4 py-4">
