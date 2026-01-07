@@ -51,9 +51,14 @@ export default function CardapioCliente() {
   const [showCheckout, setShowCheckout] = useState(false);
   const [showProductDetail, setShowProductDetail] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [tipoCliente, setTipoCliente] = useState(null); // 'cadastrado' ou 'convidado'
+  const [tipoCliente, setTipoCliente] = useState(null); // 'cadastrado', 'convidado' ou 'login'
   const [buscandoCep, setBuscandoCep] = useState(false);
   const [buscandoLocalizacao, setBuscandoLocalizacao] = useState(false);
+  const [clienteLogado, setClienteLogado] = useState(null);
+  const [loginData, setLoginData] = useState({ telefone: '', senha: '' });
+  const [loginError, setLoginError] = useState('');
+  const [cadastroSenha, setCadastroSenha] = useState('');
+  const [confirmarSenha, setConfirmarSenha] = useState('');
   
   const [formCliente, setFormCliente] = useState({
     nome: '',
@@ -70,6 +75,27 @@ export default function CardapioCliente() {
     forma_pagamento: '',
     troco_para: 0,
   });
+
+  useEffect(() => {
+    const clienteData = localStorage.getItem('cliente_logado');
+    if (clienteData) {
+      const cliente = JSON.parse(clienteData);
+      setClienteLogado(cliente);
+      setFormCliente({
+        ...formCliente,
+        nome: cliente.nome,
+        telefone: cliente.telefone,
+        email: cliente.email || '',
+        cep: cliente.cep || '',
+        endereco: cliente.endereco || '',
+        numero: cliente.numero || '',
+        complemento: cliente.complemento || '',
+        bairro: cliente.bairro || '',
+        cidade: cliente.cidade || '',
+        estado: cliente.estado || '',
+      });
+    }
+  }, []);
 
   const { data: produtos = [] } = useQuery({
     queryKey: ['produtos-cardapio'],
@@ -184,6 +210,42 @@ export default function CardapioCliente() {
     }
   };
 
+  const handleLogin = async () => {
+    if (!loginData.telefone || !loginData.senha) {
+      setLoginError('Preencha telefone e senha');
+      return;
+    }
+
+    try {
+      const clientes = await base44.entities.Cliente.filter({ telefone: loginData.telefone });
+      if (clientes.length === 0 || clientes[0].senha !== loginData.senha) {
+        setLoginError('Telefone ou senha incorretos');
+        return;
+      }
+
+      const cliente = clientes[0];
+      localStorage.setItem('cliente_logado', JSON.stringify(cliente));
+      setClienteLogado(cliente);
+      setFormCliente({
+        ...formCliente,
+        nome: cliente.nome,
+        telefone: cliente.telefone,
+        email: cliente.email || '',
+        cep: cliente.cep || '',
+        endereco: cliente.endereco || '',
+        numero: cliente.numero || '',
+        complemento: cliente.complemento || '',
+        bairro: cliente.bairro || '',
+        cidade: cliente.cidade || '',
+        estado: cliente.estado || '',
+      });
+      setTipoCliente('cadastrado');
+      setLoginError('');
+    } catch (error) {
+      setLoginError('Erro ao fazer login');
+    }
+  };
+
   const finalizarPedido = async () => {
     if (!formCliente.nome || !formCliente.telefone || !formCliente.endereco) {
       alert('Por favor, preencha todos os campos obrigatórios.');
@@ -195,17 +257,21 @@ export default function CardapioCliente() {
       return;
     }
 
+    if (tipoCliente === 'cadastrado' && !clienteLogado && (!cadastroSenha || cadastroSenha !== confirmarSenha)) {
+      alert('Por favor, crie uma senha válida (as senhas devem ser iguais).');
+      return;
+    }
+
     try {
       // Se for cliente cadastrado, salvar/atualizar dados
       let clienteId = null;
-      if (tipoCliente === 'cadastrado' && formCliente.email) {
-        const clientesExistentes = await base44.entities.Cliente.filter({ email: formCliente.email });
-        
-        if (clientesExistentes.length > 0) {
-          // Atualizar cliente existente
-          await base44.entities.Cliente.update(clientesExistentes[0].id, {
+      if (tipoCliente === 'cadastrado') {
+        if (clienteLogado) {
+          // Cliente já logado - atualizar
+          await base44.entities.Cliente.update(clienteLogado.id, {
             nome: formCliente.nome,
             telefone: formCliente.telefone,
+            email: formCliente.email,
             cep: formCliente.cep,
             endereco: formCliente.endereco,
             numero: formCliente.numero,
@@ -213,15 +279,23 @@ export default function CardapioCliente() {
             bairro: formCliente.bairro,
             cidade: formCliente.cidade,
             estado: formCliente.estado,
-            total_pedidos: (clientesExistentes[0].total_pedidos || 0) + 1,
-            pontos_fidelidade: (clientesExistentes[0].pontos_fidelidade || 0) + Math.floor(calcularTotal()),
+            total_pedidos: (clienteLogado.total_pedidos || 0) + 1,
+            pontos_fidelidade: (clienteLogado.pontos_fidelidade || 0) + Math.floor(calcularTotal()),
           });
-          clienteId = clientesExistentes[0].id;
+          clienteId = clienteLogado.id;
         } else {
-          // Criar novo cliente
+          // Criar novo cliente com senha
+          const clientesExistentes = await base44.entities.Cliente.filter({ telefone: formCliente.telefone });
+          
+          if (clientesExistentes.length > 0) {
+            alert('Já existe uma conta com este telefone. Faça login.');
+            return;
+          }
+
           const novoCliente = await base44.entities.Cliente.create({
             nome: formCliente.nome,
             telefone: formCliente.telefone,
+            senha: cadastroSenha,
             email: formCliente.email,
             cep: formCliente.cep,
             endereco: formCliente.endereco,
@@ -236,6 +310,7 @@ export default function CardapioCliente() {
             pontos_fidelidade: Math.floor(calcularTotal()),
           });
           clienteId = novoCliente.id;
+          localStorage.setItem('cliente_logado', JSON.stringify(novoCliente));
         }
       }
 
@@ -306,7 +381,18 @@ export default function CardapioCliente() {
               </div>
             </div>
             
-            <button
+            <div className="flex items-center gap-2">
+              {clienteLogado && (
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate(createPageUrl('PerfilCliente'))}
+                  className={`flex items-center gap-2 ${isLight ? 'text-gray-700' : 'text-white'}`}
+                >
+                  <User className="w-5 h-5" />
+                  <span className="hidden sm:inline">{clienteLogado.nome.split(' ')[0]}</span>
+                </Button>
+              )}
+              <button
               onClick={() => setShowCarrinho(true)}
               className="relative p-3 rounded-xl transition-colors"
               style={{ backgroundColor: corPrimaria }}
@@ -621,7 +707,7 @@ export default function CardapioCliente() {
                     className="p-6 rounded-xl border-2 border-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all"
                   >
                     <User className="w-8 h-8 mx-auto mb-3 text-emerald-400" />
-                    <p className="font-bold text-white mb-1">Com Cadastro</p>
+                    <p className="font-bold text-white mb-1">Novo Cadastro</p>
                     <p className="text-sm text-slate-400">Ganhe pontos de fidelidade</p>
                   </button>
                   <button
@@ -633,11 +719,70 @@ export default function CardapioCliente() {
                     <p className="text-sm text-slate-400">Compra rápida</p>
                   </button>
                 </div>
+                
+                <div className="text-center">
+                  <button
+                    onClick={() => setTipoCliente('login')}
+                    className="text-orange-400 hover:text-orange-300 font-medium underline"
+                  >
+                    Já possuo cadastro - Fazer Login
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Login */}
+            {tipoCliente === 'login' && (
+              <div className="space-y-4 p-6 rounded-xl bg-slate-800/50 border border-slate-700">
+                <h3 className="font-semibold text-white text-lg mb-4">Login</h3>
+                {loginError && (
+                  <div className="p-3 rounded-lg bg-red-500/20 border border-red-500/50 text-red-300 text-sm">
+                    {loginError}
+                  </div>
+                )}
+                <div>
+                  <Label>Telefone</Label>
+                  <Input
+                    value={loginData.telefone}
+                    onChange={(e) => setLoginData({ ...loginData, telefone: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="(00) 00000-0000"
+                  />
+                </div>
+                <div>
+                  <Label>Senha</Label>
+                  <Input
+                    type="password"
+                    value={loginData.senha}
+                    onChange={(e) => setLoginData({ ...loginData, senha: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="Digite sua senha"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => {
+                      setTipoCliente(null);
+                      setLoginError('');
+                      setLoginData({ telefone: '', senha: '' });
+                    }}
+                    variant="outline"
+                    className="flex-1 border-slate-600"
+                  >
+                    Voltar
+                  </Button>
+                  <Button
+                    onClick={handleLogin}
+                    className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
+                  >
+                    Entrar
+                  </Button>
+                </div>
               </div>
             )}
 
             {/* Formulário */}
-            {tipoCliente && (
+            {tipoCliente && tipoCliente !== 'login' && (
               <>
                 <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
                   <h3 className="font-semibold text-white">Seus Dados</h3>
@@ -648,6 +793,7 @@ export default function CardapioCliente() {
                         value={formCliente.nome}
                         onChange={(e) => setFormCliente({ ...formCliente, nome: e.target.value })}
                         className="bg-slate-800 border-slate-700 text-white"
+                        disabled={!!clienteLogado}
                       />
                     </div>
                     <div>
@@ -657,18 +803,45 @@ export default function CardapioCliente() {
                         onChange={(e) => setFormCliente({ ...formCliente, telefone: e.target.value })}
                         className="bg-slate-800 border-slate-700 text-white"
                         placeholder="(00) 00000-0000"
+                        disabled={!!clienteLogado}
                       />
                     </div>
                     {tipoCliente === 'cadastrado' && (
-                      <div className="col-span-2">
-                        <Label>Email</Label>
-                        <Input
-                          type="email"
-                          value={formCliente.email}
-                          onChange={(e) => setFormCliente({ ...formCliente, email: e.target.value })}
-                          className="bg-slate-800 border-slate-700 text-white"
-                        />
-                      </div>
+                      <>
+                        <div className="col-span-2">
+                          <Label>Email (opcional)</Label>
+                          <Input
+                            type="email"
+                            value={formCliente.email}
+                            onChange={(e) => setFormCliente({ ...formCliente, email: e.target.value })}
+                            className="bg-slate-800 border-slate-700 text-white"
+                          />
+                        </div>
+                        {!clienteLogado && (
+                          <>
+                            <div>
+                              <Label>Criar Senha</Label>
+                              <Input
+                                type="password"
+                                value={cadastroSenha}
+                                onChange={(e) => setCadastroSenha(e.target.value)}
+                                className="bg-slate-800 border-slate-700 text-white"
+                                placeholder="Crie uma senha"
+                              />
+                            </div>
+                            <div>
+                              <Label>Confirmar Senha</Label>
+                              <Input
+                                type="password"
+                                value={confirmarSenha}
+                                onChange={(e) => setConfirmarSenha(e.target.value)}
+                                className="bg-slate-800 border-slate-700 text-white"
+                                placeholder="Confirme a senha"
+                              />
+                            </div>
+                          </>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

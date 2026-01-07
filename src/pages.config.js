@@ -15,6 +15,7 @@ import Pagamentos from './pages/Pagamentos';
 import Pedidos from './pages/Pedidos';
 import Produtos from './pages/Produtos';
 import Relatorios from './pages/Relatorios';
+import PerfilCliente from './pages/PerfilCliente';
 import __Layout from './Layout.jsx';
 
 
@@ -36,6 +37,7 @@ export const PAGES = {
     "Pedidos": Pedidos,
     "Produtos": Produtos,
     "Relatorios": Relatorios,
+    "PerfilCliente": PerfilCliente,
 }
 
 export const pagesConfig = {
