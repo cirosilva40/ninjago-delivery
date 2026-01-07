@@ -1,5 +1,7 @@
+import AcompanharPedido from './pages/AcompanharPedido';
 import AdminUsers from './pages/AdminUsers';
 import AppEntregador from './pages/AppEntregador';
+import CardapioCliente from './pages/CardapioCliente';
 import Configuracoes from './pages/Configuracoes';
 import Cozinha from './pages/Cozinha';
 import Dashboard from './pages/Dashboard';
@@ -13,14 +15,14 @@ import Pagamentos from './pages/Pagamentos';
 import Pedidos from './pages/Pedidos';
 import Produtos from './pages/Produtos';
 import Relatorios from './pages/Relatorios';
-import CardapioCliente from './pages/CardapioCliente';
-import AcompanharPedido from './pages/AcompanharPedido';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AcompanharPedido": AcompanharPedido,
     "AdminUsers": AdminUsers,
     "AppEntregador": AppEntregador,
+    "CardapioCliente": CardapioCliente,
     "Configuracoes": Configuracoes,
     "Cozinha": Cozinha,
     "Dashboard": Dashboard,
@@ -34,8 +36,6 @@ export const PAGES = {
     "Pedidos": Pedidos,
     "Produtos": Produtos,
     "Relatorios": Relatorios,
-    "CardapioCliente": CardapioCliente,
-    "AcompanharPedido": AcompanharPedido,
 }
 
 export const pagesConfig = {
