@@ -393,17 +393,18 @@ export default function CardapioCliente() {
                 </Button>
               )}
               <button
-              onClick={() => setShowCarrinho(true)}
-              className="relative p-3 rounded-xl transition-colors"
-              style={{ backgroundColor: corPrimaria }}
-            >
-              <ShoppingCart className="w-6 h-6 text-white" />
-              {carrinho.length > 0 && (
-                <span className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                  {carrinho.length}
-                </span>
-              )}
-            </button>
+                onClick={() => setShowCarrinho(true)}
+                className="relative p-3 rounded-xl transition-colors"
+                style={{ backgroundColor: corPrimaria }}
+              >
+                <ShoppingCart className="w-6 h-6 text-white" />
+                {carrinho.length > 0 && (
+                  <span className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    {carrinho.length}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </header>
