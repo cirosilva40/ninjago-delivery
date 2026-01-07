@@ -380,15 +380,38 @@ export default function Configuracoes() {
                       className="w-20 h-20 rounded-xl object-cover border-2 border-white/10"
                     />
                   )}
-                  <div className="flex-1">
+                  <div className="flex-1 space-y-2">
                     <Input
                       value={pizzaria.logo_url || ''}
                       onChange={(e) => setPizzaria({ ...pizzaria, logo_url: e.target.value })}
                       className="bg-slate-800 border-slate-700 text-white"
                       placeholder="URL da logo (ex: https://exemplo.com/logo.png)"
                     />
-                    <p className="text-xs text-slate-500 mt-1">
-                      Cole a URL da imagem da sua logo
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setLoading(true);
+                            try {
+                              const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                              setPizzaria({ ...pizzaria, logo_url: file_url });
+                            } catch (error) {
+                              console.error('Erro ao fazer upload:', error);
+                              alert('Erro ao fazer upload da imagem');
+                            } finally {
+                              setLoading(false);
+                            }
+                          }
+                        }}
+                        className="bg-slate-800 border-slate-700 text-white"
+                      />
+                      <Upload className="w-4 h-4 text-slate-400" />
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      Cole a URL ou faça upload da sua logo
                     </p>
                   </div>
                 </div>
