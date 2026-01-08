@@ -13,9 +13,9 @@ import MapaTempoReal from './pages/MapaTempoReal';
 import NovoPedido from './pages/NovoPedido';
 import Pagamentos from './pages/Pagamentos';
 import Pedidos from './pages/Pedidos';
+import PerfilCliente from './pages/PerfilCliente';
 import Produtos from './pages/Produtos';
 import Relatorios from './pages/Relatorios';
-import PerfilCliente from './pages/PerfilCliente';
 import __Layout from './Layout.jsx';
 
 
@@ -35,9 +35,9 @@ export const PAGES = {
     "NovoPedido": NovoPedido,
     "Pagamentos": Pagamentos,
     "Pedidos": Pedidos,
+    "PerfilCliente": PerfilCliente,
     "Produtos": Produtos,
     "Relatorios": Relatorios,
-    "PerfilCliente": PerfilCliente,
 }
 
 export const pagesConfig = {

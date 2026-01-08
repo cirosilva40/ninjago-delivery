@@ -20,6 +20,8 @@ import StatsCard from '@/components/dashboard/StatsCard';
 import EntregaCard from '@/components/dashboard/EntregaCard';
 import EntregadorCard from '@/components/dashboard/EntregadorCard';
 import AtribuirEntregaModal from '@/components/pedidos/AtribuirEntregaModal';
+import { StatsSkeleton, CardSkeleton } from '@/components/ui/LoadingSkeleton';
+import { toast } from 'sonner';
 import moment from 'moment';
 
 export default function Dashboard() {
@@ -89,8 +91,14 @@ export default function Dashboard() {
   });
 
   const refetchAll = () => {
-    refetchEntregas();
-    refetchPedidos();
+    toast.promise(
+      Promise.all([refetchEntregas(), refetchPedidos()]),
+      {
+        loading: 'Atualizando dados...',
+        success: 'Dados atualizados!',
+        error: 'Erro ao atualizar',
+      }
+    );
   };
 
   // Estatísticas
@@ -135,37 +143,48 @@ export default function Dashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
-          title="Entregas Hoje"
-          value={entregasConcluidas.length}
-          subtitle={`${entregasEmAndamento.length} em andamento`}
-          icon={Package}
-          color="orange"
-          trend={12}
-        />
-        <StatsCard
-          title="Entregadores Ativos"
-          value={entregadoresAtivos.length}
-          subtitle={`${entregadores.length} cadastrados`}
-          icon={Bike}
-          color="green"
-        />
-        <StatsCard
-          title="Faturamento"
-          value={`R$ ${faturamentoHoje.toFixed(2)}`}
-          subtitle="Hoje"
-          icon={DollarSign}
-          color="blue"
-          trend={8}
-        />
-        <StatsCard
-          title="Taxas Pagas"
-          value={`R$ ${taxasHoje.toFixed(2)}`}
-          subtitle="Hoje"
-          icon={TrendingUp}
-          color="purple"
-        />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+        {entregas.length === 0 ? (
+          <>
+            <StatsSkeleton />
+            <StatsSkeleton />
+            <StatsSkeleton />
+            <StatsSkeleton />
+          </>
+        ) : (
+          <>
+            <StatsCard
+              title="Entregas Hoje"
+              value={entregasConcluidas.length}
+              subtitle={`${entregasEmAndamento.length} em andamento`}
+              icon={Package}
+              color="orange"
+              trend={12}
+            />
+            <StatsCard
+              title="Entregadores Ativos"
+              value={entregadoresAtivos.length}
+              subtitle={`${entregadores.length} cadastrados`}
+              icon={Bike}
+              color="green"
+            />
+            <StatsCard
+              title="Faturamento"
+              value={`R$ ${faturamentoHoje.toFixed(2)}`}
+              subtitle="Hoje"
+              icon={DollarSign}
+              color="blue"
+              trend={8}
+            />
+            <StatsCard
+              title="Taxas Pagas"
+              value={`R$ ${taxasHoje.toFixed(2)}`}
+              subtitle="Hoje"
+              icon={TrendingUp}
+              color="purple"
+            />
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -189,9 +208,19 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          <AnimatePresence>
-            {pedidosProntos.length === 0 ? (
+          <AnimatePresence mode="wait">
+            {pedidos.length === 0 ? (
               <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <CardSkeleton />
+              </motion.div>
+            ) : pedidosProntos.length === 0 ? (
+              <motion.div
+                key="empty"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="rounded-2xl bg-white/5 border border-white/10 p-8 text-center"
@@ -200,44 +229,42 @@ export default function Dashboard() {
                 <p className="text-slate-400">Nenhum pedido aguardando entrega</p>
               </motion.div>
             ) : (
-              <div className="space-y-3">
+              <div key="content" className="space-y-3">
                 {pedidosProntos.slice(0, 5).map((pedido) => (
                   <motion.div
                     key={pedido.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="rounded-xl bg-white/5 border border-white/10 p-4 hover:bg-white/8 transition-all"
+                    className="rounded-xl bg-white/5 border border-white/10 p-4 hover:bg-white/8 transition-all active:scale-[0.98]"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-3 flex-1 min-w-0">
+                        <div className="w-12 h-12 flex-shrink-0 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
                           <Package className="w-6 h-6 text-white" />
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-semibold text-white">#{pedido.numero_pedido}</span>
-                            <span className="px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-xs">
+                            <span className="px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-400 text-xs whitespace-nowrap">
                               {pedido.status === 'novo' ? 'Novo' : 'Pronto'}
                             </span>
                           </div>
-                          <p className="text-sm text-slate-400">{pedido.cliente_nome}</p>
-                          <p className="text-xs text-slate-500">{pedido.cliente_endereco}</p>
+                          <p className="text-sm text-slate-400 truncate">{pedido.cliente_nome}</p>
+                          <p className="text-xs text-slate-500 truncate">{pedido.cliente_endereco}</p>
+                          <div className="flex items-center gap-3 mt-2 flex-wrap">
+                            <p className="font-semibold text-emerald-400">R$ {pedido.valor_total?.toFixed(2)}</p>
+                            <p className="text-xs text-slate-500">{moment(pedido.created_date).fromNow()}</p>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="font-semibold text-emerald-400">R$ {pedido.valor_total?.toFixed(2)}</p>
-                          <p className="text-xs text-slate-500">{moment(pedido.created_date).fromNow()}</p>
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={() => handleAtribuir(pedido)}
-                          className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
-                        >
-                          <Bike className="w-4 h-4 mr-1" />
-                          Atribuir
-                        </Button>
-                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => handleAtribuir(pedido)}
+                        className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 flex-shrink-0 active:scale-95 transition-transform"
+                      >
+                        <Bike className="w-4 h-4 lg:mr-1" />
+                        <span className="hidden lg:inline">Atribuir</span>
+                      </Button>
                     </div>
                   </motion.div>
                 ))}
