@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -28,6 +28,9 @@ import {
   Clock,
   MapPin,
   Star,
+  ShoppingBag,
+  Check,
+  Truck,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -172,12 +175,84 @@ export default function Relatorios() {
     link.click();
   };
 
+  // Calcular métricas de pedidos
+  const metricasPedidos = useMemo(() => {
+    const agora = new Date();
+    const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+    const inicioSemana = new Date(hoje);
+    inicioSemana.setDate(hoje.getDate() - hoje.getDay());
+    const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
+
+    let dataInicio;
+    if (periodo === 'hoje') dataInicio = hoje;
+    else if (periodo === 'semana') dataInicio = inicioSemana;
+    else dataInicio = inicioMes;
+
+    const pedidosPeriodo = pedidos.filter(p => new Date(p.created_date) >= dataInicio);
+    
+    const totalVendas = pedidosPeriodo.reduce((sum, p) => sum + (p.valor_total || 0), 0);
+    const pedidosAbertos = pedidosPeriodo.filter(p => ['novo', 'em_preparo', 'pronto', 'em_entrega'].includes(p.status)).length;
+    const pedidosEntregues = pedidosPeriodo.filter(p => p.status === 'entregue').length;
+    const ticketMedio = pedidosPeriodo.length > 0 ? totalVendas / pedidosPeriodo.length : 0;
+
+    // Produtos mais vendidos
+    const produtosMap = {};
+    pedidosPeriodo.forEach(pedido => {
+      pedido.itens?.forEach(item => {
+        if (!produtosMap[item.nome]) {
+          produtosMap[item.nome] = { nome: item.nome, quantidade: 0, valor: 0 };
+        }
+        produtosMap[item.nome].quantidade += item.quantidade;
+        produtosMap[item.nome].valor += item.preco_unitario * item.quantidade;
+      });
+    });
+    const produtosMaisVendidos = Object.values(produtosMap)
+      .sort((a, b) => b.quantidade - a.quantidade)
+      .slice(0, 5);
+
+    // Vendas por dia (últimos 7 dias)
+    const vendasPorDia = [];
+    for (let i = 6; i >= 0; i--) {
+      const dia = new Date(hoje);
+      dia.setDate(hoje.getDate() - i);
+      const pedidosDia = pedidos.filter(p => {
+        const dataPedido = new Date(p.created_date);
+        return dataPedido.getDate() === dia.getDate() &&
+               dataPedido.getMonth() === dia.getMonth() &&
+               dataPedido.getFullYear() === dia.getFullYear();
+      });
+      vendasPorDia.push({
+        dia: dia.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        vendas: pedidosDia.reduce((sum, p) => sum + (p.valor_total || 0), 0),
+        pedidos: pedidosDia.length,
+      });
+    }
+
+    // Status dos pedidos para gráfico de pizza
+    const statusData = [
+      { name: 'Entregues', value: pedidosPeriodo.filter(p => p.status === 'entregue').length, color: '#10b981' },
+      { name: 'Em andamento', value: pedidosPeriodo.filter(p => ['novo', 'em_preparo', 'pronto', 'em_entrega'].includes(p.status)).length, color: '#f59e0b' },
+      { name: 'Cancelados', value: pedidosPeriodo.filter(p => p.status === 'cancelado').length, color: '#ef4444' },
+    ].filter(item => item.value > 0);
+
+    return {
+      totalVendas,
+      pedidosAbertos,
+      pedidosEntregues,
+      ticketMedio,
+      totalPedidos: pedidosPeriodo.length,
+      produtosMaisVendidos,
+      vendasPorDia,
+      statusData,
+    };
+  }, [pedidos, periodo]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Relatórios</h1>
+          <h1 className="text-3xl font-bold text-white">Relatórios & Dashboard</h1>
           <p className="text-slate-400 mt-1">Análise de performance e métricas</p>
         </div>
         <div className="flex items-center gap-3">
@@ -203,8 +278,137 @@ export default function Relatorios() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Dashboard de Vendas */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+          <Package className="w-6 h-6 text-orange-500" />
+          Dashboard de Vendas
+        </h2>
+
+        {/* Métricas de Pedidos */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-600/20 border border-emerald-500/30 p-6">
+            <div className="flex items-center justify-between mb-2">
+              <DollarSign className="w-8 h-8 text-emerald-400" />
+              <TrendingUp className="w-5 h-5 text-emerald-400" />
+            </div>
+            <p className="text-3xl font-bold text-white mb-1">R$ {metricasPedidos.totalVendas.toFixed(2)}</p>
+            <p className="text-sm text-emerald-300">Total em Vendas</p>
+          </div>
+
+          <div className="rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30 p-6">
+            <div className="flex items-center justify-between mb-2">
+              <ShoppingBag className="w-8 h-8 text-blue-400" />
+              <Package className="w-5 h-5 text-blue-400" />
+            </div>
+            <p className="text-3xl font-bold text-white mb-1">{metricasPedidos.totalPedidos}</p>
+            <p className="text-sm text-blue-300">Total de Pedidos</p>
+          </div>
+
+          <div className="rounded-xl bg-gradient-to-br from-orange-500/20 to-red-600/20 border border-orange-500/30 p-6">
+            <div className="flex items-center justify-between mb-2">
+              <Clock className="w-8 h-8 text-orange-400" />
+              <Truck className="w-5 h-5 text-orange-400" />
+            </div>
+            <p className="text-3xl font-bold text-white mb-1">{metricasPedidos.pedidosAbertos}</p>
+            <p className="text-sm text-orange-300">Pedidos em Aberto</p>
+          </div>
+
+          <div className="rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30 p-6">
+            <div className="flex items-center justify-between mb-2">
+              <Check className="w-8 h-8 text-purple-400" />
+              <TrendingUp className="w-5 h-5 text-purple-400" />
+            </div>
+            <p className="text-3xl font-bold text-white mb-1">R$ {metricasPedidos.ticketMedio.toFixed(2)}</p>
+            <p className="text-sm text-purple-300">Ticket Médio</p>
+          </div>
+        </div>
+
+        {/* Gráficos de Vendas */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Vendas por Dia */}
+          <div className="rounded-xl bg-white/5 border border-white/10 p-6">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-emerald-500" />
+              Vendas - Últimos 7 Dias
+            </h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={metricasPedidos.vendasPorDia}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis dataKey="dia" stroke="#94a3b8" />
+                <YAxis stroke="#94a3b8" />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }}
+                  labelStyle={{ color: '#fff' }}
+                />
+                <Line type="monotone" dataKey="vendas" stroke="#10b981" strokeWidth={2} dot={{ fill: '#10b981' }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Status dos Pedidos */}
+          <div className="rounded-xl bg-white/5 border border-white/10 p-6">
+            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <Package className="w-5 h-5 text-orange-500" />
+              Status dos Pedidos
+            </h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={metricasPedidos.statusData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, value }) => `${name}: ${value}`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {metricasPedidos.statusData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Produtos Mais Vendidos */}
+        <div className="rounded-xl bg-white/5 border border-white/10 p-6">
+          <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <ShoppingBag className="w-5 h-5 text-purple-500" />
+            Produtos Mais Vendidos
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={metricasPedidos.produtosMaisVendidos} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <XAxis type="number" stroke="#94a3b8" />
+              <YAxis dataKey="nome" type="category" stroke="#94a3b8" width={150} />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }}
+                labelStyle={{ color: '#fff' }}
+              />
+              <Bar dataKey="quantidade" fill="#f97316" radius={[0, 8, 8, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-white/10 my-8"></div>
+
+      {/* Dashboard de Entregas */}
+      <div>
+        <h2 className="text-2xl font-bold text-white flex items-center gap-2 mb-4">
+          <Bike className="w-6 h-6 text-emerald-500" />
+          Dashboard de Entregas
+        </h2>
+
+        {/* Stats de Entregas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
           title="Total de Entregas"
           value={totalEntregas}
@@ -447,9 +651,9 @@ export default function Relatorios() {
             </div>
           </CardContent>
         </Card>
-      </div>
+        </div>
 
-      {/* Pagamentos Pendentes */}
+        {/* Pagamentos Pendentes */}
       <Card className="bg-white/5 border-white/10">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
@@ -508,6 +712,7 @@ export default function Relatorios() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
