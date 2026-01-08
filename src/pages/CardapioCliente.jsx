@@ -330,12 +330,33 @@ export default function CardapioCliente() {
         cliente_complemento: formCliente.complemento,
         latitude: formCliente.latitude,
         longitude: formCliente.longitude,
-        itens: carrinho.map(item => ({
-          produto_id: item.id,
-          nome: item.nome,
-          quantidade: item.quantidade,
-          preco_unitario: item.preco,
-        })),
+        itens: carrinho.map(item => {
+          let observacaoItem = '';
+          
+          // Se tiver personalizações, adicionar aos detalhes
+          if (item.personalizacoes) {
+            const detalhes = [];
+            Object.keys(item.personalizacoes).forEach(grupoKey => {
+              const grupoIndex = parseInt(grupoKey.split('_')[1]);
+              const grupo = item.opcoes_personalizacao?.[grupoIndex];
+              if (grupo && item.personalizacoes[grupoKey].length > 0) {
+                const itensGrupo = item.personalizacoes[grupoKey]
+                  .map(sel => sel.item.nome)
+                  .join(', ');
+                detalhes.push(`${grupo.nome_grupo}: ${itensGrupo}`);
+              }
+            });
+            observacaoItem = detalhes.join(' | ');
+          }
+          
+          return {
+            produto_id: item.id,
+            nome: item.nome,
+            quantidade: item.quantidade,
+            preco_unitario: item.preco_final || item.preco,
+            observacao: observacaoItem,
+          };
+        }),
         valor_produtos: calcularTotal(),
         taxa_entrega: 5, // Valor fixo por enquanto
         desconto: 0,
