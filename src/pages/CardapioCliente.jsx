@@ -594,7 +594,7 @@ export default function CardapioCliente() {
               }`}
             >
               {produto.imagem_url && (
-                <img src={produto.imagem_url} alt={produto.nome} className="w-full h-32 object-cover rounded-lg mb-3" />
+                <img src={produto.imagem_url} alt={produto.nome} className="w-full h-48 object-cover rounded-lg mb-3" />
               )}
               <h3 className={`font-bold mb-1 ${isLight ? 'text-gray-900' : 'text-white'}`}>{produto.nome}</h3>
               <p className={`text-sm mb-3 line-clamp-2 ${isLight ? 'text-gray-600' : 'text-slate-400'}`}>{produto.descricao}</p>

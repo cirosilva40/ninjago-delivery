@@ -103,7 +103,7 @@ export default function ProductDetailModal({ produto, open, onClose, onAddToCart
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="w-full h-64 rounded-2xl overflow-hidden"
+              className="w-full aspect-square max-h-[500px] rounded-2xl overflow-hidden mx-auto"
             >
               <img 
                 src={produto.imagem_url} 
