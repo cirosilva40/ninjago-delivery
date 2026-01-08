@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Bike, Car, Star, Package, Check, MapPin, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 const statusConfig = {
   disponivel: { label: 'Disponível', color: 'bg-emerald-500' },
@@ -45,7 +46,10 @@ export default function AtribuirEntregaModal({ open, onClose, pedido, pizzariaId
   };
 
   const handleAtribuir = async () => {
-    if (!selectedEntregador || !pedido) return;
+    if (!selectedEntregador || !pedido) {
+      toast.error('Selecione um entregador');
+      return;
+    }
     
     setLoading(true);
     try {
@@ -83,10 +87,17 @@ export default function AtribuirEntregaModal({ open, onClose, pedido, pizzariaId
         dados: { entrega_id: entrega.id, pedido_id: pedido.id },
       });
 
+      toast.success('Entrega atribuída!', {
+        description: `${selectedEntregador.nome} foi notificado.`,
+      });
+
       onAtribuir && onAtribuir();
       onClose();
     } catch (error) {
       console.error('Erro ao atribuir entrega:', error);
+      toast.error('Erro ao atribuir entrega', {
+        description: error.message || 'Tente novamente.',
+      });
     } finally {
       setLoading(false);
     }
