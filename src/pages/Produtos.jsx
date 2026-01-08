@@ -312,16 +312,18 @@ export default function Produtos() {
                         }`}
                       >
                         {/* Imagem */}
-                        <div className="aspect-video bg-slate-800 relative">
+                        <div className="aspect-video bg-slate-800 relative overflow-hidden">
                           {produto.imagem_url ? (
                             <img 
                               src={produto.imagem_url} 
                               alt={produto.nome}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                              loading="lazy"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
+                            <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                               <Icon className="w-12 h-12 text-slate-600" />
+                              <p className="text-xs text-slate-600">Sem imagem</p>
                             </div>
                           )}
                           {produto.destaque && (
@@ -447,52 +449,111 @@ export default function Produtos() {
             </div>
 
             <div>
-              <Label className="text-slate-400">Imagem do Produto</Label>
+              <Label className="text-slate-400 mb-2 block">Imagem do Produto</Label>
+              
+              {/* Orientações de Dimensões */}
+              <div className="mb-4 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 flex-shrink-0 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                    <Image className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-blue-300 mb-2">📐 Dimensões Recomendadas</p>
+                    <div className="space-y-1 text-xs text-slate-400">
+                      <p>• <span className="text-blue-300 font-medium">Proporção ideal: 16:9</span> (landscape)</p>
+                      <p>• Resolução mínima: 800x450 pixels</p>
+                      <p>• Resolução recomendada: 1200x675 pixels</p>
+                      <p>• Formato: JPG, PNG ou WEBP</p>
+                      <p>• Tamanho máximo: 2MB</p>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-2">
+                      💡 Imagens com essas dimensões ficam perfeitas em todos os dispositivos
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-3">
+                {/* Preview da Imagem */}
                 {form.imagem_url && (
-                  <div className="relative w-full h-32 rounded-lg overflow-hidden bg-slate-800">
-                    <img 
-                      src={form.imagem_url} 
-                      alt="Preview" 
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="relative">
+                    <div className="aspect-video rounded-lg overflow-hidden bg-slate-800 border-2 border-blue-500/30">
+                      <img 
+                        src={form.imagem_url} 
+                        alt="Preview" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src = '';
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    </div>
                     <Button
                       type="button"
                       size="icon"
                       variant="ghost"
                       onClick={() => setForm({ ...form, imagem_url: '' })}
-                      className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white h-8 w-8"
+                      className="absolute top-2 right-2 bg-black/70 hover:bg-black/90 text-white h-8 w-8 backdrop-blur-sm"
                     >
                       <X className="w-4 h-4" />
                     </Button>
+                    <div className="absolute bottom-2 left-2 px-2 py-1 rounded bg-black/70 backdrop-blur-sm">
+                      <p className="text-xs text-white">✓ Proporção 16:9</p>
+                    </div>
                   </div>
                 )}
-                <div className="flex gap-2">
-                  <label className="flex-1">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
-                    <div className="flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-dashed border-slate-600 bg-slate-800 text-slate-300 cursor-pointer hover:bg-slate-700 transition-colors">
-                      {uploadingImage ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Upload className="w-4 h-4" />
-                      )}
-                      <span className="text-sm">
-                        {uploadingImage ? 'Enviando...' : 'Upload de Imagem'}
-                      </span>
-                    </div>
-                  </label>
+
+                {/* Upload Button */}
+                <label className="block">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  <div className="flex items-center justify-center gap-3 h-12 px-4 rounded-lg border-2 border-dashed border-slate-600 bg-slate-800/50 text-slate-300 cursor-pointer hover:bg-slate-700/50 hover:border-blue-500/50 transition-all group">
+                    {uploadingImage ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin text-blue-400" />
+                        <div className="flex-1 text-center">
+                          <p className="text-sm font-medium text-blue-400">Enviando imagem...</p>
+                          <p className="text-xs text-slate-500">Aguarde</p>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-5 h-5 group-hover:text-blue-400 transition-colors" />
+                        <div className="flex-1 text-center">
+                          <p className="text-sm font-medium group-hover:text-white transition-colors">
+                            Clique para fazer upload
+                          </p>
+                          <p className="text-xs text-slate-500">ou arraste a imagem aqui</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </label>
+
+                {/* URL Input */}
+                <div className="relative">
+                  <Input
+                    value={form.imagem_url}
+                    onChange={(e) => setForm({ ...form, imagem_url: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white pl-10"
+                    placeholder="Ou cole a URL da imagem aqui..."
+                  />
+                  <Image className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                 </div>
-                <Input
-                  value={form.imagem_url}
-                  onChange={(e) => setForm({ ...form, imagem_url: e.target.value })}
-                  className="bg-slate-800 border-slate-700 text-white"
-                  placeholder="Ou cole a URL da imagem aqui..."
-                />
+
+                {/* Dica de Proporção */}
+                {!form.imagem_url && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                    <div className="text-amber-400">💡</div>
+                    <p className="text-xs text-amber-300/80">
+                      Use imagens horizontais (mais largas que altas) para melhor visualização
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
