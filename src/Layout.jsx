@@ -31,7 +31,6 @@ import { Badge } from '@/components/ui/badge';
 import { Toaster } from 'sonner';
 
 const menuItems = [
-  { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
   { name: 'Novo Pedido', icon: ClipboardList, page: 'NovoPedido' },
   { name: 'Pedidos', icon: ClipboardList, page: 'Pedidos' },
   { name: 'Cozinha', icon: Pizza, page: 'Cozinha' },
@@ -44,8 +43,8 @@ const menuItems = [
 
 // Menu items principais para bottom navigation (mobile)
 const mobileNavItems = [
-  { name: 'Início', icon: Home, page: 'Dashboard' },
   { name: 'Pedidos', icon: Package, page: 'Pedidos' },
+  { name: 'Novo', icon: ClipboardList, page: 'NovoPedido' },
   { name: 'Cozinha', icon: ChefHat, page: 'Cozinha' },
   { name: 'Entregadores', icon: Bike, page: 'Entregadores' },
   { name: 'Mais', icon: Menu, page: 'menu' },
@@ -148,7 +147,7 @@ export default function Layout({ children, currentPageName }) {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b border-white/5">
-            <Link to={createPageUrl('Dashboard')} className="flex items-center gap-3">
+            <Link to={createPageUrl('Pedidos')} className="flex items-center gap-3">
               <img 
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6925e1fdd6376091844799ad/74cee5df9_WhatsAppImage2025-11-26at115948.jpeg" 
                 alt="NinjaGO Delivery"
