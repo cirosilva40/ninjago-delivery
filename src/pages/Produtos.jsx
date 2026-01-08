@@ -30,6 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import OpcoesPersonalizacaoManager from '@/components/produtos/OpcoesPersonalizacaoManager';
 import {
   Select,
   SelectContent,
@@ -77,6 +78,7 @@ export default function Produtos() {
     imagem_url: '',
     disponivel: true,
     destaque: false,
+    opcoes_personalizacao: [],
   });
   const [uploadingImage, setUploadingImage] = useState(false);
   const [showCategoriaModal, setShowCategoriaModal] = useState(false);
@@ -163,6 +165,7 @@ export default function Produtos() {
       imagem_url: produto.imagem_url || '',
       disponivel: produto.disponivel !== false,
       destaque: produto.destaque || false,
+      opcoes_personalizacao: produto.opcoes_personalizacao || [],
     });
     setShowModal(true);
   };
@@ -189,6 +192,7 @@ export default function Produtos() {
       imagem_url: '',
       disponivel: true,
       destaque: false,
+      opcoes_personalizacao: [],
     });
   };
 
@@ -391,7 +395,7 @@ export default function Produtos() {
 
       {/* Modal de Cadastro/Edição */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <Package className="w-6 h-6 text-orange-500" />
@@ -576,6 +580,14 @@ export default function Produtos() {
               <Switch
                 checked={form.destaque}
                 onCheckedChange={(v) => setForm({ ...form, destaque: v })}
+              />
+            </div>
+
+            {/* Opções de Personalização */}
+            <div className="pt-4 border-t border-slate-700">
+              <OpcoesPersonalizacaoManager
+                opcoes={form.opcoes_personalizacao}
+                onChange={(opcoes) => setForm({ ...form, opcoes_personalizacao: opcoes })}
               />
             </div>
 
