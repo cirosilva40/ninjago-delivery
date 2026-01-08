@@ -517,7 +517,7 @@ export default function CardapioCliente() {
                     Destaque
                   </Badge>
                   {produto.imagem_url && (
-                    <img src={produto.imagem_url} alt={produto.nome} className="w-full h-40 object-cover rounded-xl mb-4" />
+                    <img src={produto.imagem_url} alt={produto.nome} className="w-full h-64 object-cover rounded-xl mb-4" />
                   )}
                   <h3 className={`text-xl font-bold mb-2 ${isLight ? 'text-gray-900' : 'text-white'}`}>{produto.nome}</h3>
                   <p className={`text-sm mb-4 line-clamp-2 ${isLight ? 'text-gray-600' : 'text-slate-300'}`}>{produto.descricao}</p>
@@ -555,7 +555,7 @@ export default function CardapioCliente() {
                     Destaque
                   </Badge>
                   {produto.imagem_url && (
-                    <img src={produto.imagem_url} alt={produto.nome} className="w-full h-40 object-cover rounded-xl mb-4" />
+                    <img src={produto.imagem_url} alt={produto.nome} className="w-full h-64 object-cover rounded-xl mb-4" />
                   )}
                   <h3 className={`text-xl font-bold mb-2 ${isLight ? 'text-gray-900' : 'text-white'}`}>{produto.nome}</h3>
                   <p className={`text-sm mb-4 line-clamp-2 ${isLight ? 'text-gray-600' : 'text-slate-300'}`}>{produto.descricao}</p>
