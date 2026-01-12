@@ -347,54 +347,64 @@ export default function NovoPedido() {
               </Select>
             </div>
 
-            {/* Lista de Produtos */}
-            <div className="max-h-96 overflow-y-auto space-y-4 pr-2">
-              {Object.entries(produtosPorCategoria).map(([categoria, items]) => {
-                const config = categoriaConfig[categoria] || categoriaConfig.outro;
-                return (
-                  <div key={categoria}>
-                    <h3 className="text-sm font-semibold text-slate-400 mb-2 flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${config.color}`} />
-                      {config.label}
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {items.map((produto) => {
-                        const inCart = carrinho.find(i => i.produto_id === produto.id);
-                        return (
-                          <div
-                            key={produto.id}
-                            className={`p-3 rounded-lg border transition-all cursor-pointer ${
-                              inCart 
-                                ? 'bg-orange-500/10 border-orange-500/50' 
-                                : 'bg-white/5 border-white/10 hover:bg-white/10'
-                            }`}
-                            onClick={() => addToCart(produto)}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="font-medium text-white">{produto.nome}</p>
-                                <p className="text-emerald-400 font-semibold">R$ {produto.preco?.toFixed(2)}</p>
+            {/* Lista de Produtos - Só mostra se houver busca */}
+            {searchProduto && (
+              <div className="max-h-96 overflow-y-auto space-y-4 pr-2">
+                {Object.entries(produtosPorCategoria).map(([categoria, items]) => {
+                  const config = categoriaConfig[categoria] || categoriaConfig.outro;
+                  return (
+                    <div key={categoria}>
+                      <h3 className="text-sm font-semibold text-slate-400 mb-2 flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${config.color}`} />
+                        {config.label}
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {items.map((produto) => {
+                          const inCart = carrinho.find(i => i.produto_id === produto.id);
+                          return (
+                            <div
+                              key={produto.id}
+                              className={`p-3 rounded-lg border transition-all cursor-pointer ${
+                                inCart 
+                                  ? 'bg-orange-500/10 border-orange-500/50' 
+                                  : 'bg-white/5 border-white/10 hover:bg-white/10'
+                              }`}
+                              onClick={() => addToCart(produto)}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium text-white">{produto.nome}</p>
+                                  <p className="text-emerald-400 font-semibold">R$ {produto.preco?.toFixed(2)}</p>
+                                </div>
+                                {inCart ? (
+                                  <Badge className="bg-orange-500 text-white">{inCart.quantidade}x</Badge>
+                                ) : (
+                                  <Plus className="w-5 h-5 text-slate-400" />
+                                )}
                               </div>
-                              {inCart ? (
-                                <Badge className="bg-orange-500 text-white">{inCart.quantidade}x</Badge>
-                              ) : (
-                                <Plus className="w-5 h-5 text-slate-400" />
-                              )}
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
+                  );
+                })}
+                {filteredProdutos.length === 0 && (
+                  <div className="text-center py-8 text-slate-400">
+                    <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>Nenhum produto encontrado</p>
                   </div>
-                );
-              })}
-              {filteredProdutos.length === 0 && (
-                <div className="text-center py-8 text-slate-400">
-                  <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>Nenhum produto encontrado</p>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
+            
+            {!searchProduto && (
+              <div className="text-center py-12 text-slate-400">
+                <Search className="w-16 h-16 mx-auto mb-4 opacity-30" />
+                <p className="text-lg font-medium">Digite para buscar produtos</p>
+                <p className="text-sm mt-1">Use a barra de pesquisa acima para encontrar produtos</p>
+              </div>
+            )}
           </Card>
 
           {/* Dados do Cliente */}
