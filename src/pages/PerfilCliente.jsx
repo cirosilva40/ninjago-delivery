@@ -30,7 +30,7 @@ export default function PerfilCliente() {
     if (clienteData) {
       setClienteLogado(JSON.parse(clienteData));
     } else {
-      navigate(createPageUrl('CardapioCliente'));
+      navigate(createPageUrl('AcessoCliente'));
     }
   }, [navigate]);
 

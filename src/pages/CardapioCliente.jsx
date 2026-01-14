@@ -415,7 +415,7 @@ export default function CardapioCliente() {
               ) : (
                 <Button
                   variant="ghost"
-                  onClick={() => navigate(createPageUrl('LoginCliente'))}
+                  onClick={() => navigate(createPageUrl('AcessoCliente'))}
                   className={`flex items-center gap-2 ${isLight ? 'text-gray-700' : 'text-white'}`}
                 >
                   <User className="w-5 h-5" />
