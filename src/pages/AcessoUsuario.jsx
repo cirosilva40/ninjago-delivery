@@ -20,8 +20,8 @@ import { createPageUrl } from '@/utils';
 
 export default function AcessoUsuario() {
   const navigate = useNavigate();
-  const [modo, setModo] = useState('login'); // 'login', 'primeiro-acesso', 'recuperar-senha'
-  const [etapa, setEtapa] = useState(1); // 1: email, 2: código, 3: criar senha
+  const [modo, setModo] = useState('login');
+  const [etapa, setEtapa] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -34,7 +34,6 @@ export default function AcessoUsuario() {
   const [codigoGerado, setCodigoGerado] = useState('');
   const [userId, setUserId] = useState(null);
 
-  // Login Normal
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -63,7 +62,6 @@ export default function AcessoUsuario() {
         return;
       }
 
-      // Login bem-sucedido
       await base44.auth.login(email, senha);
       navigate(createPageUrl('Pedidos'));
     } catch (error) {
@@ -73,7 +71,6 @@ export default function AcessoUsuario() {
     }
   };
 
-  // Primeiro Acesso - Etapa 1: Enviar código
   const handlePrimeiroAcessoEmail = async (e) => {
     e.preventDefault();
     setError('');
@@ -96,12 +93,10 @@ export default function AcessoUsuario() {
         return;
       }
 
-      // Gerar código de 6 dígitos
       const codigoVerificacao = Math.floor(100000 + Math.random() * 900000).toString();
       setCodigoGerado(codigoVerificacao);
       setUserId(usuario.id);
 
-      // Enviar código por email
       await base44.integrations.Core.SendEmail({
         to: email,
         subject: 'Código de Verificação - Primeiro Acesso',
@@ -122,7 +117,6 @@ export default function AcessoUsuario() {
     }
   };
 
-  // Primeiro Acesso - Etapa 2: Verificar código
   const handleVerificarCodigo = (e) => {
     e.preventDefault();
     setError('');
@@ -136,7 +130,6 @@ export default function AcessoUsuario() {
     setEtapa(3);
   };
 
-  // Primeiro Acesso - Etapa 3: Criar senha
   const handleCriarSenha = async (e) => {
     e.preventDefault();
     setError('');
@@ -154,13 +147,11 @@ export default function AcessoUsuario() {
     setLoading(true);
 
     try {
-      // Atualizar senha no usuário
       await base44.entities.User.update(userId, { senha: novaSenha });
       
       setSuccess('Senha criada com sucesso! Fazendo login...');
       
       setTimeout(async () => {
-        // Fazer login automático
         await base44.auth.login(email, novaSenha);
         navigate(createPageUrl('Pedidos'));
       }, 1500);
@@ -171,7 +162,6 @@ export default function AcessoUsuario() {
     }
   };
 
-  // Recuperar Senha - Mesmo fluxo do primeiro acesso
   const handleRecuperarSenhaEmail = async (e) => {
     e.preventDefault();
     setError('');
@@ -189,11 +179,9 @@ export default function AcessoUsuario() {
       const usuario = usuarios[0];
       setUserId(usuario.id);
 
-      // Gerar código de 6 dígitos
       const codigoVerificacao = Math.floor(100000 + Math.random() * 900000).toString();
       setCodigoGerado(codigoVerificacao);
 
-      // Enviar código por email
       await base44.integrations.Core.SendEmail({
         to: email,
         subject: 'Código de Recuperação de Senha',
@@ -234,7 +222,6 @@ export default function AcessoUsuario() {
         className="w-full max-w-md"
       >
         <Card className="bg-white/5 border-white/10 p-8">
-          {/* Logo e Título */}
           <div className="text-center mb-8">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mx-auto mb-4">
               <Store className="w-10 h-10 text-white" />
@@ -251,7 +238,6 @@ export default function AcessoUsuario() {
             </p>
           </div>
 
-          {/* Mensagens de erro/sucesso */}
           <AnimatePresence>
             {error && (
               <motion.div
@@ -277,7 +263,6 @@ export default function AcessoUsuario() {
             )}
           </AnimatePresence>
 
-          {/* Login Normal */}
           {modo === 'login' && (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
@@ -343,10 +328,8 @@ export default function AcessoUsuario() {
             </form>
           )}
 
-          {/* Primeiro Acesso / Recuperar Senha */}
           {(modo === 'primeiro-acesso' || modo === 'recuperar-senha') && (
             <>
-              {/* Etapa 1: Email */}
               {etapa === 1 && (
                 <form onSubmit={modo === 'primeiro-acesso' ? handlePrimeiroAcessoEmail : handleRecuperarSenhaEmail} className="space-y-4">
                   <div>
@@ -396,7 +379,6 @@ export default function AcessoUsuario() {
                 </form>
               )}
 
-              {/* Etapa 2: Código */}
               {etapa === 2 && (
                 <form onSubmit={handleVerificarCodigo} className="space-y-4">
                   <div>
@@ -435,7 +417,6 @@ export default function AcessoUsuario() {
                 </form>
               )}
 
-              {/* Etapa 3: Criar Senha */}
               {etapa === 3 && (
                 <form onSubmit={handleCriarSenha} className="space-y-4">
                   <div>
