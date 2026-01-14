@@ -23,6 +23,7 @@ import {
   Phone,
   CreditCard,
   DollarSign,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -55,6 +56,8 @@ export default function AdminUsers() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('todos');
   const [showCadastroModal, setShowCadastroModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
   const [cadastroForm, setCadastroForm] = useState({
     tipo_pessoa: 'fisica',
     nome_completo: '',
@@ -172,6 +175,69 @@ export default function AdminUsers() {
       refetch();
     } catch (error) {
       console.error('Erro ao atualizar role:', error);
+    }
+  };
+
+  const handleEditUser = (usuario) => {
+    setEditingUser(usuario);
+    setCadastroForm({
+      tipo_pessoa: 'fisica',
+      nome_completo: usuario.full_name || '',
+      cpf: '',
+      cnpj: '',
+      telefone: '',
+      email: usuario.email || '',
+      plano: 'basico',
+      data_pagamento: '',
+      valor_pagamento: '',
+      forma_pagamento: 'pix',
+      role: usuario.role || 'user'
+    });
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingUser) return;
+    
+    setCadastrando(true);
+    try {
+      await base44.entities.User.update(editingUser.id, {
+        full_name: cadastroForm.nome_completo,
+        email: cadastroForm.email,
+        role: cadastroForm.role
+      });
+      
+      setCadastroSuccess(true);
+      setTimeout(() => {
+        setCadastroSuccess(false);
+        setShowEditModal(false);
+        setEditingUser(null);
+      }, 1500);
+      refetch();
+    } catch (error) {
+      console.error('Erro ao editar usuário:', error);
+      alert('Erro ao editar usuário. Tente novamente.');
+    } finally {
+      setCadastrando(false);
+    }
+  };
+
+  const handleDeleteUser = async (usuario) => {
+    if (usuario.id === currentUser?.id) {
+      alert('Você não pode excluir seu próprio usuário.');
+      return;
+    }
+
+    if (!confirm(`Tem certeza que deseja excluir o usuário ${usuario.full_name || usuario.email}?`)) {
+      return;
+    }
+
+    try {
+      await base44.entities.User.delete(usuario.id);
+      refetch();
+    } catch (error) {
+      console.error('Erro ao excluir usuário:', error);
+      alert('Erro ao excluir usuário. Tente novamente.');
     }
   };
 
@@ -346,6 +412,13 @@ export default function AdminUsers() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-slate-900 border-slate-700">
+                      <DropdownMenuItem 
+                        onClick={() => handleEditUser(usuario)}
+                        className="cursor-pointer"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        Editar
+                      </DropdownMenuItem>
                       {usuario.role === 'user' ? (
                         <DropdownMenuItem 
                           onClick={() => handleUpdateRole(usuario.id, 'admin')}
@@ -363,6 +436,14 @@ export default function AdminUsers() {
                           Tornar Usuário
                         </DropdownMenuItem>
                       )}
+                      <DropdownMenuItem 
+                        onClick={() => handleDeleteUser(usuario)}
+                        className="cursor-pointer text-red-400 focus:text-red-300"
+                        disabled={usuario.id === currentUser?.id}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Excluir
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -609,6 +690,83 @@ export default function AdminUsers() {
                 className="bg-gradient-to-r from-orange-500 to-red-600"
               >
                 {cadastrando ? 'Cadastrando...' : cadastroSuccess ? 'Cadastrado!' : 'Cadastrar Usuário'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Editar Usuário */}
+      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Edit className="w-6 h-6 text-orange-500" />
+              Editar Usuário
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label className="text-slate-400">Nome Completo</Label>
+              <Input
+                value={cadastroForm.nome_completo}
+                onChange={(e) => setCadastroForm({ ...cadastroForm, nome_completo: e.target.value })}
+                className="bg-slate-800 border-slate-700 text-white"
+              />
+            </div>
+
+            <div>
+              <Label className="text-slate-400">Email</Label>
+              <Input
+                type="email"
+                value={cadastroForm.email}
+                onChange={(e) => setCadastroForm({ ...cadastroForm, email: e.target.value })}
+                className="bg-slate-800 border-slate-700 text-white"
+              />
+            </div>
+
+            <div>
+              <Label className="text-slate-400">Nível de Acesso</Label>
+              <Select 
+                value={cadastroForm.role} 
+                onValueChange={(v) => setCadastroForm({ ...cadastroForm, role: v })}
+              >
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectItem value="user">Usuário</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {cadastroSuccess && (
+              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                <p className="text-sm text-emerald-300 font-medium">
+                  ✅ Usuário editado com sucesso!
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingUser(null);
+                }}
+                className="border-slate-600 text-slate-300"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleSaveEdit}
+                disabled={cadastrando || cadastroSuccess}
+                className="bg-gradient-to-r from-orange-500 to-red-600"
+              >
+                {cadastrando ? 'Salvando...' : cadastroSuccess ? 'Salvo!' : 'Salvar'}
               </Button>
             </div>
           </div>
