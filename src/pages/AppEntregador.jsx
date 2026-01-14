@@ -92,10 +92,12 @@ export default function AppEntregador() {
   }, []);
 
   const loadUser = async () => {
+    setCheckingAuth(true);
     try {
       const isAuth = await base44.auth.isAuthenticated();
       if (!isAuth) {
         setUser(null);
+        setCheckingAuth(false);
         return;
       }
 
@@ -110,6 +112,8 @@ export default function AppEntregador() {
     } catch (e) {
       console.log('User not logged');
       setUser(null);
+    } finally {
+      setCheckingAuth(false);
     }
   };
 
