@@ -291,34 +291,7 @@ export default function AppEntregador() {
     }
   };
 
-  const vincularEntregador = async () => {
-    if (!codigoVinculo || !user) return;
-    
-    setLoading(true);
-    try {
-      // Buscar entregador pelo código (usando telefone como código)
-      const entregadores = await base44.entities.Entregador.filter({ 
-        telefone: codigoVinculo 
-      });
-      
-      if (entregadores.length > 0) {
-        // Atualizar o entregador com o email do usuário
-        await base44.entities.Entregador.update(entregadores[0].id, {
-          email: user.email
-        });
-        
-        setEntregador(entregadores[0]);
-        setShowVincularModal(false);
-        setCodigoVinculo('');
-      } else {
-        alert('Código não encontrado. Verifique com a pizzaria.');
-      }
-    } catch (error) {
-      console.error('Erro ao vincular:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   const openMaps = (entrega) => {
     const address = encodeURIComponent(entrega.endereco_completo);
