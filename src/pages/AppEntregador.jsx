@@ -940,7 +940,11 @@ export default function AppEntregador() {
             <Button 
               variant="outline" 
               className="w-full h-12 border-red-500/30 text-red-400 hover:bg-red-500/10"
-              onClick={() => base44.auth.logout()}
+              onClick={() => {
+                localStorage.removeItem('entregador_logado');
+                setEntregador(null);
+                setUser(null);
+              }}
             >
               <LogOut className="w-5 h-5 mr-2" />
               Sair da Conta
