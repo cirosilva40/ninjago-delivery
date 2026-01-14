@@ -96,26 +96,51 @@ export default function AppEntregador() {
   const loadUser = async () => {
     setCheckingAuth(true);
     try {
-      const isAuth = await base44.auth.isAuthenticated();
-      if (!isAuth) {
-        setUser(null);
-        setCheckingAuth(false);
+      // Verificar se há entregador salvo localmente
+      const entregadorSalvo = localStorage.getItem('entregador_logado');
+      if (entregadorSalvo) {
+        const entregadorData = JSON.parse(entregadorSalvo);
+        setEntregador(entregadorData);
+        setUser({ email: entregadorData.email || entregadorData.telefone });
+      }
+    } catch (e) {
+      console.log('Erro ao carregar usuário');
+    } finally {
+      setCheckingAuth(false);
+    }
+  };
+
+  const handleLoginEntregador = async () => {
+    if (!telefoneLogin) {
+      setLoginError('Por favor, digite seu telefone');
+      return;
+    }
+
+    setLoading(true);
+    setLoginError('');
+
+    try {
+      const entregadores = await base44.entities.Entregador.filter({ telefone: telefoneLogin });
+      
+      if (entregadores.length === 0) {
+        setLoginError('Telefone não encontrado. Verifique com a pizzaria.');
+        setLoading(false);
         return;
       }
 
-      const userData = await base44.auth.me();
-      setUser(userData);
+      const entregadorData = entregadores[0];
       
-      // Buscar dados do entregador pelo email
-      const entregadores = await base44.entities.Entregador.filter({ email: userData.email });
-      if (entregadores.length > 0) {
-        setEntregador(entregadores[0]);
-      }
-    } catch (e) {
-      console.log('User not logged');
-      setUser(null);
+      // Salvar no localStorage
+      localStorage.setItem('entregador_logado', JSON.stringify(entregadorData));
+      
+      setEntregador(entregadorData);
+      setUser({ email: entregadorData.email || entregadorData.telefone });
+      setTelefoneLogin('');
+    } catch (error) {
+      console.error('Erro ao fazer login:', error);
+      setLoginError('Erro ao fazer login. Tente novamente.');
     } finally {
-      setCheckingAuth(false);
+      setLoading(false);
     }
   };
 
