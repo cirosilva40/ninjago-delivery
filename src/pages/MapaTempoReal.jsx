@@ -116,9 +116,10 @@ export default function MapaTempoReal() {
   const [atribuindoRota, setAtribuindoRota] = useState(false);
 
   // Buscar configurações da pizzaria para pegar coordenadas
-  const { data: pizzarias = [] } = useQuery({
-    queryKey: ['pizzaria-config'],
+  const { data: pizzarias = [], refetch: refetchPizzaria } = useQuery({
+    queryKey: ['pizzaria-config-mapa'],
     queryFn: () => base44.entities.Pizzaria.list('-created_date', 1),
+    refetchInterval: 10000, // Atualiza a cada 10 segundos
   });
 
   // Coordenadas do estabelecimento (ou padrão São Paulo)
