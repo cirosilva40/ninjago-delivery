@@ -1,3 +1,4 @@
+import AcessoCliente from './pages/AcessoCliente';
 import AcompanharPedido from './pages/AcompanharPedido';
 import AdminUsers from './pages/AdminUsers';
 import AppEntregador from './pages/AppEntregador';
@@ -16,11 +17,12 @@ import Pedidos from './pages/Pedidos';
 import PerfilCliente from './pages/PerfilCliente';
 import Produtos from './pages/Produtos';
 import Relatorios from './pages/Relatorios';
-import AcessoCliente from './pages/AcessoCliente';
+import AcessoUsuario from './pages/AcessoUsuario';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AcessoCliente": AcessoCliente,
     "AcompanharPedido": AcompanharPedido,
     "AdminUsers": AdminUsers,
     "AppEntregador": AppEntregador,
@@ -39,7 +41,7 @@ export const PAGES = {
     "PerfilCliente": PerfilCliente,
     "Produtos": Produtos,
     "Relatorios": Relatorios,
-    "AcessoCliente": AcessoCliente,
+    "AcessoUsuario": AcessoUsuario,
 }
 
 export const pagesConfig = {
