@@ -85,7 +85,7 @@ export default function Layout({ children, currentPageName }) {
   };
 
   // Páginas que não usam o layout padrão
-  if (currentPageName === 'AppEntregador' || currentPageName === 'AdminUsers' || currentPageName === 'CardapioCliente' || currentPageName === 'AcompanharPedido' || currentPageName === 'AcessoCliente' || currentPageName === 'PerfilCliente') {
+  if (currentPageName === 'AppEntregador' || currentPageName === 'AdminUsers' || currentPageName === 'CardapioCliente' || currentPageName === 'AcompanharPedido' || currentPageName === 'AcessoCliente' || currentPageName === 'PerfilCliente' || currentPageName === 'AcessoUsuario') {
     return <>{children}</>;
   }
 
