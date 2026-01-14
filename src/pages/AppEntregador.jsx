@@ -84,6 +84,7 @@ export default function AppEntregador() {
   const [periodoFiltro, setPeriodoFiltro] = useState('hoje');
   const [valorRecebido, setValorRecebido] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const queryClient = useQueryClient();
 
   useEffect(() => {
