@@ -363,23 +363,49 @@ export default function AppEntregador() {
     );
   }
 
-  if (!user) {
+  if (!entregador) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-white/5 border-white/10 p-8 text-center">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mx-auto mb-6">
-            <Bike className="w-10 h-10 text-white" />
+        <Card className="w-full max-w-md bg-white/5 border-white/10 p-8">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mx-auto mb-4">
+              <Bike className="w-10 h-10 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-2">App do Entregador</h1>
+            <p className="text-slate-400">
+              Digite seu telefone para acessar
+            </p>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">App do Entregador</h1>
-          <p className="text-slate-400 mb-6">
-            Faça login para acessar suas entregas e ganhos.
-          </p>
-          <Button 
-            onClick={() => base44.auth.redirectToLogin()}
-            className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 text-lg"
-          >
-            Fazer Login
-          </Button>
+
+          {loginError && (
+            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/50">
+              <p className="text-sm text-red-300">{loginError}</p>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <Label className="text-slate-400">Telefone Cadastrado</Label>
+              <Input
+                value={telefoneLogin}
+                onChange={(e) => setTelefoneLogin(e.target.value)}
+                placeholder="(11) 99999-9999"
+                className="bg-slate-800 border-slate-700 text-white h-12 text-lg"
+                onKeyPress={(e) => e.key === 'Enter' && handleLoginEntregador()}
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                Use o telefone cadastrado na pizzaria
+              </p>
+            </div>
+
+            <Button 
+              onClick={handleLoginEntregador}
+              disabled={!telefoneLogin || loading}
+              className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 text-lg"
+            >
+              {loading ? 'Entrando...' : 'Entrar'}
+            </Button>
+          </div>
         </Card>
       </div>
     );
