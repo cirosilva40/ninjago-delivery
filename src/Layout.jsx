@@ -130,6 +130,9 @@ export default function Layout({ children, currentPageName }) {
         .glow-orange {
           box-shadow: 0 0 30px rgba(249, 115, 22, 0.3);
         }
+        * {
+          -webkit-tap-highlight-color: transparent;
+        }
       `}</style>
 
       {/* Mobile Sidebar Overlay */}
@@ -171,7 +174,7 @@ export default function Layout({ children, currentPageName }) {
                   to={createPageUrl(item.page)}
                   onClick={() => setSidebarOpen(false)}
                   className={`
-                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+                    flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-150
                     ${isActive 
                       ? 'bg-gradient-to-r from-orange-500/20 to-red-500/10 text-orange-500 border border-orange-500/20' 
                       : isLight 
