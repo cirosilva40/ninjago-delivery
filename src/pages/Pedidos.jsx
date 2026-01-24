@@ -164,31 +164,6 @@ export default function Pedidos() {
         </div>
       </div>
 
-      {/* Status Quick Filters */}
-      <div className="flex flex-wrap gap-2">
-        {Object.entries(statusConfig).map(([key, config]) => {
-          const count = pedidos.filter(p => p.status === key).length;
-          const StatusIcon = config.icon;
-          return (
-            <button
-              key={key}
-              onClick={() => setStatusFilter(statusFilter === key ? 'todos' : key)}
-              className={`
-                flex items-center gap-2 px-4 py-2 rounded-xl border transition-all
-                ${statusFilter === key 
-                  ? 'bg-white/10 border-white/20' 
-                  : 'bg-white/5 border-white/10 hover:bg-white/8'
-                }
-              `}
-            >
-              <StatusIcon className="w-4 h-4 text-slate-400" />
-              <span className="text-sm text-white">{config.label}</span>
-              <Badge className={`${config.color} text-xs`}>{count}</Badge>
-            </button>
-          );
-        })}
-      </div>
-
       {/* Pedidos List */}
       {viewMode === 'colunas' ? (
         // Visualização Kanban (por status)
