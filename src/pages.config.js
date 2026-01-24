@@ -5,11 +5,15 @@ import AdminUsers from './pages/AdminUsers';
 import AppEntregador from './pages/AppEntregador';
 import CardapioCliente from './pages/CardapioCliente';
 import Configuracoes from './pages/Configuracoes';
+import ConfiguracoesFinanceiras from './pages/ConfiguracoesFinanceiras';
+import ControleComandas from './pages/ControleComandas';
 import Cozinha from './pages/Cozinha';
 import Dashboard from './pages/Dashboard';
 import EntregadorDetalhe from './pages/EntregadorDetalhe';
 import Entregadores from './pages/Entregadores';
 import EntregasHoje from './pages/EntregasHoje';
+import Financeiro from './pages/Financeiro';
+import FluxoDeCaixa from './pages/FluxoDeCaixa';
 import Home from './pages/Home';
 import MapaTempoReal from './pages/MapaTempoReal';
 import NovoPedido from './pages/NovoPedido';
@@ -18,10 +22,6 @@ import Pedidos from './pages/Pedidos';
 import PerfilCliente from './pages/PerfilCliente';
 import Produtos from './pages/Produtos';
 import Relatorios from './pages/Relatorios';
-import Financeiro from './pages/Financeiro';
-import ControleComandas from './pages/ControleComandas';
-import FluxoDeCaixa from './pages/FluxoDeCaixa';
-import ConfiguracoesFinanceiras from './pages/ConfiguracoesFinanceiras';
 import __Layout from './Layout.jsx';
 
 
@@ -33,11 +33,15 @@ export const PAGES = {
     "AppEntregador": AppEntregador,
     "CardapioCliente": CardapioCliente,
     "Configuracoes": Configuracoes,
+    "ConfiguracoesFinanceiras": ConfiguracoesFinanceiras,
+    "ControleComandas": ControleComandas,
     "Cozinha": Cozinha,
     "Dashboard": Dashboard,
     "EntregadorDetalhe": EntregadorDetalhe,
     "Entregadores": Entregadores,
     "EntregasHoje": EntregasHoje,
+    "Financeiro": Financeiro,
+    "FluxoDeCaixa": FluxoDeCaixa,
     "Home": Home,
     "MapaTempoReal": MapaTempoReal,
     "NovoPedido": NovoPedido,
@@ -46,10 +50,6 @@ export const PAGES = {
     "PerfilCliente": PerfilCliente,
     "Produtos": Produtos,
     "Relatorios": Relatorios,
-    "Financeiro": Financeiro,
-    "ControleComandas": ControleComandas,
-    "FluxoDeCaixa": FluxoDeCaixa,
-    "ConfiguracoesFinanceiras": ConfiguracoesFinanceiras,
 }
 
 export const pagesConfig = {

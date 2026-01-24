@@ -190,154 +190,165 @@ export default function Pedidos() {
       </div>
 
       {/* Pedidos List */}
-      <div className={viewMode === 'colunas' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-3'}>
-        <AnimatePresence>
-          {filteredPedidos.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="rounded-2xl bg-white/5 border border-white/10 p-12 text-center col-span-full"
-            >
-              <Package className="w-16 h-16 mx-auto text-slate-600 mb-4" />
-              <p className="text-slate-400">Nenhum pedido encontrado</p>
-            </motion.div>
-          ) : (
-            filteredPedidos.map((pedido, index) => {
+      {viewMode === 'colunas' ? (
+        // Visualização Kanban (por status)
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {Object.entries(statusConfig).map(([statusKey, statusInfo]) => {
+            const pedidosDoStatus = filteredPedidos.filter(p => p.status === statusKey);
+            const StatusIcon = statusInfo.icon;
+            
+            return (
+              <div key={statusKey} className="flex flex-col">
+                {/* Header da Coluna */}
+                <div className={`rounded-xl p-3 mb-3 ${statusInfo.color} border border-white/10 sticky top-4 z-10`}>
+                  <div className="flex items-center gap-2">
+                    <StatusIcon className="w-4 h-4" />
+                    <span className="font-semibold text-sm">{statusInfo.label}</span>
+                  </div>
+                  <Badge className="bg-white/20 text-white text-xs mt-1">
+                    {pedidosDoStatus.length}
+                  </Badge>
+                </div>
+
+                {/* Pedidos da Coluna */}
+                <div className="space-y-3 flex-1">
+                  <AnimatePresence>
+                    {pedidosDoStatus.map((pedido, index) => {
+                      const status = statusConfig[pedido.status] || statusConfig.novo;
+                      const StatusIcon = status.icon;
+                      
+                      return (
+                        <motion.div
+                          key={pedido.id}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          transition={{ delay: index * 0.03 }}
+                          className="rounded-xl bg-white/5 border border-white/10 p-3 hover:bg-white/8 transition-all cursor-pointer"
+                          onClick={() => handleEdit(pedido)}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <span className="text-base font-bold text-white">#{pedido.numero_pedido}</span>
+                              <p className="text-xs text-slate-500">{moment(pedido.created_date).format('HH:mm')}</p>
+                            </div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                <Button variant="ghost" size="icon" className="text-slate-400 h-6 w-6">
+                                  <MoreVertical className="w-3 h-3" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="bg-slate-900 border-slate-700">
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(pedido); }} className="cursor-pointer">
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  Ver/Editar
+                                </DropdownMenuItem>
+                                {pedido.status === 'novo' && (
+                                  <DropdownMenuItem 
+                                    onClick={(e) => { e.stopPropagation(); updateStatus(pedido, 'em_preparo'); }}
+                                    className="cursor-pointer"
+                                  >
+                                    <ChefHat className="w-4 h-4 mr-2" />
+                                    Iniciar Preparo
+                                  </DropdownMenuItem>
+                                )}
+                                {pedido.status === 'em_preparo' && (
+                                  <DropdownMenuItem 
+                                    onClick={(e) => { e.stopPropagation(); updateStatus(pedido, 'pronto'); }}
+                                    className="cursor-pointer"
+                                  >
+                                    <Check className="w-4 h-4 mr-2" />
+                                    Marcar como Pronto
+                                  </DropdownMenuItem>
+                                )}
+                                {(pedido.status === 'novo' || pedido.status === 'pronto') && (
+                                  <DropdownMenuItem 
+                                    onClick={(e) => { e.stopPropagation(); handleAtribuir(pedido); }}
+                                    className="cursor-pointer"
+                                  >
+                                    <Bike className="w-4 h-4 mr-2" />
+                                    Atribuir Entrega
+                                  </DropdownMenuItem>
+                                )}
+                                {pedido.status !== 'cancelado' && pedido.status !== 'entregue' && (
+                                  <DropdownMenuItem 
+                                    onClick={(e) => { e.stopPropagation(); updateStatus(pedido, 'cancelado'); }}
+                                    className="cursor-pointer text-red-400"
+                                  >
+                                    <X className="w-4 h-4 mr-2" />
+                                    Cancelar
+                                  </DropdownMenuItem>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+
+                          <p className="text-white font-medium text-sm mb-1 truncate">{pedido.cliente_nome}</p>
+                          <p className="text-xs text-slate-400 truncate">{pedido.cliente_bairro || pedido.cliente_endereco}</p>
+
+                          {pedido.itens && pedido.itens.length > 0 && (
+                            <div className="mt-2 pt-2 border-t border-white/10">
+                              <div className="flex flex-wrap gap-1">
+                                {pedido.itens.slice(0, 2).map((item, i) => (
+                                  <span 
+                                    key={i}
+                                    className="px-2 py-0.5 rounded bg-white/5 text-xs text-white truncate"
+                                  >
+                                    {item.quantidade}x {item.nome}
+                                  </span>
+                                ))}
+                                {pedido.itens.length > 2 && (
+                                  <span className="px-2 py-0.5 text-xs text-slate-400">
+                                    +{pedido.itens.length - 2}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/10">
+                            <p className="text-base font-bold text-emerald-400">R$ {pedido.valor_total?.toFixed(2)}</p>
+                            <a 
+                              href={`tel:${pedido.cliente_telefone}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                            >
+                              <Phone className="w-4 h-4 text-white" />
+                            </a>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
+                  {pedidosDoStatus.length === 0 && (
+                    <div className="text-center py-8 text-slate-500">
+                      <p className="text-xs">Nenhum pedido</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        // Visualização Horizontal
+        <div className="space-y-3">
+          <AnimatePresence>
+            {filteredPedidos.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="rounded-2xl bg-white/5 border border-white/10 p-12 text-center"
+              >
+                <Package className="w-16 h-16 mx-auto text-slate-600 mb-4" />
+                <p className="text-slate-400">Nenhum pedido encontrado</p>
+              </motion.div>
+            ) : (
+              filteredPedidos.map((pedido, index) => {
               const status = statusConfig[pedido.status] || statusConfig.novo;
               const StatusIcon = status.icon;
               
-              if (viewMode === 'colunas') {
-                // Visualização em Colunas (Card vertical)
-                return (
-                  <motion.div
-                    key={pedido.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.03 }}
-                    className="rounded-xl bg-white/5 border border-white/10 p-4 hover:bg-white/8 transition-all flex flex-col"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center flex-shrink-0">
-                          <Package className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <span className="text-lg font-bold text-white">#{pedido.numero_pedido}</span>
-                          <Badge className={`${status.color} border border-white/10 text-xs mt-1`}>
-                            <StatusIcon className="w-3 h-3 mr-1" />
-                            {status.label}
-                          </Badge>
-                        </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="text-slate-400 h-8 w-8">
-                            <MoreVertical className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-slate-900 border-slate-700">
-                          <DropdownMenuItem onClick={() => handleEdit(pedido)} className="cursor-pointer">
-                            <Eye className="w-4 h-4 mr-2" />
-                            Ver/Editar
-                          </DropdownMenuItem>
-                          {pedido.status === 'novo' && (
-                            <DropdownMenuItem 
-                              onClick={() => updateStatus(pedido, 'em_preparo')}
-                              className="cursor-pointer"
-                            >
-                              <ChefHat className="w-4 h-4 mr-2" />
-                              Iniciar Preparo
-                            </DropdownMenuItem>
-                          )}
-                          {pedido.status === 'em_preparo' && (
-                            <DropdownMenuItem 
-                              onClick={() => updateStatus(pedido, 'pronto')}
-                              className="cursor-pointer"
-                            >
-                              <Check className="w-4 h-4 mr-2" />
-                              Marcar como Pronto
-                            </DropdownMenuItem>
-                          )}
-                          {pedido.status !== 'cancelado' && pedido.status !== 'entregue' && (
-                            <DropdownMenuItem 
-                              onClick={() => updateStatus(pedido, 'cancelado')}
-                              className="cursor-pointer text-red-400"
-                            >
-                              <X className="w-4 h-4 mr-2" />
-                              Cancelar Pedido
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-
-                    <div className="space-y-2 mb-3">
-                      <p className="text-white font-medium text-sm">{pedido.cliente_nome}</p>
-                      <p className="text-xs text-slate-400 line-clamp-2">{pedido.cliente_endereco}</p>
-                      <p className="text-xs text-slate-500">{pedido.cliente_bairro}</p>
-                    </div>
-
-                    {pedido.itens && pedido.itens.length > 0 && (
-                      <div className="mb-3 pb-3 border-b border-white/10">
-                        <p className="text-xs text-slate-400 mb-2">Itens:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {pedido.itens.slice(0, 3).map((item, i) => (
-                            <span 
-                              key={i}
-                              className="px-2 py-1 rounded-full bg-white/5 text-xs text-white"
-                            >
-                              {item.quantidade}x {item.nome}
-                            </span>
-                          ))}
-                          {pedido.itens.length > 3 && (
-                            <span className="px-2 py-1 text-xs text-slate-400">
-                              +{pedido.itens.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="mt-auto">
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <p className="text-xl font-bold text-emerald-400">R$ {pedido.valor_total?.toFixed(2)}</p>
-                          <p className="text-xs text-slate-400">{pedido.forma_pagamento}</p>
-                          <p className="text-xs text-slate-500">{moment(pedido.created_date).format('DD/MM HH:mm')}</p>
-                        </div>
-                        <a 
-                          href={`tel:${pedido.cliente_telefone}`}
-                          className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-                        >
-                          <Phone className="w-5 h-5 text-white" />
-                        </a>
-                      </div>
-
-                      {pedido.status === 'novo' && pedido.origem === 'site' ? (
-                        <Button
-                          size="sm"
-                          onClick={() => updateStatus(pedido, 'em_preparo')}
-                          className="w-full bg-gradient-to-r from-emerald-500 to-green-600"
-                        >
-                          <Check className="w-4 h-4 mr-1" />
-                          Aceitar Pedido
-                        </Button>
-                      ) : (pedido.status === 'novo' || pedido.status === 'pronto') && (
-                        <Button
-                          size="sm"
-                          onClick={() => handleAtribuir(pedido)}
-                          className="w-full bg-gradient-to-r from-orange-500 to-red-600"
-                        >
-                          <Bike className="w-4 h-4 mr-1" />
-                          Entregar
-                        </Button>
-                      )}
-                    </div>
-                  </motion.div>
-                );
-              }
-
-              // Visualização Horizontal (padrão)
+              // Visualização Horizontal
               return (
                 <motion.div
                   key={pedido.id}
@@ -462,10 +473,11 @@ export default function Pedidos() {
                   )}
                 </motion.div>
               );
-            })
-          )}
-        </AnimatePresence>
-      </div>
+              })
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* Modais */}
       <PedidoModal
