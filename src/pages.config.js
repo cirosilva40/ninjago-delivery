@@ -18,6 +18,10 @@ import Pedidos from './pages/Pedidos';
 import PerfilCliente from './pages/PerfilCliente';
 import Produtos from './pages/Produtos';
 import Relatorios from './pages/Relatorios';
+import Financeiro from './pages/Financeiro';
+import ControleComandas from './pages/ControleComandas';
+import FluxoDeCaixa from './pages/FluxoDeCaixa';
+import ConfiguracoesFinanceiras from './pages/ConfiguracoesFinanceiras';
 import __Layout from './Layout.jsx';
 
 
@@ -42,6 +46,10 @@ export const PAGES = {
     "PerfilCliente": PerfilCliente,
     "Produtos": Produtos,
     "Relatorios": Relatorios,
+    "Financeiro": Financeiro,
+    "ControleComandas": ControleComandas,
+    "FluxoDeCaixa": FluxoDeCaixa,
+    "ConfiguracoesFinanceiras": ConfiguracoesFinanceiras,
 }
 
 export const pagesConfig = {
