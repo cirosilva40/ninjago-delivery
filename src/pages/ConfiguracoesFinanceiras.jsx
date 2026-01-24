@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CnpjInput, CpfInput } from '@/components/ui/masked-input';
+import { CnpjInput, CpfInput, TelefoneInput } from '@/components/ui/masked-input';
 import {
   Select,
   SelectContent,
@@ -433,12 +433,32 @@ export default function ConfiguracoesFinanceiras() {
                   <Label className={isLight ? 'text-gray-900' : 'text-white'}>
                     Chave PIX
                   </Label>
-                  <Input
-                    value={dadosBancarios.pix_chave}
-                    onChange={(e) => setDadosBancarios({ ...dadosBancarios, pix_chave: e.target.value })}
-                    placeholder="Digite a chave PIX"
-                    className={`mt-1 ${isLight ? 'bg-white' : 'bg-white/5'}`}
-                  />
+                  {dadosBancarios.pix_tipo === 'cpf' ? (
+                    <CpfInput
+                      value={dadosBancarios.pix_chave}
+                      onChange={(e) => setDadosBancarios({ ...dadosBancarios, pix_chave: e.target.value })}
+                      className={`mt-1 ${isLight ? 'bg-white' : 'bg-white/5'}`}
+                    />
+                  ) : dadosBancarios.pix_tipo === 'cnpj' ? (
+                    <CnpjInput
+                      value={dadosBancarios.pix_chave}
+                      onChange={(e) => setDadosBancarios({ ...dadosBancarios, pix_chave: e.target.value })}
+                      className={`mt-1 ${isLight ? 'bg-white' : 'bg-white/5'}`}
+                    />
+                  ) : dadosBancarios.pix_tipo === 'telefone' ? (
+                    <TelefoneInput
+                      value={dadosBancarios.pix_chave}
+                      onChange={(e) => setDadosBancarios({ ...dadosBancarios, pix_chave: e.target.value })}
+                      className={`mt-1 ${isLight ? 'bg-white' : 'bg-white/5'}`}
+                    />
+                  ) : (
+                    <Input
+                      value={dadosBancarios.pix_chave}
+                      onChange={(e) => setDadosBancarios({ ...dadosBancarios, pix_chave: e.target.value })}
+                      placeholder="Digite a chave PIX"
+                      className={`mt-1 ${isLight ? 'bg-white' : 'bg-white/5'}`}
+                    />
+                  )}
                 </div>
               </div>
 
