@@ -23,6 +23,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { CepInput, TelefoneInput, CnpjInput, CurrencyInput } from '@/components/ui/masked-input';
 import {
   Select,
   SelectContent,
@@ -169,20 +170,18 @@ export default function Configuracoes() {
                   </div>
                   <div>
                     <Label className="text-slate-400">CNPJ</Label>
-                    <Input
+                    <CnpjInput
                       value={pizzaria.cnpj}
                       onChange={(e) => setPizzaria({ ...pizzaria, cnpj: e.target.value })}
                       className="bg-slate-800 border-slate-700 text-white"
-                      placeholder="00.000.000/0000-00"
                     />
                   </div>
                   <div>
                     <Label className="text-slate-400">Telefone</Label>
-                    <Input
+                    <TelefoneInput
                       value={pizzaria.telefone}
                       onChange={(e) => setPizzaria({ ...pizzaria, telefone: e.target.value })}
                       className="bg-slate-800 border-slate-700 text-white"
-                      placeholder="(00) 0000-0000"
                     />
                   </div>
                   <div className="col-span-2">
@@ -259,11 +258,10 @@ export default function Configuracoes() {
                   </div>
                   <div>
                     <Label className="text-slate-400">CEP</Label>
-                    <Input
+                    <CepInput
                       value={pizzaria.cep}
                       onChange={(e) => setPizzaria({ ...pizzaria, cep: e.target.value })}
                       className="bg-slate-800 border-slate-700 text-white"
-                      placeholder="00000-000"
                     />
                   </div>
                 </div>

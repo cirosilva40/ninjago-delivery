@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { CurrencyInput } from '@/components/ui/masked-input';
 import {
   Dialog,
   DialogContent,
@@ -446,12 +447,9 @@ export default function FluxoDeCaixa() {
                 <Label className={isLight ? 'text-gray-900' : 'text-white'}>
                   Valor *
                 </Label>
-                <Input
-                  type="number"
-                  step="0.01"
+                <CurrencyInput
                   value={formData.valor}
                   onChange={(e) => setFormData({ ...formData, valor: e.target.value })}
-                  placeholder="0.00"
                   className={`mt-1 ${isLight ? 'bg-white' : 'bg-white/5'}`}
                 />
               </div>

@@ -28,6 +28,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { CepInput, TelefoneInput, CurrencyInput } from '@/components/ui/masked-input';
 import {
   Select,
   SelectContent,
@@ -425,11 +426,10 @@ export default function NovoPedido() {
               </div>
               <div>
                 <Label className="text-slate-400">Telefone</Label>
-                <Input
+                <TelefoneInput
                   value={form.cliente_telefone}
                   onChange={(e) => setForm({ ...form, cliente_telefone: e.target.value })}
                   className="bg-slate-800 border-slate-700 text-white"
-                  placeholder="(00) 00000-0000"
                 />
               </div>
             </div>
@@ -445,12 +445,11 @@ export default function NovoPedido() {
                   <div>
                     <Label className="text-slate-400">CEP</Label>
                     <div className="relative">
-                      <Input
+                      <CepInput
                         value={form.cliente_cep}
                         onChange={(e) => setForm({ ...form, cliente_cep: e.target.value })}
                         onBlur={(e) => e.target.value && buscarCep(e.target.value)}
                         className="bg-slate-800 border-slate-700 text-white pr-10"
-                        placeholder="00000-000"
                       />
                       {buscandoCep && (
                         <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-orange-400 animate-spin" />
@@ -610,12 +609,10 @@ export default function NovoPedido() {
               {form.forma_pagamento === 'dinheiro' && (
                 <div>
                   <Label className="text-slate-400 text-sm">Troco para</Label>
-                  <Input
-                    type="number"
+                  <CurrencyInput
                     value={form.troco_para}
                     onChange={(e) => setForm({ ...form, troco_para: e.target.value })}
                     className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="0.00"
                   />
                 </div>
               )}
@@ -638,8 +635,7 @@ export default function NovoPedido() {
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <Label className="text-slate-400 text-sm">Taxa Entrega</Label>
-                    <Input
-                      type="number"
+                    <CurrencyInput
                       value={form.taxa_entrega}
                       onChange={(e) => setForm({ ...form, taxa_entrega: e.target.value })}
                       className="bg-slate-800 border-slate-700 text-white"
@@ -647,8 +643,7 @@ export default function NovoPedido() {
                   </div>
                   <div>
                     <Label className="text-slate-400 text-sm">Desconto</Label>
-                    <Input
-                      type="number"
+                    <CurrencyInput
                       value={form.desconto}
                       onChange={(e) => setForm({ ...form, desconto: e.target.value })}
                       className="bg-slate-800 border-slate-700 text-white"
