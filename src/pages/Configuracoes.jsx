@@ -165,7 +165,7 @@ export default function Configuracoes() {
                     <Input
                       value={pizzaria.nome}
                       onChange={(e) => setPizzaria({ ...pizzaria, nome: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
                     />
                   </div>
                   <div>
@@ -173,7 +173,7 @@ export default function Configuracoes() {
                     <CnpjInput
                       value={pizzaria.cnpj}
                       onChange={(e) => setPizzaria({ ...pizzaria, cnpj: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
                     />
                   </div>
                   <div>
@@ -181,7 +181,7 @@ export default function Configuracoes() {
                     <TelefoneInput
                       value={pizzaria.telefone}
                       onChange={(e) => setPizzaria({ ...pizzaria, telefone: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
                     />
                   </div>
                   <div className="col-span-2">
@@ -190,7 +190,7 @@ export default function Configuracoes() {
                       type="email"
                       value={pizzaria.email}
                       onChange={(e) => setPizzaria({ ...pizzaria, email: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
                     />
                   </div>
                 </div>
@@ -224,7 +224,7 @@ export default function Configuracoes() {
                     <Input
                       value={pizzaria.cidade}
                       onChange={(e) => setPizzaria({ ...pizzaria, cidade: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
                     />
                   </div>
                   <div>
@@ -261,7 +261,7 @@ export default function Configuracoes() {
                     <CepInput
                       value={pizzaria.cep}
                       onChange={(e) => setPizzaria({ ...pizzaria, cep: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
                     />
                   </div>
                 </div>
@@ -273,7 +273,7 @@ export default function Configuracoes() {
                       step="0.000001"
                       value={pizzaria.latitude || ''}
                       onChange={(e) => setPizzaria({ ...pizzaria, latitude: parseFloat(e.target.value) || null })}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
                       placeholder="-23.5505"
                     />
                   </div>
@@ -284,7 +284,7 @@ export default function Configuracoes() {
                       step="0.000001"
                       value={pizzaria.longitude || ''}
                       onChange={(e) => setPizzaria({ ...pizzaria, longitude: parseFloat(e.target.value) || null })}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
                       placeholder="-46.6333"
                     />
                   </div>
@@ -311,7 +311,7 @@ export default function Configuracoes() {
                       type="time"
                       value={pizzaria.horario_abertura}
                       onChange={(e) => setPizzaria({ ...pizzaria, horario_abertura: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
                     />
                   </div>
                   <div>
@@ -320,7 +320,7 @@ export default function Configuracoes() {
                       type="time"
                       value={pizzaria.horario_fechamento}
                       onChange={(e) => setPizzaria({ ...pizzaria, horario_fechamento: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
                     />
                   </div>
                   <div>
@@ -329,7 +329,7 @@ export default function Configuracoes() {
                       type="number"
                       value={pizzaria.configuracoes?.tempo_medio_preparo || 30}
                       onChange={(e) => updateConfig('tempo_medio_preparo', parseInt(e.target.value))}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
                     />
                   </div>
                   <div>
@@ -382,7 +382,7 @@ export default function Configuracoes() {
                     <Input
                       value={pizzaria.logo_url || ''}
                       onChange={(e) => setPizzaria({ ...pizzaria, logo_url: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-white"
+                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
                       placeholder="URL da logo (ex: https://exemplo.com/logo.png)"
                     />
                     <div className="flex items-center gap-2">
@@ -404,7 +404,7 @@ export default function Configuracoes() {
                             }
                           }
                         }}
-                        className="bg-slate-800 border-slate-700 text-white"
+                        className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
                       />
                       <Upload className="w-4 h-4 text-slate-400" />
                     </div>
