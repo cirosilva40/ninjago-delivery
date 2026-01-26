@@ -194,17 +194,29 @@ export default function FluxoDeCaixa() {
             Acompanhe receitas e despesas do seu negócio
           </p>
         </div>
-        <Button 
-          onClick={() => {
-            setEditingCusto(null);
-            resetForm();
-            setShowCustoModal(true);
-          }}
-          className="bg-orange-500 hover:bg-orange-600"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Adicionar Custo
-        </Button>
+        <div className="flex gap-3">
+          <Button 
+            onClick={() => {
+              toast.info('Funcionalidade em desenvolvimento');
+            }}
+            variant="outline"
+            className="border-orange-500/50 text-orange-500 hover:bg-orange-500/10"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar Categoria
+          </Button>
+          <Button 
+            onClick={() => {
+              setEditingCusto(null);
+              resetForm();
+              setShowCustoModal(true);
+            }}
+            className="bg-orange-500 hover:bg-orange-600"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar Custo
+          </Button>
+        </div>
       </div>
 
       {/* Seletor de Mês */}
@@ -214,7 +226,7 @@ export default function FluxoDeCaixa() {
           type="month"
           value={mesAtual}
           onChange={(e) => setMesAtual(e.target.value)}
-          className={`w-48 ${isLight ? 'bg-white' : 'glass-card'}`}
+          className={`w-48 ${isLight ? 'bg-white border-gray-300' : 'bg-slate-800/50 border-slate-600 text-white'}`}
         />
       </div>
 
