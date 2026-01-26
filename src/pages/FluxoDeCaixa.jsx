@@ -438,7 +438,7 @@ export default function FluxoDeCaixa() {
                 value={formData.descricao}
                 onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
                 placeholder="Ex: Aluguel do imóvel"
-                className={`mt-1 ${isLight ? 'bg-white' : 'bg-white/5'}`}
+                className={`mt-1 ${isLight ? 'bg-white border-gray-300' : 'bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500'}`}
               />
             </div>
 
@@ -450,7 +450,7 @@ export default function FluxoDeCaixa() {
                 <CurrencyInput
                   value={formData.valor}
                   onChange={(e) => setFormData({ ...formData, valor: e.target.value })}
-                  className={`mt-1 ${isLight ? 'bg-white' : 'bg-white/5'}`}
+                  className={`mt-1 ${isLight ? 'bg-white border-gray-300' : 'bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500'}`}
                 />
               </div>
 
@@ -462,7 +462,7 @@ export default function FluxoDeCaixa() {
                   type="date"
                   value={formData.data}
                   onChange={(e) => setFormData({ ...formData, data: e.target.value })}
-                  className={`mt-1 ${isLight ? 'bg-white' : 'bg-white/5'}`}
+                  className={`mt-1 ${isLight ? 'bg-white border-gray-300' : 'bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500'}`}
                 />
               </div>
             </div>
@@ -472,7 +472,7 @@ export default function FluxoDeCaixa() {
                 Categoria *
               </Label>
               <Select value={formData.categoria} onValueChange={(value) => setFormData({ ...formData, categoria: value })}>
-                <SelectTrigger className={`mt-1 ${isLight ? 'bg-white' : 'bg-white/5'}`}>
+                <SelectTrigger className={`mt-1 ${isLight ? 'bg-white border-gray-300' : 'bg-slate-800/50 border-slate-600 text-white'}`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -490,7 +490,7 @@ export default function FluxoDeCaixa() {
                 Tipo
               </Label>
               <Select value={formData.tipo} onValueChange={(value) => setFormData({ ...formData, tipo: value })}>
-                <SelectTrigger className={`mt-1 ${isLight ? 'bg-white' : 'bg-white/5'}`}>
+                <SelectTrigger className={`mt-1 ${isLight ? 'bg-white border-gray-300' : 'bg-slate-800/50 border-slate-600 text-white'}`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -508,7 +508,7 @@ export default function FluxoDeCaixa() {
                 value={formData.observacoes}
                 onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
                 placeholder="Detalhes adicionais (opcional)"
-                className={`mt-1 ${isLight ? 'bg-white' : 'bg-white/5'}`}
+                className={`mt-1 ${isLight ? 'bg-white border-gray-300' : 'bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500'}`}
                 rows={3}
               />
             </div>
