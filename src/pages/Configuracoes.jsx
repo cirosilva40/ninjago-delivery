@@ -152,7 +152,7 @@ export default function Configuracoes() {
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <Pizza className="w-5 h-5 text-orange-500" />
-                  Dados da Pizzaria
+                  Meus Dados
                 </CardTitle>
                 <CardDescription className="text-slate-400">
                   Informações básicas do estabelecimento
@@ -161,7 +161,7 @@ export default function Configuracoes() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
-                    <Label className="text-slate-400">Nome da Pizzaria</Label>
+                    <Label className="text-slate-400">Nome do Estabelecimento</Label>
                     <Input
                       value={pizzaria.nome}
                       onChange={(e) => setPizzaria({ ...pizzaria, nome: e.target.value })}
