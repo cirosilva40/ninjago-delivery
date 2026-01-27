@@ -550,7 +550,7 @@ export default function FluxoDeCaixa() {
                           <Badge className={`${cat?.color} text-white`}>
                             {cat?.label}
                           </Badge>
-                          <Badge variant="outline">
+                          <Badge variant="outline" className={isLight ? 'border-gray-400 text-gray-700' : 'border-slate-400 text-slate-200'}>
                             {custo.tipo === 'fixo' ? 'Fixo' : 'Variável'}
                           </Badge>
                           {custo.recorrente && (
