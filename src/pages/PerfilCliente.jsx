@@ -13,6 +13,8 @@ import {
   Mail,
   Edit,
   Clock,
+  Gift,
+  ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -119,15 +121,43 @@ export default function PerfilCliente() {
               </div>
               <p className="text-3xl font-bold text-white">{clienteLogado.total_pedidos || 0}</p>
             </div>
-            <div className="p-4 rounded-xl bg-white/5 border border-white/10">
+            <Link 
+              to={createPageUrl('ProgramaFidelidade')}
+              className="p-4 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/50 hover:from-yellow-500/30 hover:to-orange-500/30 transition-all group"
+            >
               <div className="flex items-center gap-2 mb-2">
                 <Star className="w-5 h-5 text-yellow-500" />
-                <span className="text-sm text-slate-400">Pontos de Fidelidade</span>
+                <span className="text-sm text-yellow-200">Pontos de Fidelidade</span>
               </div>
-              <p className="text-3xl font-bold text-emerald-400">{clienteLogado.pontos_fidelidade || 0}</p>
-            </div>
+              <div className="flex items-center justify-between">
+                <p className="text-3xl font-bold text-yellow-400">{clienteLogado.pontos_fidelidade || 0}</p>
+                <ChevronRight className="w-6 h-6 text-yellow-500 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
           </div>
         </Card>
+
+        {/* Banner Programa de Fidelidade */}
+        <Link to={createPageUrl('ProgramaFidelidade')}>
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 p-6 mb-6 cursor-pointer group"
+          >
+            <div className="relative z-10 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Gift className="w-6 h-6 text-white" />
+                  <h3 className="text-xl font-bold text-white">Programa de Fidelidade</h3>
+                </div>
+                <p className="text-white/90 text-sm">
+                  Acumule pontos e troque por recompensas incríveis! 🎁
+                </p>
+              </div>
+              <ChevronRight className="w-8 h-8 text-white group-hover:translate-x-2 transition-transform" />
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          </motion.div>
+        </Link>
 
         {/* Endereço Cadastrado */}
         {clienteLogado.endereco && (
