@@ -81,6 +81,15 @@ export default function Layout({ children, currentPageName }) {
     } catch (e) {}
   };
 
+  const marcarComoLida = async (notificacaoId) => {
+    try {
+      await base44.entities.Notificacao.update(notificacaoId, { lida: true });
+      loadNotificacoes();
+    } catch (e) {
+      console.error('Erro ao marcar notificação como lida:', e);
+    }
+  };
+
   const handleLogout = () => {
     base44.auth.logout();
   };
@@ -251,7 +260,11 @@ export default function Layout({ children, currentPageName }) {
                     </div>
                   ) : (
                     notificacoes.map((n) => (
-                      <DropdownMenuItem key={n.id} className="p-3 cursor-pointer">
+                      <DropdownMenuItem 
+                        key={n.id} 
+                        className="p-3 cursor-pointer"
+                        onClick={() => marcarComoLida(n.id)}
+                      >
                         <div>
                           <p className="font-medium text-white">{n.titulo}</p>
                           <p className="text-sm text-slate-400">{n.mensagem}</p>
