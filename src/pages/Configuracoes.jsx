@@ -16,6 +16,11 @@ import {
   CreditCard,
   Truck,
   Pizza,
+  Gift,
+  Award,
+  Plus,
+  Trash2,
+  Edit,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +37,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default function Configuracoes() {
   const [pizzaria, setPizzaria] = useState({
@@ -58,10 +69,27 @@ export default function Configuracoes() {
   
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [showRecompensaModal, setShowRecompensaModal] = useState(false);
+  const [recompensaEditando, setRecompensaEditando] = useState(null);
+  const [formRecompensa, setFormRecompensa] = useState({
+    titulo: '',
+    descricao: '',
+    pontos_necessarios: 100,
+    tipo: 'desconto_valor',
+    valor_desconto: 0,
+    imagem_url: '',
+    validade_dias: 30,
+    ativa: true,
+  });
 
   const { data: pizzarias = [], refetch } = useQuery({
     queryKey: ['pizzarias'],
     queryFn: () => base44.entities.Pizzaria.list('-created_date', 1),
+  });
+
+  const { data: recompensas = [], refetch: refetchRecompensas } = useQuery({
+    queryKey: ['recompensas-admin'],
+    queryFn: () => base44.entities.Recompensa.list('-created_date'),
   });
 
   useEffect(() => {
@@ -96,6 +124,44 @@ export default function Configuracoes() {
         [key]: value,
       },
     }));
+  };
+
+  const handleSaveRecompensa = async () => {
+    setLoading(true);
+    try {
+      if (recompensaEditando) {
+        await base44.entities.Recompensa.update(recompensaEditando.id, formRecompensa);
+      } else {
+        await base44.entities.Recompensa.create(formRecompensa);
+      }
+      refetchRecompensas();
+      setShowRecompensaModal(false);
+      setRecompensaEditando(null);
+      setFormRecompensa({
+        titulo: '',
+        descricao: '',
+        pontos_necessarios: 100,
+        tipo: 'desconto_valor',
+        valor_desconto: 0,
+        imagem_url: '',
+        validade_dias: 30,
+        ativa: true,
+      });
+    } catch (error) {
+      console.error('Erro ao salvar recompensa:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteRecompensa = async (id) => {
+    if (!confirm('Deseja realmente excluir esta recompensa?')) return;
+    try {
+      await base44.entities.Recompensa.delete(id);
+      refetchRecompensas();
+    } catch (error) {
+      console.error('Erro ao excluir recompensa:', error);
+    }
   };
 
   return (
@@ -141,6 +207,10 @@ export default function Configuracoes() {
           <TabsTrigger value="aparencia" className="data-[state=active]:bg-white/10">
             <Settings className="w-4 h-4 mr-2" />
             Aparência
+          </TabsTrigger>
+          <TabsTrigger value="fidelidade" className="data-[state=active]:bg-white/10">
+            <Gift className="w-4 h-4 mr-2" />
+            Programa de Fidelidade
           </TabsTrigger>
         </TabsList>
 
@@ -709,7 +779,293 @@ export default function Configuracoes() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Tab Programa de Fidelidade */}
+        <TabsContent value="fidelidade" className="space-y-6">
+          {/* Regras de Pontuação */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Award className="w-5 h-5 text-yellow-500" />
+                Regras de Pontuação
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                Configure como os clientes ganham pontos
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/30">
+                <h4 className="font-medium text-white mb-2 flex items-center gap-2">
+                  ⭐ Sistema de Pontos Atual
+                </h4>
+                <p className="text-sm text-slate-300">
+                  • 1 ponto = R$ 1,00 gasto no pedido
+                </p>
+                <p className="text-sm text-slate-300">
+                  • Pontos são acumulados automaticamente em cada pedido finalizado
+                </p>
+                <p className="text-sm text-slate-300">
+                  • Válido apenas para clientes cadastrados
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 p-4 rounded-xl bg-white/5">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-orange-500">1:1</div>
+                  <p className="text-sm text-slate-400 mt-1">R$ 1 = 1 ponto</p>
+                </div>
+                <div className="text-center border-l border-r border-white/10">
+                  <div className="text-3xl font-bold text-emerald-500">+{recompensas.length}</div>
+                  <p className="text-sm text-slate-400 mt-1">Recompensas ativas</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-500">30d</div>
+                  <p className="text-sm text-slate-400 mt-1">Validade padrão</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recompensas */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Gift className="w-5 h-5 text-purple-500" />
+                    Recompensas Disponíveis
+                  </CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Gerencie as recompensas que os clientes podem resgatar
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={() => {
+                    setRecompensaEditando(null);
+                    setFormRecompensa({
+                      titulo: '',
+                      descricao: '',
+                      pontos_necessarios: 100,
+                      tipo: 'desconto_valor',
+                      valor_desconto: 0,
+                      imagem_url: '',
+                      validade_dias: 30,
+                      ativa: true,
+                    });
+                    setShowRecompensaModal(true);
+                  }}
+                  className="bg-gradient-to-r from-purple-500 to-pink-600"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nova Recompensa
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {recompensas.length === 0 ? (
+                <div className="text-center py-12">
+                  <Gift className="w-16 h-16 mx-auto text-slate-600 mb-4" />
+                  <p className="text-slate-400">Nenhuma recompensa cadastrada</p>
+                  <p className="text-sm text-slate-500 mt-2">Comece adicionando sua primeira recompensa</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {recompensas.map((recompensa) => (
+                    <div
+                      key={recompensa.id}
+                      className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10"
+                    >
+                      {recompensa.imagem_url && (
+                        <img
+                          src={recompensa.imagem_url}
+                          alt={recompensa.titulo}
+                          className="w-16 h-16 rounded-lg object-cover"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-white">{recompensa.titulo}</h3>
+                          {!recompensa.ativa && (
+                            <span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-300">
+                              Inativa
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-slate-400">{recompensa.descricao}</p>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-slate-300">
+                          <span className="flex items-center gap-1">
+                            <Award className="w-4 h-4 text-orange-500" />
+                            {recompensa.pontos_necessarios} pontos
+                          </span>
+                          {recompensa.tipo === 'desconto_valor' && (
+                            <span className="text-emerald-400">
+                              R$ {recompensa.valor_desconto?.toFixed(2)} de desconto
+                            </span>
+                          )}
+                          {recompensa.tipo === 'desconto_percentual' && (
+                            <span className="text-emerald-400">
+                              {recompensa.valor_desconto}% de desconto
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setRecompensaEditando(recompensa);
+                            setFormRecompensa(recompensa);
+                            setShowRecompensaModal(true);
+                          }}
+                          className="border-slate-600"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeleteRecompensa(recompensa.id)}
+                          className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+
+      {/* Modal de Recompensa */}
+      <Dialog open={showRecompensaModal} onOpenChange={setShowRecompensaModal}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">
+              {recompensaEditando ? 'Editar Recompensa' : 'Nova Recompensa'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label className="text-slate-400">Título da Recompensa</Label>
+              <Input
+                value={formRecompensa.titulo}
+                onChange={(e) => setFormRecompensa({ ...formRecompensa, titulo: e.target.value })}
+                className="bg-slate-800 border-slate-700 text-white"
+                placeholder="Ex: 10 reais de desconto"
+              />
+            </div>
+
+            <div>
+              <Label className="text-slate-400">Descrição</Label>
+              <Textarea
+                value={formRecompensa.descricao}
+                onChange={(e) => setFormRecompensa({ ...formRecompensa, descricao: e.target.value })}
+                className="bg-slate-800 border-slate-700 text-white"
+                placeholder="Descreva os detalhes da recompensa"
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-slate-400">Pontos Necessários</Label>
+                <Input
+                  type="number"
+                  value={formRecompensa.pontos_necessarios}
+                  onChange={(e) => setFormRecompensa({ ...formRecompensa, pontos_necessarios: parseInt(e.target.value) })}
+                  className="bg-slate-800 border-slate-700 text-white"
+                />
+              </div>
+
+              <div>
+                <Label className="text-slate-400">Tipo de Recompensa</Label>
+                <Select
+                  value={formRecompensa.tipo}
+                  onValueChange={(v) => setFormRecompensa({ ...formRecompensa, tipo: v })}
+                >
+                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="desconto_valor">Desconto em R$</SelectItem>
+                    <SelectItem value="desconto_percentual">Desconto em %</SelectItem>
+                    <SelectItem value="produto_gratis">Produto Grátis</SelectItem>
+                    <SelectItem value="entrega_gratis">Entrega Grátis</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {(formRecompensa.tipo === 'desconto_valor' || formRecompensa.tipo === 'desconto_percentual') && (
+                <div>
+                  <Label className="text-slate-400">
+                    Valor do Desconto {formRecompensa.tipo === 'desconto_percentual' ? '(%)' : '(R$)'}
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.50"
+                    value={formRecompensa.valor_desconto}
+                    onChange={(e) => setFormRecompensa({ ...formRecompensa, valor_desconto: parseFloat(e.target.value) })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+              )}
+
+              <div>
+                <Label className="text-slate-400">Validade (dias)</Label>
+                <Input
+                  type="number"
+                  value={formRecompensa.validade_dias}
+                  onChange={(e) => setFormRecompensa({ ...formRecompensa, validade_dias: parseInt(e.target.value) })}
+                  className="bg-slate-800 border-slate-700 text-white"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-slate-400">URL da Imagem (opcional)</Label>
+              <Input
+                value={formRecompensa.imagem_url}
+                onChange={(e) => setFormRecompensa({ ...formRecompensa, imagem_url: e.target.value })}
+                className="bg-slate-800 border-slate-700 text-white"
+                placeholder="https://exemplo.com/imagem.jpg"
+              />
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-xl bg-white/5">
+              <div>
+                <p className="font-medium text-white">Recompensa Ativa</p>
+                <p className="text-sm text-slate-400">Disponível para resgate pelos clientes</p>
+              </div>
+              <Switch
+                checked={formRecompensa.ativa}
+                onCheckedChange={(checked) => setFormRecompensa({ ...formRecompensa, ativa: checked })}
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowRecompensaModal(false)}
+                className="flex-1 border-slate-600"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSaveRecompensa}
+                disabled={loading}
+                className="flex-1 bg-gradient-to-r from-purple-500 to-pink-600"
+              >
+                {loading ? 'Salvando...' : 'Salvar Recompensa'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
