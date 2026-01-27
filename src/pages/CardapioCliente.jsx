@@ -41,6 +41,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import ProductDetailModal from '../components/cliente/ProductDetailModal';
+import ProdutoCard from '../components/cliente/ProdutoCard';
 
 export default function CardapioCliente() {
   const navigate = useNavigate();
@@ -51,6 +52,7 @@ export default function CardapioCliente() {
   const [showCheckout, setShowCheckout] = useState(false);
   const [showProductDetail, setShowProductDetail] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [categoriaAtiva, setCategoriaAtiva] = useState('todos');
   const [tipoCliente, setTipoCliente] = useState(null); // 'cadastrado', 'convidado' ou 'login'
   const [buscandoCep, setBuscandoCep] = useState(false);
   const [buscandoLocalizacao, setBuscandoLocalizacao] = useState(false);
@@ -120,13 +122,35 @@ export default function CardapioCliente() {
   const nomeExibicao = pizzariaConfig.nome_exibicao_cliente || pizzariaConfig.nome || 'NinjaGO Delivery';
 
   const produtosFiltrados = produtos.filter(p => {
-    const matchCategoria = categoriaFiltro === 'todos' || p.categoria === categoriaFiltro;
-    const matchBusca = !busca || p.nome?.toLowerCase().includes(busca.toLowerCase());
+    const matchCategoria = categoriaAtiva === 'todos' || p.categoria === categoriaAtiva;
+    const matchBusca = !busca || 
+      p.nome?.toLowerCase().includes(busca.toLowerCase()) ||
+      p.descricao?.toLowerCase().includes(busca.toLowerCase());
     return matchCategoria && matchBusca;
   });
 
   const produtosDestaque = produtos.filter(p => p.destaque);
   const categorias = [...new Set(produtos.map(p => p.categoria))];
+
+  const categoriaLabels = {
+    pizza: { nome: '🍕 Pizzas', icone: '🍕' },
+    esfiha: { nome: '🥟 Esfihas', icone: '🥟' },
+    lanche: { nome: '🍔 Lanches', icone: '🍔' },
+    bebida: { nome: '🥤 Bebidas', icone: '🥤' },
+    acai: { nome: '🍨 Açaí', icone: '🍨' },
+    combo: { nome: '🍽️ Combos', icone: '🍽️' },
+    sobremesa: { nome: '🍰 Sobremesas', icone: '🍰' },
+    porcao: { nome: '🍟 Porções', icone: '🍟' },
+    salgado: { nome: '🥐 Salgados', icone: '🥐' },
+    doce: { nome: '🍩 Doces', icone: '🍩' },
+    outro: { nome: '🍴 Outros', icone: '🍴' }
+  };
+
+  // Agrupar produtos por categoria para exibição em seções
+  const produtosPorCategoria = categorias.reduce((acc, cat) => {
+    acc[cat] = produtosFiltrados.filter(p => p.categoria === cat);
+    return acc;
+  }, {});
 
   const adicionarAoCarrinho = (produto) => {
     const itemExistente = carrinho.find(item => item.id === produto.id);
@@ -383,6 +407,17 @@ export default function CardapioCliente() {
     setShowProductDetail(true);
   };
 
+  // Componente de Card de Produto
+  const ProdutoCardWrapper = ({ produto }) => (
+    <ProdutoCard
+      produto={produto}
+      onClick={handleProductClick}
+      onAddCart={adicionarAoCarrinho}
+      tema={tema}
+      corPrimaria={corPrimaria}
+    />
+  );
+
   return (
     <div className={`min-h-screen ${isLight ? 'bg-gradient-to-br from-gray-50 to-gray-100' : 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'}`}
       style={{ '--cor-primaria': corPrimaria }}>
@@ -440,64 +475,99 @@ export default function CardapioCliente() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Busca */}
-        <div className="mb-8">
+        {/* Busca Aprimorada */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
           <div className="relative">
-            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isLight ? 'text-gray-400' : 'text-slate-400'}`} />
+            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 ${isLight ? 'text-gray-400' : 'text-slate-400'}`} />
             <Input
-              placeholder="Buscar produtos..."
+              placeholder="🔍 Busque por nome ou descrição do produto..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className={`pl-12 h-14 text-lg ${isLight ? 'bg-white border-gray-200 text-gray-900' : 'bg-white/5 border-white/10 text-white'}`}
-            />
-          </div>
-        </div>
-
-        {/* Filtro de Categorias (Guias de Atalho) */}
-        <div className="mb-6 sticky top-[88px] z-40 backdrop-blur-xl pb-4" style={{ backgroundColor: isLight ? 'rgba(249, 250, 251, 0.9)' : 'rgba(2, 6, 23, 0.9)' }}>
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            <button
-              onClick={() => setCategoriaFiltro('todos')}
-              className={`px-4 py-2 rounded-xl transition-all whitespace-nowrap ${
-                categoriaFiltro === 'todos'
-                  ? 'text-white'
-                  : isLight
-                    ? 'bg-white text-gray-600 hover:bg-gray-100'
-                    : 'bg-white/5 text-slate-400 hover:bg-white/10'
+              className={`pl-14 h-16 text-lg rounded-2xl shadow-lg ${
+                isLight 
+                  ? 'bg-white border-gray-200 text-gray-900 placeholder:text-gray-400' 
+                  : 'bg-white/10 border-white/20 text-white placeholder:text-slate-400 backdrop-blur-xl'
               }`}
-              style={categoriaFiltro === 'todos' ? { backgroundColor: corPrimaria } : {}}
-            >
-              Todos
-            </button>
-            {produtosDestaque.length > 0 && (
+            />
+            {busca && (
               <button
-                onClick={() => {
-                  setCategoriaFiltro('todos');
-                  document.getElementById('destaques')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className={`px-4 py-2 rounded-xl transition-all whitespace-nowrap flex items-center gap-1 ${
-                  isLight ? 'bg-yellow-100 text-yellow-700' : 'bg-yellow-500/20 text-yellow-400'
-                }`}
+                onClick={() => setBusca('')}
+                className="absolute right-4 top-1/2 -translate-y-1/2"
               >
-                <Star className="w-4 h-4" />
-                Em Destaque
+                <X className={`w-5 h-5 ${isLight ? 'text-gray-400 hover:text-gray-600' : 'text-slate-400 hover:text-white'}`} />
               </button>
             )}
-            {categorias.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategoriaFiltro(cat)}
-                className={`px-4 py-2 rounded-xl transition-all capitalize whitespace-nowrap ${
-                  categoriaFiltro === cat
-                    ? 'text-white'
-                    : isLight
-                      ? 'bg-white text-gray-600 hover:bg-gray-100'
-                      : 'bg-white/5 text-slate-400 hover:bg-white/10'
+          </div>
+          {busca && (
+            <p className={`mt-2 text-sm ${isLight ? 'text-gray-600' : 'text-slate-400'}`}>
+              {produtosFiltrados.length} resultado(s) encontrado(s)
+            </p>
+          )}
+        </motion.div>
+
+        {/* Abas de Categorias Interativas */}
+        <div className="mb-8 sticky top-[88px] z-40 backdrop-blur-xl pb-4 -mx-4 px-4" 
+          style={{ backgroundColor: isLight ? 'rgba(249, 250, 251, 0.95)' : 'rgba(2, 6, 23, 0.95)' }}>
+          <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setCategoriaAtiva('todos')}
+              className={`px-6 py-3 rounded-2xl transition-all whitespace-nowrap font-semibold shadow-md ${
+                categoriaAtiva === 'todos'
+                  ? 'text-white shadow-lg transform scale-105'
+                  : isLight
+                    ? 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                    : 'bg-white/10 text-slate-300 hover:bg-white/15 border border-white/10'
+              }`}
+              style={categoriaAtiva === 'todos' ? { backgroundColor: corPrimaria } : {}}
+            >
+              <span className="text-lg mr-2">🍽️</span>
+              Todos os Produtos
+            </motion.button>
+            
+            {produtosDestaque.length > 0 && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  setCategoriaAtiva('todos');
+                  setTimeout(() => {
+                    document.getElementById('destaques')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 100);
+                }}
+                className={`px-6 py-3 rounded-2xl transition-all whitespace-nowrap font-semibold flex items-center gap-2 shadow-md ${
+                  isLight 
+                    ? 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-2 border-yellow-300' 
+                    : 'bg-gradient-to-r from-yellow-500/30 to-amber-500/30 text-yellow-300 border-2 border-yellow-500/50'
                 }`}
-                style={categoriaFiltro === cat ? { backgroundColor: corPrimaria } : {}}
               >
-                {cat}
-              </button>
+                <Star className="w-5 h-5 fill-current" />
+                Em Destaque
+              </motion.button>
+            )}
+            
+            {categorias.map((cat) => (
+              <motion.button
+                key={cat}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setCategoriaAtiva(cat)}
+                className={`px-6 py-3 rounded-2xl transition-all whitespace-nowrap font-semibold shadow-md ${
+                  categoriaAtiva === cat
+                    ? 'text-white shadow-lg transform scale-105'
+                    : isLight
+                      ? 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                      : 'bg-white/10 text-slate-300 hover:bg-white/15 border border-white/10'
+                }`}
+                style={categoriaAtiva === cat ? { backgroundColor: corPrimaria } : {}}
+              >
+                {categoriaLabels[cat]?.nome || cat}
+              </motion.button>
             ))}
           </div>
         </div>
@@ -589,41 +659,79 @@ export default function CardapioCliente() {
 
 
 
-        {/* Grid de Produtos */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {produtosFiltrados.map((produto) => (
-            <motion.div
-              key={produto.id}
-              whileHover={{ scale: 1.02 }}
-              onClick={() => handleProductClick(produto)}
-              className={`rounded-xl p-4 transition-all cursor-pointer ${
-                isLight 
-                  ? 'bg-white border border-gray-200 hover:shadow-lg'
-                  : 'bg-white/5 border border-white/10 hover:bg-white/8'
-              }`}
-            >
-              {produto.imagem_url && (
-                <img src={produto.imagem_url} alt={produto.nome} className="w-full h-48 object-cover rounded-lg mb-3" />
-              )}
-              <h3 className={`font-bold mb-1 ${isLight ? 'text-gray-900' : 'text-white'}`}>{produto.nome}</h3>
-              <p className={`text-sm mb-3 line-clamp-2 ${isLight ? 'text-gray-600' : 'text-slate-400'}`}>{produto.descricao}</p>
-              <div className="flex items-center justify-between">
-                <p className="text-xl font-bold text-emerald-500">R$ {produto.preco?.toFixed(2)}</p>
-                <Button
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    adicionarAoCarrinho(produto);
-                  }}
-                  className="text-white"
-                  style={{ backgroundColor: corPrimaria }}
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
+        {/* Produtos por Categoria */}
+        {busca ? (
+          /* Resultados da Busca */
+          <div>
+            <h2 className={`text-2xl font-bold mb-6 ${isLight ? 'text-gray-900' : 'text-white'}`}>
+              Resultados da Busca
+            </h2>
+            {produtosFiltrados.length === 0 ? (
+              <div className={`text-center py-16 ${isLight ? 'bg-white' : 'bg-white/5'} rounded-2xl`}>
+                <Search className={`w-16 h-16 mx-auto mb-4 ${isLight ? 'text-gray-300' : 'text-slate-600'}`} />
+                <p className={`text-lg ${isLight ? 'text-gray-600' : 'text-slate-400'}`}>
+                  Nenhum produto encontrado para "{busca}"
+                </p>
               </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {produtosFiltrados.map((produto) => (
+                  <ProdutoCardWrapper key={produto.id} produto={produto} />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : categoriaAtiva === 'todos' ? (
+          /* Todas as Categorias */
+          <div className="space-y-12">
+            {categorias.map((cat) => {
+              const produtosCat = produtosPorCategoria[cat] || [];
+              if (produtosCat.length === 0) return null;
+              
+              return (
+                <motion.section
+                  key={cat}
+                  id={`cat-${cat}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="scroll-mt-32"
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <span className="text-4xl">{categoriaLabels[cat]?.icone}</span>
+                    <h2 className={`text-3xl font-bold ${isLight ? 'text-gray-900' : 'text-white'}`}>
+                      {categoriaLabels[cat]?.nome || cat}
+                    </h2>
+                    <div className={`h-1 flex-1 rounded-full ${isLight ? 'bg-gray-200' : 'bg-white/10'}`} />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {produtosCat.map((produto) => (
+                      <ProdutoCardWrapper key={produto.id} produto={produto} />
+                    ))}
+                  </div>
+                </motion.section>
+              );
+            })}
+          </div>
+        ) : (
+          /* Categoria Específica */
+          <div>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-3 mb-6"
+            >
+              <span className="text-4xl">{categoriaLabels[categoriaAtiva]?.icone}</span>
+              <h2 className={`text-3xl font-bold ${isLight ? 'text-gray-900' : 'text-white'}`}>
+                {categoriaLabels[categoriaAtiva]?.nome || categoriaAtiva}
+              </h2>
             </motion.div>
-          ))}
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {produtosFiltrados.map((produto) => (
+                <ProdutoCardWrapper key={produto.id} produto={produto} />
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Modal de Detalhes do Produto */}
