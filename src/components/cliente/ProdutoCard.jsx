@@ -8,15 +8,12 @@ export default function ProdutoCard({ produto, onAddCart, onClick, tema = 'dark'
   const isLight = tema === 'light';
   
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -8, scale: 1.02 }}
+    <div
       onClick={() => onClick?.(produto)}
-      className={`group rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${
+      className={`group rounded-xl overflow-hidden active:scale-95 transition-transform ${
         isLight 
-          ? 'bg-white border-2 border-gray-200 hover:border-gray-300 hover:shadow-2xl'
-          : 'bg-white/5 border-2 border-white/10 hover:border-white/20 hover:bg-white/10 backdrop-blur-xl'
+          ? 'bg-white border border-gray-200 shadow-sm'
+          : 'bg-white/5 border border-white/10 backdrop-blur-xl'
       }`}
     >
       {/* Imagem do Produto */}
@@ -25,10 +22,10 @@ export default function ProdutoCard({ produto, onAddCart, onClick, tema = 'dark'
           <img 
             src={produto.imagem_url} 
             alt={produto.nome} 
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            className="w-full h-full object-cover"
           />
         ) : (
-          <div className={`w-full h-full flex items-center justify-center text-6xl ${
+          <div className={`w-full h-full flex items-center justify-center text-4xl sm:text-5xl ${
             isLight ? 'bg-gradient-to-br from-gray-100 to-gray-200' : 'bg-gradient-to-br from-slate-800 to-slate-900'
           }`}>
             🍽️
@@ -36,60 +33,39 @@ export default function ProdutoCard({ produto, onAddCart, onClick, tema = 'dark'
         )}
         
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
-          {produto.destaque && (
-            <Badge className="bg-yellow-500 text-white shadow-lg flex items-center gap-1">
-              <Star className="w-3 h-3 fill-current" />
-              Destaque
-            </Badge>
-          )}
-        </div>
-
-        {/* Overlay com Botão de Adicionar */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <Button
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddCart?.(produto);
-            }}
-            size="lg"
-            className="text-white shadow-2xl transform scale-90 group-hover:scale-100 transition-transform"
-            style={{ backgroundColor: corPrimaria }}
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Adicionar ao Carrinho
-          </Button>
-        </div>
+        {produto.destaque && (
+          <Badge className="absolute top-2 left-2 bg-yellow-500 text-white text-xs py-0.5 px-1.5">
+            <Star className="w-3 h-3 fill-current" />
+          </Badge>
+        )}
       </div>
 
       {/* Informações do Produto */}
-      <div className="p-5">
-        <h3 className={`text-xl font-bold mb-2 line-clamp-1 ${isLight ? 'text-gray-900' : 'text-white'}`}>
+      <div className="p-2.5 sm:p-3">
+        <h3 className={`text-sm sm:text-base font-bold mb-1 line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem] ${isLight ? 'text-gray-900' : 'text-white'}`}>
           {produto.nome}
         </h3>
         
         {produto.descricao && (
-          <p className={`text-sm mb-4 line-clamp-2 min-h-[40px] ${isLight ? 'text-gray-600' : 'text-slate-400'}`}>
+          <p className={`text-xs mb-2 line-clamp-1 hidden sm:block ${isLight ? 'text-gray-600' : 'text-slate-400'}`}>
             {produto.descricao}
           </p>
         )}
 
         {/* Opções de Personalização */}
         {produto.opcoes_personalizacao && produto.opcoes_personalizacao.length > 0 && (
-          <div className={`text-xs mb-3 flex items-center gap-1 ${isLight ? 'text-gray-500' : 'text-slate-500'}`}>
+          <div className={`text-xs mb-2 flex items-center gap-1 ${isLight ? 'text-gray-500' : 'text-slate-500'}`}>
             <Tag className="w-3 h-3" />
-            {produto.opcoes_personalizacao.length} opção(ões) disponível(is)
+            <span className="hidden sm:inline">{produto.opcoes_personalizacao.length} opção(ões)</span>
+            <span className="sm:hidden">{produto.opcoes_personalizacao.length} opções</span>
           </div>
         )}
 
         {/* Preço e Ação */}
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-3xl font-bold text-emerald-500">
+        <div className="flex items-end justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <p className="text-base sm:text-lg font-bold text-emerald-500 truncate">
               R$ {produto.preco?.toFixed(2)}
-            </p>
-            <p className={`text-xs ${isLight ? 'text-gray-400' : 'text-slate-500'}`}>
-              Clique para ver detalhes
             </p>
           </div>
           
@@ -99,13 +75,13 @@ export default function ProdutoCard({ produto, onAddCart, onClick, tema = 'dark'
               e.stopPropagation();
               onAddCart?.(produto);
             }}
-            className="w-12 h-12 rounded-full text-white shadow-lg"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full text-white shadow-md flex-shrink-0"
             style={{ backgroundColor: corPrimaria }}
           >
-            <Plus className="w-6 h-6" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

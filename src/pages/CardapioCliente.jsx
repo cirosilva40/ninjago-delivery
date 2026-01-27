@@ -422,49 +422,49 @@ export default function CardapioCliente() {
     <div className={`min-h-screen ${isLight ? 'bg-gradient-to-br from-gray-50 to-gray-100' : 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'}`}
       style={{ '--cor-primaria': corPrimaria }}>
       {/* Header */}
-      <header className={`sticky top-0 z-50 backdrop-blur-xl ${isLight ? 'bg-white/90 border-gray-200' : 'bg-slate-900/80 border-white/10'} border-b`}>
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+      <header className={`sticky top-0 z-50 backdrop-blur-xl ${isLight ? 'bg-white/95 border-gray-200' : 'bg-slate-900/95 border-white/10'} border-b shadow-lg`}>
+        <div className="px-3 sm:px-4 py-3">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
               <img 
                 src={logoUrl}
                 alt="Logo"
-                className="w-12 h-12 rounded-xl object-cover"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover flex-shrink-0"
               />
-              <div>
-                <h1 className={`text-xl font-bold ${isLight ? 'text-gray-900' : 'text-white'}`}>{nomeExibicao}</h1>
-                <p className={`text-xs ${isLight ? 'text-gray-500' : 'text-slate-400'}`}>Peça agora e receba rapidinho! 🥷</p>
+              <div className="min-w-0">
+                <h1 className={`text-base sm:text-lg font-bold truncate ${isLight ? 'text-gray-900' : 'text-white'}`}>{nomeExibicao}</h1>
+                <p className={`text-xs hidden sm:block ${isLight ? 'text-gray-500' : 'text-slate-400'}`}>Peça agora e receba rapidinho! 🥷</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               {clienteLogado ? (
                 <Button
                   variant="ghost"
+                  size="sm"
                   onClick={() => navigate(createPageUrl('PerfilCliente'))}
-                  className={`flex items-center gap-2 ${isLight ? 'text-gray-700' : 'text-white'}`}
+                  className={`p-2 ${isLight ? 'text-gray-700' : 'text-white'}`}
                 >
                   <User className="w-5 h-5" />
-                  <span className="hidden sm:inline">{clienteLogado.nome.split(' ')[0]}</span>
                 </Button>
               ) : (
                 <Button
                   variant="ghost"
+                  size="sm"
                   onClick={() => navigate(createPageUrl('AcessoCliente'))}
-                  className={`flex items-center gap-2 ${isLight ? 'text-gray-700' : 'text-white'}`}
+                  className={`p-2 ${isLight ? 'text-gray-700' : 'text-white'}`}
                 >
                   <User className="w-5 h-5" />
-                  <span className="hidden sm:inline">Entrar</span>
                 </Button>
               )}
               <button
                 onClick={() => setShowCarrinho(true)}
-                className="relative p-3 rounded-xl transition-colors"
+                className="relative p-2.5 sm:p-3 rounded-lg transition-transform active:scale-95"
                 style={{ backgroundColor: corPrimaria }}
               >
-                <ShoppingCart className="w-6 h-6 text-white" />
+                <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 {carrinho.length > 0 && (
-                  <span className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                  <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
                     {carrinho.length}
                   </span>
                 )}
@@ -474,20 +474,20 @@ export default function CardapioCliente() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Busca Aprimorada */}
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-6">
+        {/* Busca Otimizada Mobile */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-4"
         >
           <div className="relative">
-            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 ${isLight ? 'text-gray-400' : 'text-slate-400'}`} />
+            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${isLight ? 'text-gray-400' : 'text-slate-400'}`} />
             <Input
-              placeholder="🔍 Busque por nome ou descrição do produto..."
+              placeholder="🔍 Buscar produtos..."
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
-              className={`pl-14 h-16 text-lg rounded-2xl shadow-lg ${
+              className={`pl-11 pr-10 h-12 sm:h-14 text-base rounded-xl shadow-md ${
                 isLight 
                   ? 'bg-white border-gray-200 text-gray-900 placeholder:text-gray-400' 
                   : 'bg-white/10 border-white/20 text-white placeholder:text-slate-400 backdrop-blur-xl'
@@ -496,87 +496,80 @@ export default function CardapioCliente() {
             {busca && (
               <button
                 onClick={() => setBusca('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1"
               >
-                <X className={`w-5 h-5 ${isLight ? 'text-gray-400 hover:text-gray-600' : 'text-slate-400 hover:text-white'}`} />
+                <X className={`w-4 h-4 ${isLight ? 'text-gray-400 hover:text-gray-600' : 'text-slate-400 hover:text-white'}`} />
               </button>
             )}
           </div>
           {busca && (
-            <p className={`mt-2 text-sm ${isLight ? 'text-gray-600' : 'text-slate-400'}`}>
-              {produtosFiltrados.length} resultado(s) encontrado(s)
+            <p className={`mt-2 text-xs sm:text-sm px-1 ${isLight ? 'text-gray-600' : 'text-slate-400'}`}>
+              {produtosFiltrados.length} resultado(s)
             </p>
           )}
         </motion.div>
 
-        {/* Abas de Categorias Interativas */}
-        <div className="mb-8 sticky top-[88px] z-40 backdrop-blur-xl pb-4 -mx-4 px-4" 
+        {/* Abas de Categorias Mobile */}
+        <div className="mb-4 sticky top-[60px] sm:top-[72px] z-40 backdrop-blur-xl pb-3 -mx-3 px-3" 
           style={{ backgroundColor: isLight ? 'rgba(249, 250, 251, 0.95)' : 'rgba(2, 6, 23, 0.95)' }}>
-          <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide snap-x snap-proximity">
+            <button
               onClick={() => setCategoriaAtiva('todos')}
-              className={`px-6 py-3 rounded-2xl transition-all whitespace-nowrap font-semibold shadow-md ${
+              className={`flex-shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl transition-all whitespace-nowrap font-medium text-sm sm:text-base shadow-sm snap-start ${
                 categoriaAtiva === 'todos'
-                  ? 'text-white shadow-lg transform scale-105'
+                  ? 'text-white shadow-md scale-105'
                   : isLight
-                    ? 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
-                    : 'bg-white/10 text-slate-300 hover:bg-white/15 border border-white/10'
+                    ? 'bg-white text-gray-700 active:bg-gray-50 border border-gray-200'
+                    : 'bg-white/10 text-slate-300 active:bg-white/15 border border-white/10'
               }`}
               style={categoriaAtiva === 'todos' ? { backgroundColor: corPrimaria } : {}}
             >
-              <span className="text-lg mr-2">🍽️</span>
-              Todos os Produtos
-            </motion.button>
+              🍽️ <span className="hidden xs:inline">Todos</span>
+            </button>
             
             {produtosDestaque.length > 0 && (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={() => {
                   setCategoriaAtiva('todos');
                   setTimeout(() => {
                     document.getElementById('destaques')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   }, 100);
                 }}
-                className={`px-6 py-3 rounded-2xl transition-all whitespace-nowrap font-semibold flex items-center gap-2 shadow-md ${
+                className={`flex-shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl transition-all whitespace-nowrap font-medium text-sm sm:text-base flex items-center gap-1.5 shadow-sm snap-start ${
                   isLight 
                     ? 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-2 border-yellow-300' 
                     : 'bg-gradient-to-r from-yellow-500/30 to-amber-500/30 text-yellow-300 border-2 border-yellow-500/50'
                 }`}
               >
-                <Star className="w-5 h-5 fill-current" />
-                Em Destaque
-              </motion.button>
+                <Star className="w-4 h-4 fill-current" />
+                Destaque
+              </button>
             )}
             
             {categorias.map((cat) => (
-              <motion.button
+              <button
                 key={cat}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
                 onClick={() => setCategoriaAtiva(cat)}
-                className={`px-6 py-3 rounded-2xl transition-all whitespace-nowrap font-semibold shadow-md ${
+                className={`flex-shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl transition-all whitespace-nowrap font-medium text-sm sm:text-base shadow-sm snap-start ${
                   categoriaAtiva === cat
-                    ? 'text-white shadow-lg transform scale-105'
+                    ? 'text-white shadow-md scale-105'
                     : isLight
-                      ? 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
-                      : 'bg-white/10 text-slate-300 hover:bg-white/15 border border-white/10'
+                      ? 'bg-white text-gray-700 active:bg-gray-50 border border-gray-200'
+                      : 'bg-white/10 text-slate-300 active:bg-white/15 border border-white/10'
                 }`}
                 style={categoriaAtiva === cat ? { backgroundColor: corPrimaria } : {}}
               >
-                {categoriaLabels[cat]?.nome || cat}
-              </motion.button>
+                {categoriaLabels[cat]?.icone} <span className="hidden xs:inline">{cat}</span>
+              </button>
             ))}
           </div>
         </div>
 
         {/* Produtos em Destaque */}
         {produtosDestaque.length > 0 && (
-          <div id="destaques" className="mb-12">
-            <h2 className={`text-2xl font-bold mb-4 flex items-center gap-2 ${isLight ? 'text-gray-900' : 'text-white'}`}>
-              <Star className="w-6 h-6 text-yellow-500" />
+          <div id="destaques" className="mb-6 sm:mb-8">
+            <h2 className={`text-xl sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-2 px-1 ${isLight ? 'text-gray-900' : 'text-white'}`}>
+              <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
               Em Destaque
             </h2>
             <div className="md:grid md:grid-cols-3 gap-4 hidden">
@@ -616,42 +609,41 @@ export default function CardapioCliente() {
                 </motion.div>
               ))}
             </div>
-            {/* Carrossel Mobile */}
-            <div className="flex md:hidden gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide">
+            {/* Carrossel Mobile Otimizado */}
+            <div className="flex md:hidden gap-3 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide -mx-3 px-3">
               {produtosDestaque.map((produto) => (
-                <motion.div
+                <div
                   key={produto.id}
-                  whileHover={{ scale: 1.02 }}
                   onClick={() => handleProductClick(produto)}
-                  className={`flex-shrink-0 w-[85vw] rounded-2xl p-6 relative overflow-hidden cursor-pointer snap-center ${
+                  className={`flex-shrink-0 w-[80vw] rounded-xl p-4 relative overflow-hidden active:scale-95 transition-transform snap-center ${
                     isLight 
                       ? 'bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200'
                       : 'bg-gradient-to-br from-orange-500/20 to-red-500/20 border-2 border-orange-500/50'
                   }`}
                 >
-                  <Badge className="absolute top-4 right-4 bg-yellow-500 text-white">
-                    <Star className="w-3 h-3 mr-1" />
-                    Destaque
+                  <Badge className="absolute top-3 right-3 bg-yellow-500 text-white text-xs">
+                    <Star className="w-3 h-3" />
                   </Badge>
                   {produto.imagem_url && (
-                    <img src={produto.imagem_url} alt={produto.nome} className="w-full h-64 object-cover rounded-xl mb-4" />
+                    <img src={produto.imagem_url} alt={produto.nome} className="w-full h-40 object-cover rounded-lg mb-3" />
                   )}
-                  <h3 className={`text-xl font-bold mb-2 ${isLight ? 'text-gray-900' : 'text-white'}`}>{produto.nome}</h3>
-                  <p className={`text-sm mb-4 line-clamp-2 ${isLight ? 'text-gray-600' : 'text-slate-300'}`}>{produto.descricao}</p>
+                  <h3 className={`text-base font-bold mb-1 line-clamp-1 ${isLight ? 'text-gray-900' : 'text-white'}`}>{produto.nome}</h3>
+                  <p className={`text-xs mb-3 line-clamp-2 ${isLight ? 'text-gray-600' : 'text-slate-300'}`}>{produto.descricao}</p>
                   <div className="flex items-center justify-between">
-                    <p className="text-3xl font-bold text-emerald-500">R$ {produto.preco?.toFixed(2)}</p>
+                    <p className="text-xl font-bold text-emerald-500">R$ {produto.preco?.toFixed(2)}</p>
                     <Button
+                      size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         adicionarAoCarrinho(produto);
                       }}
-                      className="text-white"
+                      className="text-white h-8 w-8 p-0"
                       style={{ backgroundColor: corPrimaria }}
                     >
-                      <Plus className="w-5 h-5" />
+                      <Plus className="w-4 h-4" />
                     </Button>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
@@ -725,7 +717,7 @@ export default function CardapioCliente() {
                 {categoriaLabels[categoriaAtiva]?.nome || categoriaAtiva}
               </h2>
             </motion.div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
               {produtosFiltrados.map((produto) => (
                 <ProdutoCardWrapper key={produto.id} produto={produto} />
               ))}
