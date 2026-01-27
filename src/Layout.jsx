@@ -291,8 +291,8 @@ export default function Layout({ children, currentPageName }) {
                     <ChevronDown className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-slate-900 border-slate-700">
-                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-400">
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-500/10">
                     <LogOut className="w-4 h-4 mr-2" />
                     Sair
                   </DropdownMenuItem>
