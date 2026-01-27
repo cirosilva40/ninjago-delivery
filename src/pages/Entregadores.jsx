@@ -56,6 +56,8 @@ export default function Entregadores() {
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showModal, setShowModal] = useState(false);
   const [editingEntregador, setEditingEntregador] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
   const [form, setForm] = useState({
     nome: '',
     email: '',
@@ -83,6 +85,10 @@ export default function Entregadores() {
     const matchStatus = statusFilter === 'todos' || e.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  // Paginação
+  const totalPages = Math.ceil(filteredEntregadores.length / itemsPerPage);
+  const paginatedEntregadores = filteredEntregadores.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const getEntregasCount = (entregadorId) => {
     return entregas.filter(e => e.entregador_id === entregadorId && e.status === 'entregue').length;
@@ -217,7 +223,7 @@ export default function Entregadores() {
       {/* Entregadores Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         <AnimatePresence>
-          {filteredEntregadores.length === 0 ? (
+          {paginatedEntregadores.length === 0 && filteredEntregadores.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -227,7 +233,7 @@ export default function Entregadores() {
               <p className="text-slate-400">Nenhum entregador encontrado</p>
             </motion.div>
           ) : (
-            filteredEntregadores.map((entregador, index) => {
+            paginatedEntregadores.map((entregador, index) => {
               const status = statusConfig[entregador.status] || statusConfig.offline;
               const entregasCount = getEntregasCount(entregador.id);
               
@@ -346,6 +352,33 @@ export default function Entregadores() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-6">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="border-white/10 text-white"
+          >
+            Anterior
+          </Button>
+          <span className="px-4 text-white">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="border-white/10 text-white"
+          >
+            Próxima
+          </Button>
+        </div>
+      )}
 
       {/* Modal de Cadastro/Edição */}
       <Dialog open={showModal} onOpenChange={setShowModal}>

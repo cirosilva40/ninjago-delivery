@@ -56,6 +56,8 @@ export default function Pedidos() {
   const [showAtribuirModal, setShowAtribuirModal] = useState(false);
   const [selectedPedido, setSelectedPedido] = useState(null);
   const [editingPedido, setEditingPedido] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   const handleViewModeChange = (mode) => {
     setViewMode(mode);
@@ -88,6 +90,12 @@ export default function Pedidos() {
     const matchStatus = statusFilter === 'todos' || p.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  // Paginação (apenas para view horizontal)
+  const totalPages = Math.ceil(filteredPedidos.length / itemsPerPage);
+  const paginatedPedidos = viewMode === 'horizontal' 
+    ? filteredPedidos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+    : filteredPedidos;
 
   const handleAtribuir = (pedido) => {
     setSelectedPedido(pedido);
@@ -307,9 +315,10 @@ export default function Pedidos() {
         </div>
       ) : (
         // Visualização Horizontal
-        <div className="space-y-3">
-          <AnimatePresence>
-            {filteredPedidos.length === 0 ? (
+        <>
+          <div className="space-y-3">
+            <AnimatePresence>
+              {paginatedPedidos.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -319,7 +328,7 @@ export default function Pedidos() {
                 <p className="text-slate-400">Nenhum pedido encontrado</p>
               </motion.div>
             ) : (
-              filteredPedidos.map((pedido, index) => {
+              paginatedPedidos.map((pedido, index) => {
               const status = statusConfig[pedido.status] || statusConfig.novo;
               const StatusIcon = status.icon;
               
@@ -450,8 +459,36 @@ export default function Pedidos() {
               );
               })
             )}
-          </AnimatePresence>
-        </div>
+            </AnimatePresence>
+          </div>
+
+          {/* Paginação */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="border-white/10 text-white"
+              >
+                Anterior
+              </Button>
+              <span className="px-4 text-white">
+                Página {currentPage} de {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="border-white/10 text-white"
+              >
+                Próxima
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Modais */}

@@ -42,6 +42,9 @@ export default function FluxoDeCaixa() {
   const [showCustoModal, setShowCustoModal] = useState(false);
   const [editingCusto, setEditingCusto] = useState(null);
   const [mesAtual, setMesAtual] = useState(moment().format('YYYY-MM'));
+  const [currentPage, setCurrentPage] = useState(1);
+  const [receitasPage, setReceitasPage] = useState(1);
+  const itemsPerPage = 10;
   
   const [formData, setFormData] = useState({
     descricao: '',
@@ -182,6 +185,14 @@ export default function FluxoDeCaixa() {
       .reduce((acc, c) => acc + c.valor, 0),
   })).filter(c => c.total > 0);
 
+  // Paginação de custos
+  const totalPages = Math.ceil(custos.length / itemsPerPage);
+  const paginatedCustos = custos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Paginação de receitas
+  const totalReceitasPages = Math.ceil(pedidosFinalizados.length / itemsPerPage);
+  const paginatedReceitas = pedidosFinalizados.slice((receitasPage - 1) * itemsPerPage, receitasPage * itemsPerPage);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -309,7 +320,8 @@ export default function FluxoDeCaixa() {
               </CardContent>
             </Card>
           ) : (
-            custos.map((custo) => {
+            <>
+              {paginatedCustos.map((custo) => {
               const cat = categorias.find(c => c.value === custo.categoria);
               return (
                 <Card key={custo.id} className={`${isLight ? 'bg-white' : 'glass-card'} border-none`}>
@@ -368,7 +380,35 @@ export default function FluxoDeCaixa() {
                   </CardContent>
                 </Card>
               );
-            })
+            })}
+            
+            {/* Paginação */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className={isLight ? '' : 'border-white/10 text-white'}
+                >
+                  Anterior
+                </Button>
+                <span className={`px-4 ${isLight ? 'text-gray-700' : 'text-white'}`}>
+                  Página {currentPage} de {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className={isLight ? '' : 'border-white/10 text-white'}
+                >
+                  Próxima
+                </Button>
+              </div>
+            )}
+          </>
           )}
         </TabsContent>
 
@@ -406,7 +446,8 @@ export default function FluxoDeCaixa() {
               </CardContent>
             </Card>
           ) : (
-            pedidosFinalizados.map((pedido) => (
+            <>
+              {paginatedReceitas.map((pedido) => (
               <Card key={pedido.id} className={`${isLight ? 'bg-white' : 'glass-card'} border-none`}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -427,7 +468,35 @@ export default function FluxoDeCaixa() {
                   </div>
                 </CardContent>
               </Card>
-            ))
+            ))}
+            
+            {/* Paginação de Receitas */}
+            {totalReceitasPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setReceitasPage(p => Math.max(1, p - 1))}
+                  disabled={receitasPage === 1}
+                  className={isLight ? '' : 'border-white/10 text-white'}
+                >
+                  Anterior
+                </Button>
+                <span className={`px-4 ${isLight ? 'text-gray-700' : 'text-white'}`}>
+                  Página {receitasPage} de {totalReceitasPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setReceitasPage(p => Math.min(totalReceitasPages, p + 1))}
+                  disabled={receitasPage === totalReceitasPages}
+                  className={isLight ? '' : 'border-white/10 text-white'}
+                >
+                  Próxima
+                </Button>
+              </div>
+            )}
+          </>
           )}
         </TabsContent>
       </Tabs>
