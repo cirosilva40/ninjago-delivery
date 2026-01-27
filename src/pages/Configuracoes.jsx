@@ -265,33 +265,7 @@ export default function Configuracoes() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-slate-400">Latitude</Label>
-                    <Input
-                      type="number"
-                      step="0.000001"
-                      value={pizzaria.latitude || ''}
-                      onChange={(e) => setPizzaria({ ...pizzaria, latitude: parseFloat(e.target.value) || null })}
-                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
-                      placeholder="-23.5505"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-slate-400">Longitude</Label>
-                    <Input
-                      type="number"
-                      step="0.000001"
-                      value={pizzaria.longitude || ''}
-                      onChange={(e) => setPizzaria({ ...pizzaria, longitude: parseFloat(e.target.value) || null })}
-                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
-                      placeholder="-46.6333"
-                    />
-                  </div>
-                </div>
-                <p className="text-xs text-slate-500">
-                  💡 Para encontrar as coordenadas, pesquise o endereço no Google Maps, clique com o botão direito e copie as coordenadas.
-                </p>
+
               </CardContent>
             </Card>
 
