@@ -114,6 +114,10 @@ export default function MapaTempoReal() {
   const [rotaOtimizada, setRotaOtimizada] = useState(null);
   const [showAtribuirRotaModal, setShowAtribuirRotaModal] = useState(false);
   const [atribuindoRota, setAtribuindoRota] = useState(false);
+  const [horarioInicio, setHorarioInicio] = useState(() => {
+    const now = moment();
+    return now.format('HH:mm');
+  });
 
   // Buscar configurações da pizzaria para pegar coordenadas
   const { data: pizzarias = [], refetch: refetchPizzaria } = useQuery({
@@ -169,30 +173,106 @@ export default function MapaTempoReal() {
     refetchInterval: 10000,
   });
 
-  // Gerar melhor rota
+  // Gerar melhor rota usando API de roteirização
   const gerarMelhorRota = async () => {
     if (pedidosProntos.length === 0) return;
     
     setGerandoRota(true);
     try {
-      // Ordenar por bairro/região para agrupar entregas próximas
+      // Montar lista de endereços
+      const enderecos = pedidosProntos.map(p => ({
+        id: p.id,
+        numero_pedido: p.numero_pedido,
+        endereco: `${p.cliente_endereco}, ${p.cliente_numero} - ${p.cliente_bairro}, ${p.cliente_cidade}`,
+        cliente_nome: p.cliente_nome,
+        valor_total: p.valor_total,
+      }));
+
+      // Usar LLM com contexto da internet para otimizar rota
+      const prompt = `
+Você é um especialista em otimização de rotas de entrega.
+
+Tenho ${enderecos.length} entregas para fazer, começando de ${pizzaria?.endereco || 'estabelecimento'} em ${pizzaria?.cidade || ''}.
+
+Lista de entregas:
+${enderecos.map((e, i) => `${i + 1}. Pedido #${e.numero_pedido} - ${e.cliente_nome} em ${e.endereco}`).join('\n')}
+
+Horário de início preferencial: ${horarioInicio}
+
+Por favor:
+1. Calcule a rota mais eficiente considerando o trânsito atual
+2. Ordene as entregas na sequência ótima
+3. Estime distância total e tempo total considerando trânsito
+4. Considere que cada parada leva aproximadamente 3-5 minutos
+
+Retorne a rota otimizada com as seguintes informações.
+`;
+
+      const resultado = await base44.integrations.Core.InvokeLLM({
+        prompt: prompt,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            sequencia_pedidos: {
+              type: "array",
+              items: { type: "string" },
+              description: "Array com números dos pedidos na ordem otimizada"
+            },
+            distancia_total_km: {
+              type: "number",
+              description: "Distância total em km"
+            },
+            tempo_estimado_minutos: {
+              type: "number",
+              description: "Tempo total estimado em minutos incluindo trânsito"
+            },
+            observacoes: {
+              type: "string",
+              description: "Observações sobre a rota (trânsito, melhores horários, etc)"
+            }
+          }
+        }
+      });
+
+      // Reordenar pedidos conforme sequência otimizada
+      const pedidosOrdenados = resultado.sequencia_pedidos.map(numeroPedido => 
+        pedidosProntos.find(p => p.numero_pedido === numeroPedido)
+      ).filter(Boolean);
+
+      // Se alguns pedidos não foram incluídos na sequência, adicionar no final
+      const pedidosNaoIncluidos = pedidosProntos.filter(p => 
+        !resultado.sequencia_pedidos.includes(p.numero_pedido)
+      );
+      const pedidosFinais = [...pedidosOrdenados, ...pedidosNaoIncluidos];
+
+      setRotaOtimizada({
+        pedidos: pedidosFinais,
+        distanciaTotal: resultado.distancia_total_km || pedidosFinais.length * 2.5,
+        tempoEstimado: resultado.tempo_estimado_minutos || pedidosFinais.length * 8,
+        observacoes: resultado.observacoes,
+        horarioInicio: horarioInicio,
+      });
+
+      toast.success('Rota otimizada gerada com sucesso!');
+    } catch (error) {
+      console.error('Erro ao gerar rota:', error);
+      toast.error('Erro ao gerar rota otimizada');
+      
+      // Fallback: ordenar por bairro
       const pedidosOrdenados = [...pedidosProntos].sort((a, b) => {
         const bairroA = a.cliente_bairro || '';
         const bairroB = b.cliente_bairro || '';
         return bairroA.localeCompare(bairroB);
       });
 
-      // Calcular distância estimada e tempo
-      const distanciaEstimada = pedidosOrdenados.length * 2.5; // Média 2.5km por entrega
-      const tempoEstimado = pedidosOrdenados.length * 8; // Média 8 min por entrega
-
       setRotaOtimizada({
         pedidos: pedidosOrdenados,
-        distanciaTotal: distanciaEstimada,
-        tempoEstimado: tempoEstimado,
+        distanciaTotal: pedidosOrdenados.length * 2.5,
+        tempoEstimado: pedidosOrdenados.length * 8,
+        observacoes: 'Rota básica por bairro (sem otimização de trânsito)',
+        horarioInicio: horarioInicio,
       });
-    } catch (error) {
-      console.error('Erro ao gerar rota:', error);
     } finally {
       setGerandoRota(false);
     }
@@ -225,13 +305,23 @@ export default function MapaTempoReal() {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 bg-white/5 rounded-lg px-3 py-2 border border-white/10">
+            <Clock className="w-4 h-4 text-slate-400" />
+            <Input
+              type="time"
+              value={horarioInicio}
+              onChange={(e) => setHorarioInicio(e.target.value)}
+              className="w-28 h-8 bg-slate-800/50 border-slate-600 text-white text-sm"
+              title="Horário de início preferencial"
+            />
+          </div>
           <Button
             onClick={gerarMelhorRota}
             disabled={pedidosProntos.length === 0 || gerandoRota}
             className="bg-gradient-to-r from-emerald-500 to-green-600"
           >
             <Route className="w-4 h-4 mr-2" />
-            {gerandoRota ? 'Gerando...' : `Gerar Rota (${pedidosProntos.length} prontos)`}
+            {gerandoRota ? 'Gerando...' : `Gerar Rota Otimizada (${pedidosProntos.length})`}
           </Button>
           <div className="flex rounded-lg bg-white/5 p-1">
             <Button
@@ -274,7 +364,7 @@ export default function MapaTempoReal() {
               </div>
               <div>
                 <h3 className="font-semibold text-white">Rota Otimizada</h3>
-                <p className="text-sm text-slate-400">{rotaOtimizada.pedidos.length} paradas</p>
+                <p className="text-sm text-slate-400">{rotaOtimizada.pedidos.length} paradas • Início: {rotaOtimizada.horarioInicio}</p>
               </div>
             </div>
             <div className="flex items-center gap-4 text-center">
@@ -286,8 +376,18 @@ export default function MapaTempoReal() {
                 <p className="text-xl font-bold text-white">{rotaOtimizada.tempoEstimado} min</p>
                 <p className="text-xs text-slate-400">Tempo Est.</p>
               </div>
+              <div>
+                <p className="text-xl font-bold text-white">{moment(rotaOtimizada.horarioInicio, 'HH:mm').add(rotaOtimizada.tempoEstimado, 'minutes').format('HH:mm')}</p>
+                <p className="text-xs text-slate-400">Chegada</p>
+              </div>
             </div>
           </div>
+          
+          {rotaOtimizada.observacoes && (
+            <div className="mb-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+              <p className="text-sm text-blue-300">💡 {rotaOtimizada.observacoes}</p>
+            </div>
+          )}
           
           <div className="space-y-2 mb-4 max-h-40 overflow-y-auto">
             {rotaOtimizada.pedidos.map((pedido, index) => (
