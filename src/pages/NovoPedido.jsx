@@ -21,6 +21,7 @@ import {
   AlertCircle,
   Loader2,
   X,
+  Printer,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -205,6 +206,175 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
     }
   }, [form.cliente_endereco, form.cliente_numero, form.cliente_cidade]);
 
+  // Imprimir comanda
+  const imprimirComanda = () => {
+    if (!pedidoCriado) return;
+
+    const nomeEstabelecimento = pizzaria.nome || 'Estabelecimento';
+    const telefoneEstabelecimento = pizzaria.telefone || '';
+    const enderecoEstabelecimento = pizzaria.endereco || '';
+
+    const htmlComanda = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          @media print {
+            @page {
+              size: 80mm auto;
+              margin: 0;
+            }
+            body {
+              margin: 0;
+              padding: 0;
+            }
+          }
+          body {
+            font-family: 'Courier New', monospace;
+            width: 80mm;
+            margin: 0 auto;
+            padding: 5mm;
+            font-size: 12px;
+            line-height: 1.3;
+          }
+          .centro {
+            text-align: center;
+          }
+          .negrito {
+            font-weight: bold;
+          }
+          .grande {
+            font-size: 18px;
+            font-weight: bold;
+          }
+          .linha {
+            border-top: 1px dashed #000;
+            margin: 8px 0;
+          }
+          .item {
+            display: flex;
+            justify-content: space-between;
+            margin: 3px 0;
+          }
+          .total {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 5px;
+          }
+          .destaque {
+            background-color: #f0f0f0;
+            padding: 3px;
+            margin: 3px 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="centro">
+          <div class="negrito">${nomeEstabelecimento}</div>
+          ${telefoneEstabelecimento ? `<div>${telefoneEstabelecimento}</div>` : ''}
+          ${enderecoEstabelecimento ? `<div style="font-size: 10px;">${enderecoEstabelecimento}</div>` : ''}
+        </div>
+        
+        <div class="linha"></div>
+        
+        <div class="centro grande">PEDIDO #${pedidoCriado.numero_pedido}</div>
+        <div class="centro">${new Date(pedidoCriado.horario_pedido).toLocaleString('pt-BR')}</div>
+        
+        <div class="linha"></div>
+        
+        <div class="negrito">CLIENTE:</div>
+        <div>${pedidoCriado.cliente_nome}</div>
+        <div>${pedidoCriado.cliente_telefone}</div>
+        
+        ${pedidoCriado.tipo_pedido === 'delivery' ? `
+          <div style="margin-top: 5px;">
+            <div class="negrito">ENTREGAR EM:</div>
+            <div>${pedidoCriado.cliente_endereco}, ${pedidoCriado.cliente_numero}</div>
+            ${pedidoCriado.cliente_complemento ? `<div>${pedidoCriado.cliente_complemento}</div>` : ''}
+            <div>${pedidoCriado.cliente_bairro} - ${pedidoCriado.cliente_cidade}/${pedidoCriado.cliente_estado}</div>
+            ${pedidoCriado.cliente_referencia ? `<div>Ref: ${pedidoCriado.cliente_referencia}</div>` : ''}
+          </div>
+        ` : `
+          <div style="margin-top: 5px;">
+            <div class="negrito centro">*** RETIRADA NO BALCÃO ***</div>
+          </div>
+        `}
+        
+        <div class="linha"></div>
+        
+        <div class="negrito">ITENS:</div>
+        ${pedidoCriado.itens.map(item => `
+          <div class="item">
+            <span>${item.quantidade}x ${item.nome}</span>
+            <span>R$ ${(item.preco_unitario * item.quantidade).toFixed(2)}</span>
+          </div>
+          ${item.observacao ? `<div style="font-size: 10px; margin-left: 10px;">Obs: ${item.observacao}</div>` : ''}
+        `).join('')}
+        
+        <div class="linha"></div>
+        
+        <div class="item">
+          <span>Subtotal:</span>
+          <span>R$ ${pedidoCriado.valor_produtos.toFixed(2)}</span>
+        </div>
+        
+        ${pedidoCriado.tipo_pedido === 'delivery' && pedidoCriado.taxa_entrega > 0 ? `
+          <div class="item destaque">
+            <span class="negrito">Taxa de Entrega:</span>
+            <span class="negrito">R$ ${pedidoCriado.taxa_entrega.toFixed(2)}</span>
+          </div>
+        ` : ''}
+        
+        ${pedidoCriado.desconto > 0 ? `
+          <div class="item">
+            <span>Desconto:</span>
+            <span>- R$ ${pedidoCriado.desconto.toFixed(2)}</span>
+          </div>
+        ` : ''}
+        
+        <div class="linha"></div>
+        
+        <div class="item total">
+          <span>TOTAL:</span>
+          <span>R$ ${pedidoCriado.valor_total.toFixed(2)}</span>
+        </div>
+        
+        <div class="linha"></div>
+        
+        <div class="negrito">PAGAMENTO:</div>
+        <div>${pedidoCriado.forma_pagamento.toUpperCase().replace('_', ' ')}</div>
+        ${pedidoCriado.forma_pagamento === 'dinheiro' && pedidoCriado.troco_para > 0 ? `
+          <div>Troco para: R$ ${pedidoCriado.troco_para.toFixed(2)}</div>
+          <div>Troco: R$ ${(pedidoCriado.troco_para - pedidoCriado.valor_total).toFixed(2)}</div>
+        ` : ''}
+        
+        ${pedidoCriado.observacoes ? `
+          <div style="margin-top: 8px;">
+            <div class="negrito">OBSERVAÇÕES:</div>
+            <div>${pedidoCriado.observacoes}</div>
+          </div>
+        ` : ''}
+        
+        <div class="linha"></div>
+        
+        <div class="centro" style="margin-top: 10px;">
+          <div>Obrigado pela preferência!</div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const janelaImpressao = window.open('', '_blank', 'width=300,height=600');
+    janelaImpressao.document.write(htmlComanda);
+    janelaImpressao.document.close();
+    janelaImpressao.focus();
+    
+    setTimeout(() => {
+      janelaImpressao.print();
+    }, 250);
+  };
+
   // Carrinho
   const addToCart = (produto) => {
     setCarrinho(prev => {
@@ -358,20 +528,29 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
           <p className="text-slate-400 mb-6">
             {tipoPedido === 'delivery' ? 'Pedido para entrega' : 'Pedido para retirada no balcão'}
           </p>
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3">
             <Button 
-              variant="outline" 
-              className="flex-1 border-slate-600"
-              onClick={() => setPedidoCriado(null)}
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center gap-2"
+              onClick={imprimirComanda}
             >
-              Novo Pedido
+              <Printer className="w-5 h-5" />
+              Imprimir Comanda
             </Button>
-            <Button 
-              className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
-              onClick={() => window.location.href = '/Pedidos'}
-            >
-              Ver Pedidos
-            </Button>
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                className="flex-1 border-slate-600"
+                onClick={() => setPedidoCriado(null)}
+              >
+                Novo Pedido
+              </Button>
+              <Button 
+                className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
+                onClick={() => window.location.href = '/Pedidos'}
+              >
+                Ver Pedidos
+              </Button>
+            </div>
           </div>
         </Card>
       </div>
