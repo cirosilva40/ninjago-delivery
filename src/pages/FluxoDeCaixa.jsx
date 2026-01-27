@@ -29,7 +29,8 @@ import {
   Calendar,
   Trash2,
   Edit,
-  BarChart3
+  BarChart3,
+  Printer
 } from 'lucide-react';
 import moment from 'moment';
 import { toast } from 'sonner';
@@ -193,6 +194,215 @@ export default function FluxoDeCaixa() {
   const totalReceitasPages = Math.ceil(pedidosFinalizados.length / itemsPerPage);
   const paginatedReceitas = pedidosFinalizados.slice((receitasPage - 1) * itemsPerPage, receitasPage * itemsPerPage);
 
+  // Função de impressão
+  const handlePrint = () => {
+    const printWindow = window.open('', '', 'width=800,height=600');
+    const mesFormatado = moment(mesAtual).format('MMMM [de] YYYY');
+    
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Relatório de Fluxo de Caixa - ${mesFormatado}</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            color: #333;
+          }
+          h1 {
+            text-align: center;
+            color: #f97316;
+            margin-bottom: 10px;
+          }
+          .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+          }
+          .summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+          }
+          .summary-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+          }
+          .summary-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #666;
+          }
+          .summary-card .value {
+            font-size: 28px;
+            font-weight: bold;
+          }
+          .summary-card.receitas .value { color: #10b981; }
+          .summary-card.despesas .value { color: #ef4444; }
+          .summary-card.saldo .value { color: #3b82f6; }
+          .summary-card.saldo.negative .value { color: #ef4444; }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+          }
+          th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+          }
+          th {
+            background-color: #f3f4f6;
+            font-weight: bold;
+            color: #374151;
+          }
+          .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 30px 0 15px 0;
+            color: #1f2937;
+          }
+          .categoria {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            color: #666;
+            font-size: 12px;
+          }
+          @media print {
+            body { padding: 20px; }
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Relatório de Fluxo de Caixa</h1>
+        <div class="subtitle">${mesFormatado.charAt(0).toUpperCase() + mesFormatado.slice(1)}</div>
+        
+        <div class="summary">
+          <div class="summary-card receitas">
+            <h3>Total de Receitas</h3>
+            <div class="value">R$ ${totalReceitas.toFixed(2)}</div>
+            <div style="font-size: 12px; color: #666; margin-top: 8px;">${pedidosFinalizados.length} pedidos</div>
+          </div>
+          <div class="summary-card despesas">
+            <h3>Total de Despesas</h3>
+            <div class="value">R$ ${totalCustos.toFixed(2)}</div>
+            <div style="font-size: 12px; color: #666; margin-top: 8px;">${custos.length} lançamentos</div>
+          </div>
+          <div class="summary-card saldo ${saldo < 0 ? 'negative' : ''}">
+            <h3>Saldo do Período</h3>
+            <div class="value">R$ ${saldo.toFixed(2)}</div>
+            <div style="font-size: 12px; color: #666; margin-top: 8px;">${saldo >= 0 ? 'Positivo' : 'Negativo'}</div>
+          </div>
+        </div>
+
+        <div class="section-title">Despesas por Categoria</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Categoria</th>
+              <th style="text-align: right;">Quantidade</th>
+              <th style="text-align: right;">Total</th>
+              <th style="text-align: right;">% do Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${custosPorCategoria.map(cat => `
+              <tr>
+                <td>${cat.label}</td>
+                <td style="text-align: right;">${custos.filter(c => c.categoria === cat.value).length}</td>
+                <td style="text-align: right;">R$ ${cat.total.toFixed(2)}</td>
+                <td style="text-align: right;">${((cat.total / totalCustos) * 100).toFixed(1)}%</td>
+              </tr>
+            `).join('')}
+            <tr style="font-weight: bold; background-color: #f9fafb;">
+              <td>TOTAL</td>
+              <td style="text-align: right;">${custos.length}</td>
+              <td style="text-align: right;">R$ ${totalCustos.toFixed(2)}</td>
+              <td style="text-align: right;">100%</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="section-title">Detalhamento de Despesas</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Descrição</th>
+              <th>Categoria</th>
+              <th>Tipo</th>
+              <th style="text-align: right;">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${custos.map(custo => {
+              const cat = categorias.find(c => c.value === custo.categoria);
+              return `
+                <tr>
+                  <td>${moment(custo.data).format('DD/MM/YYYY')}</td>
+                  <td>${custo.descricao}</td>
+                  <td>${cat?.label || custo.categoria}</td>
+                  <td>${custo.tipo === 'fixo' ? 'Fixo' : 'Variável'}</td>
+                  <td style="text-align: right; color: #ef4444; font-weight: bold;">R$ ${custo.valor.toFixed(2)}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+
+        <div class="section-title">Receitas (Pedidos Finalizados)</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Data/Hora</th>
+              <th>Pedido</th>
+              <th>Cliente</th>
+              <th style="text-align: right;">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pedidosFinalizados.map(pedido => `
+              <tr>
+                <td>${moment(pedido.created_date).format('DD/MM/YYYY HH:mm')}</td>
+                <td>#${pedido.numero_pedido}</td>
+                <td>${pedido.cliente_nome}</td>
+                <td style="text-align: right; color: #10b981; font-weight: bold;">R$ ${pedido.valor_total?.toFixed(2) || '0.00'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p>Relatório gerado em ${moment().format('DD/MM/YYYY [às] HH:mm')}</p>
+          <p>Sistema NinjaGO Delivery</p>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -206,6 +416,14 @@ export default function FluxoDeCaixa() {
           </p>
         </div>
         <div className="flex gap-3">
+          <Button 
+            onClick={handlePrint}
+            variant="outline"
+            className="border-blue-500/50 text-blue-500 hover:bg-blue-500/10"
+          >
+            <Printer className="w-4 h-4 mr-2" />
+            Imprimir Relatório
+          </Button>
           <Button 
             onClick={() => {
               toast.info('Funcionalidade em desenvolvimento');
