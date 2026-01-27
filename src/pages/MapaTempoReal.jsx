@@ -335,18 +335,25 @@ export default function MapaTempoReal() {
         {/* Map */}
         <div className={`${viewMode === 'map' ? 'lg:col-span-2' : 'hidden lg:block lg:col-span-2'}`}>
           <Card className="overflow-hidden rounded-2xl bg-white/5 border-white/10 h-[600px]">
-            <MapContainer
-              center={defaultCenter}
-              zoom={13}
-              style={{ height: '100%', width: '100%' }}
-              className="rounded-2xl"
-            >
-              <TileLayer
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-              />
-              
-              {allPositions.length > 1 && <AutoCenter positions={allPositions} />}
+            {defaultCenter[0] && defaultCenter[1] && (
+              <MapContainer
+                key={`${defaultCenter[0]}-${defaultCenter[1]}`}
+                center={defaultCenter}
+                zoom={13}
+                style={{ height: '100%', width: '100%' }}
+                className="rounded-2xl"
+                whenReady={() => {
+                  setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                  }, 100);
+                }}
+              >
+                <TileLayer
+                  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                  attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+                />
+                
+                {allPositions.length > 1 && <AutoCenter positions={allPositions} />}
 
               {/* Pizzaria Marker */}
               <Marker position={defaultCenter} icon={pizzariaIcon}>
@@ -420,7 +427,8 @@ export default function MapaTempoReal() {
                   </Popup>
                 </Marker>
               ))}
-            </MapContainer>
+              </MapContainer>
+            )}
           </Card>
         </div>
 
