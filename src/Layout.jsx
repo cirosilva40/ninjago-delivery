@@ -83,10 +83,14 @@ export default function Layout({ children, currentPageName }) {
 
   const marcarComoLida = async (notificacaoId) => {
     try {
+      // Remove imediatamente da UI para feedback instantâneo
+      setNotificacoes(prev => prev.filter(n => n.id !== notificacaoId));
+      // Atualiza no backend
       await base44.entities.Notificacao.update(notificacaoId, { lida: true });
-      loadNotificacoes();
     } catch (e) {
       console.error('Erro ao marcar notificação como lida:', e);
+      // Recarrega em caso de erro
+      loadNotificacoes();
     }
   };
 
