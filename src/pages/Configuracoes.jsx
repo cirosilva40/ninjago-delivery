@@ -485,7 +485,7 @@ export default function Configuracoes() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div>
                   <Label className="text-slate-400">Taxa de Entrega Base (R$)</Label>
                   <Input
@@ -495,25 +495,46 @@ export default function Configuracoes() {
                     onChange={(e) => setPizzaria({ ...pizzaria, taxa_entrega_base: parseFloat(e.target.value) })}
                     className="bg-slate-800 border-slate-700 text-white"
                   />
-                  <p className="text-xs text-slate-500 mt-1">Valor cobrado do cliente pela entrega</p>
+                  <p className="text-xs text-slate-500 mt-1">Valor cobrado dentro do raio base</p>
                 </div>
                 <div>
-                  <Label className="text-slate-400">Raio de Entrega (km)</Label>
+                  <Label className="text-slate-400">Raio Base (km)</Label>
                   <Input
                     type="number"
                     value={pizzaria.raio_entrega_km}
                     onChange={(e) => setPizzaria({ ...pizzaria, raio_entrega_km: parseInt(e.target.value) })}
                     className="bg-slate-800 border-slate-700 text-white"
                   />
-                  <p className="text-xs text-slate-500 mt-1">Distância máxima para entregas</p>
+                  <p className="text-xs text-slate-500 mt-1">Distância coberta pela taxa base</p>
+                </div>
+                <div>
+                  <Label className="text-slate-400">Taxa Adicional por KM (R$)</Label>
+                  <Input
+                    type="number"
+                    step="0.50"
+                    value={pizzaria.taxa_adicional_por_km || 0}
+                    onChange={(e) => setPizzaria({ ...pizzaria, taxa_adicional_por_km: parseFloat(e.target.value) })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Valor por km além do raio base</p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-orange-500/10 border border-orange-500/20">
-                <h4 className="font-medium text-white mb-2">Taxa por Distância</h4>
-                <p className="text-sm text-slate-400">
-                  Em breve você poderá configurar taxas diferenciadas por bairro ou distância.
+              <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                <h4 className="font-medium text-white mb-2 flex items-center gap-2">
+                  💡 Cálculo Automático de Taxa
+                </h4>
+                <p className="text-sm text-slate-400 mb-2">
+                  A taxa de entrega será calculada automaticamente com base na distância real entre seu estabelecimento e o endereço do cliente.
                 </p>
+                <div className="text-sm text-slate-300 space-y-1">
+                  <p><strong>Exemplo:</strong></p>
+                  <p>• Taxa base: R$ {pizzaria.taxa_entrega_base?.toFixed(2) || '0.00'} (até {pizzaria.raio_entrega_km || 0} km)</p>
+                  <p>• Taxa adicional: R$ {pizzaria.taxa_adicional_por_km?.toFixed(2) || '0.00'} por km adicional</p>
+                  <p className="pt-2 text-emerald-400">
+                    Cliente a 15 km = R$ {(pizzaria.taxa_entrega_base + ((15 - pizzaria.raio_entrega_km) * (pizzaria.taxa_adicional_por_km || 0))).toFixed(2)}
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>

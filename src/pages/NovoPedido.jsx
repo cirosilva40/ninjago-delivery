@@ -86,10 +86,20 @@ export default function NovoPedido() {
     observacoes: '',
   });
 
+  const [calculandoTaxa, setCalculandoTaxa] = useState(false);
+  const [distanciaCalculada, setDistanciaCalculada] = useState(null);
+
   const { data: produtos = [] } = useQuery({
     queryKey: ['produtos-disponiveis'],
     queryFn: () => base44.entities.Produto.filter({ disponivel: true }, 'categoria', 500),
   });
+
+  const { data: pizzarias = [] } = useQuery({
+    queryKey: ['pizzarias'],
+    queryFn: () => base44.entities.Pizzaria.list('-created_date', 1),
+  });
+
+  const pizzaria = pizzarias[0] || {};
 
   const filteredProdutos = produtos.filter(p => {
     const matchSearch = !searchProduto || 
@@ -130,6 +140,70 @@ export default function NovoPedido() {
       setBuscandoCep(false);
     }
   };
+
+  // Calcular taxa de entrega por distância
+  const calcularTaxaEntrega = async () => {
+    if (!form.cliente_endereco || !form.cliente_numero || !pizzaria.endereco) {
+      return;
+    }
+
+    setCalculandoTaxa(true);
+    try {
+      const enderecoCliente = `${form.cliente_endereco}, ${form.cliente_numero} - ${form.cliente_bairro}, ${form.cliente_cidade}`;
+      const enderecoEstabelecimento = `${pizzaria.endereco}, ${pizzaria.cidade}`;
+
+      const resultado = await base44.integrations.Core.InvokeLLM({
+        prompt: `Calcule a distância real (em quilômetros) entre estes dois endereços:
+        
+Origem: ${enderecoEstabelecimento}
+Destino: ${enderecoCliente}
+
+Retorne APENAS a distância em km considerando as rotas reais de carro.`,
+        add_context_from_internet: true,
+        response_json_schema: {
+          type: "object",
+          properties: {
+            distancia_km: {
+              type: "number",
+              description: "Distância em quilômetros"
+            }
+          }
+        }
+      });
+
+      const distancia = resultado.distancia_km;
+      setDistanciaCalculada(distancia);
+
+      // Calcular taxa baseada na distância
+      const taxaBase = pizzaria.taxa_entrega_base || 5;
+      const raioBase = pizzaria.raio_entrega_km || 5;
+      const taxaPorKm = pizzaria.taxa_adicional_por_km || 0;
+
+      let taxaFinal = taxaBase;
+      if (distancia > raioBase) {
+        const kmAdicionais = distancia - raioBase;
+        taxaFinal = taxaBase + (kmAdicionais * taxaPorKm);
+      }
+
+      setForm(prev => ({
+        ...prev,
+        taxa_entrega: taxaFinal.toFixed(2)
+      }));
+
+    } catch (error) {
+      console.error('Erro ao calcular taxa:', error);
+      setCepError('Não foi possível calcular a distância. Taxa padrão aplicada.');
+    } finally {
+      setCalculandoTaxa(false);
+    }
+  };
+
+  // Calcular taxa quando o endereço estiver completo
+  useEffect(() => {
+    if (tipoPedido === 'delivery' && form.cliente_endereco && form.cliente_numero && form.cliente_cidade) {
+      calcularTaxaEntrega();
+    }
+  }, [form.cliente_endereco, form.cliente_numero, form.cliente_cidade]);
 
   // Carrinho
   const addToCart = (produto) => {
@@ -634,12 +708,25 @@ export default function NovoPedido() {
               {tipoPedido === 'delivery' && (
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label className="text-slate-400 text-sm">Taxa Entrega</Label>
-                    <CurrencyInput
-                      value={form.taxa_entrega}
-                      onChange={(e) => setForm({ ...form, taxa_entrega: e.target.value })}
-                      className="bg-slate-800 border-slate-700 text-white"
-                    />
+                    <Label className="text-slate-400 text-sm flex items-center justify-between">
+                      <span>Taxa Entrega</span>
+                      {distanciaCalculada && (
+                        <span className="text-xs text-emerald-400">{distanciaCalculada.toFixed(1)} km</span>
+                      )}
+                    </Label>
+                    <div className="relative">
+                      <CurrencyInput
+                        value={form.taxa_entrega}
+                        onChange={(e) => setForm({ ...form, taxa_entrega: e.target.value })}
+                        className="bg-slate-800 border-slate-700 text-white"
+                      />
+                      {calculandoTaxa && (
+                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-orange-400 animate-spin" />
+                      )}
+                    </div>
+                    {distanciaCalculada && (
+                      <p className="text-xs text-slate-500 mt-1">Calculado automaticamente</p>
+                    )}
                   </div>
                   <div>
                     <Label className="text-slate-400 text-sm">Desconto</Label>
