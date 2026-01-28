@@ -108,6 +108,19 @@ const statusConfig = {
   entregue: { label: 'Entregue', color: 'bg-emerald-500' },
 };
 
+// Map controller component to fly to position
+function MapController({ center, zoom }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (center && center[0] && center[1]) {
+      map.flyTo(center, zoom || 16, { duration: 1.5 });
+    }
+  }, [center, zoom, map]);
+  
+  return null;
+}
+
 export default function MapaTempoReal() {
   const [viewMode, setViewMode] = useState('map');
   const [selectedEntrega, setSelectedEntrega] = useState(null);
@@ -115,6 +128,7 @@ export default function MapaTempoReal() {
   const [rotaOtimizada, setRotaOtimizada] = useState(null);
   const [showAtribuirRotaModal, setShowAtribuirRotaModal] = useState(false);
   const [atribuindoRota, setAtribuindoRota] = useState(false);
+  const [selectedEntregadorId, setSelectedEntregadorId] = useState(null);
   const [horarioInicio, setHorarioInicio] = useState(() => {
     const now = moment();
     return now.format('HH:mm');
@@ -454,7 +468,14 @@ Retorne a rota otimizada com as seguintes informações.
                   attribution='&copy; <a href="https://carto.com/">CARTO</a>'
                 />
                 
-                {allPositions.length > 1 && <AutoCenter positions={allPositions} />}
+                {allPositions.length > 1 && !selectedEntregadorId && <AutoCenter positions={allPositions} />}
+                
+                {selectedEntregadorId && (() => {
+                  const entregador = entregadores.find(e => e.id === selectedEntregadorId);
+                  return entregador?.latitude && entregador?.longitude ? (
+                    <MapController center={[entregador.latitude, entregador.longitude]} zoom={16} />
+                  ) : null;
+                })()}
 
               {/* Pizzaria Marker */}
               <Marker position={defaultCenter} icon={pizzariaIcon}>
@@ -470,30 +491,50 @@ Retorne a rota otimizada com as seguintes informações.
               </Marker>
 
               {/* Entregadores Markers */}
-              {entregadores.filter(e => e.latitude && e.longitude).map((entregador) => (
-                <Marker
-                  key={entregador.id}
-                  position={[entregador.latitude, entregador.longitude]}
-                  icon={bikeIcon}
-                >
-                  <Popup>
-                    <div className="p-2 min-w-[200px]">
-                      <p className="font-bold text-lg">{entregador.nome}</p>
-                      <p className="text-sm text-gray-600">{entregador.veiculo}</p>
-                      <div className="mt-2 flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${statusConfig[entregador.status]?.color || 'bg-gray-400'}`} />
-                        <span className="text-sm capitalize">{entregador.status?.replace('_', ' ')}</span>
+              {entregadores.filter(e => e.latitude && e.longitude).map((entregador) => {
+                const isSelected = selectedEntregadorId === entregador.id;
+                const icon = isSelected ? L.divIcon({
+                  className: 'bike-marker-selected',
+                  html: `<div style="background: linear-gradient(135deg, #f97316, #ef4444); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 4px solid white; box-shadow: 0 6px 20px rgba(249,115,22,0.6); animation: pulse 2s infinite;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>
+                    </svg>
+                  </div>
+                  <style>
+                    @keyframes pulse {
+                      0%, 100% { transform: scale(1); }
+                      50% { transform: scale(1.1); }
+                    }
+                  </style>`,
+                  iconSize: [50, 50],
+                  iconAnchor: [25, 25],
+                }) : bikeIcon;
+                
+                return (
+                  <Marker
+                    key={entregador.id}
+                    position={[entregador.latitude, entregador.longitude]}
+                    icon={icon}
+                  >
+                    <Popup>
+                      <div className="p-2 min-w-[200px]">
+                        <p className="font-bold text-lg">{entregador.nome}</p>
+                        <p className="text-sm text-gray-600">{entregador.veiculo}</p>
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${statusConfig[entregador.status]?.color || 'bg-gray-400'}`} />
+                          <span className="text-sm capitalize">{entregador.status?.replace('_', ' ')}</span>
+                        </div>
+                        <a 
+                          href={`tel:${entregador.telefone}`}
+                          className="mt-2 block text-blue-600 text-sm"
+                        >
+                          📞 {entregador.telefone}
+                        </a>
                       </div>
-                      <a 
-                        href={`tel:${entregador.telefone}`}
-                        className="mt-2 block text-blue-600 text-sm"
-                      >
-                        📞 {entregador.telefone}
-                      </a>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
+                    </Popup>
+                  </Marker>
+                );
+              })}
 
               {/* Entregas Markers */}
               {entregas.filter(e => e.latitude_destino && e.longitude_destino).map((entrega) => (
@@ -656,13 +697,28 @@ Retorne a rota otimizada com as seguintes informações.
               <div className="space-y-2">
                 {entregadores.map((entregador) => {
                   const status = statusConfig[entregador.status] || { label: 'Offline', color: 'bg-slate-500' };
+                  const isSelected = selectedEntregadorId === entregador.id;
+                  
                   return (
                     <div
                       key={entregador.id}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10"
+                      onClick={() => {
+                        if (entregador.latitude && entregador.longitude) {
+                          setSelectedEntregadorId(isSelected ? null : entregador.id);
+                        }
+                      }}
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                        isSelected 
+                          ? 'bg-orange-500/20 border-orange-500/50 shadow-lg' 
+                          : 'bg-white/5 border-white/10 hover:bg-white/8'
+                      }`}
                     >
                       <div className="relative">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          isSelected 
+                            ? 'bg-gradient-to-br from-orange-500 to-red-600' 
+                            : 'bg-gradient-to-br from-blue-500 to-indigo-600'
+                        }`}>
                           <span className="text-white font-bold">{entregador.nome?.charAt(0)}</span>
                         </div>
                         <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ${status.color} border-2 border-slate-900`} />
@@ -671,8 +727,15 @@ Retorne a rota otimizada com as seguintes informações.
                         <p className="font-medium text-white">{entregador.nome}</p>
                         <p className="text-xs text-slate-400 capitalize">{entregador.status?.replace('_', ' ')}</p>
                       </div>
+                      {isSelected && entregador.latitude && entregador.longitude && (
+                        <Badge className="bg-orange-500/20 text-orange-400 text-xs">
+                          <MapPin className="w-3 h-3 mr-1" />
+                          No mapa
+                        </Badge>
+                      )}
                       <a 
                         href={`tel:${entregador.telefone}`}
+                        onClick={(e) => e.stopPropagation()}
                         className="p-2 rounded-lg bg-white/10 hover:bg-white/20"
                       >
                         <Phone className="w-4 h-4 text-white" />
