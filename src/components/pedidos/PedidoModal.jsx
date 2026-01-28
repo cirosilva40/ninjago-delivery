@@ -17,7 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Trash2, Package } from 'lucide-react';
+import { Plus, Trash2, Package, Send } from 'lucide-react';
+import { enviarNotificacaoManual } from './NotificacaoHelper';
+import { toast } from 'sonner';
 
 export default function PedidoModal({ open, onClose, pedido, pizzariaId, onSave }) {
   const [form, setForm] = useState({
@@ -36,6 +38,8 @@ export default function PedidoModal({ open, onClose, pedido, pizzariaId, onSave 
     origem: 'balcao',
   });
   const [loading, setLoading] = useState(false);
+  const [showNotificacao, setShowNotificacao] = useState(false);
+  const [notifForm, setNotifForm] = useState({ titulo: '', mensagem: '' });
 
   useEffect(() => {
     if (pedido) {
@@ -118,6 +122,27 @@ export default function PedidoModal({ open, onClose, pedido, pizzariaId, onSave 
       console.error('Erro ao salvar pedido:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEnviarNotificacao = async () => {
+    if (!notifForm.titulo || !notifForm.mensagem) {
+      toast.error('Preencha título e mensagem');
+      return;
+    }
+
+    const sucesso = await enviarNotificacaoManual(
+      pedido || form,
+      notifForm.titulo,
+      notifForm.mensagem
+    );
+
+    if (sucesso) {
+      toast.success('Notificação enviada com sucesso! 📲');
+      setNotifForm({ titulo: '', mensagem: '' });
+      setShowNotificacao(false);
+    } else {
+      toast.error('Erro ao enviar notificação');
     }
   };
 
@@ -327,6 +352,58 @@ export default function PedidoModal({ open, onClose, pedido, pizzariaId, onSave 
               <span className="text-3xl font-bold text-orange-400">R$ {calcularTotal().toFixed(2)}</span>
             </div>
           </div>
+
+          {/* Notificação Manual */}
+          {pedido && (
+            <div className="space-y-3 p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-white flex items-center gap-2">
+                  <Send className="w-5 h-5 text-blue-400" />
+                  Enviar Notificação ao Cliente
+                </h3>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setShowNotificacao(!showNotificacao)}
+                  className="text-blue-400"
+                >
+                  {showNotificacao ? 'Ocultar' : 'Mostrar'}
+                </Button>
+              </div>
+              
+              {showNotificacao && (
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-slate-400">Título da Notificação</Label>
+                    <Input
+                      value={notifForm.titulo}
+                      onChange={(e) => setNotifForm({ ...notifForm, titulo: e.target.value })}
+                      className="bg-slate-800 border-slate-700 text-white"
+                      placeholder="Ex: Pedido em andamento"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-slate-400">Mensagem</Label>
+                    <Textarea
+                      value={notifForm.mensagem}
+                      onChange={(e) => setNotifForm({ ...notifForm, mensagem: e.target.value })}
+                      className="bg-slate-800 border-slate-700 text-white"
+                      placeholder="Ex: Seu pedido chegará em aproximadamente 30 minutos"
+                      rows={3}
+                    />
+                  </div>
+                  <Button
+                    onClick={handleEnviarNotificacao}
+                    size="sm"
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Enviar Notificação
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Ações */}
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
