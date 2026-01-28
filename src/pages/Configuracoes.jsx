@@ -545,28 +545,6 @@ export default function Configuracoes() {
 
         {/* Tab Entrega */}
         <TabsContent value="entrega" className="space-y-6">
-          {/* Mapa Visual do Raio de Entrega */}
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-purple-500" />
-                Área de Cobertura
-              </CardTitle>
-              <CardDescription className="text-slate-400">
-                Visualização do raio de entrega em tempo real
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <MapaRaioEntrega
-                latitude={pizzaria.latitude}
-                longitude={pizzaria.longitude}
-                raioKm={pizzaria.raio_entrega_km || 10}
-                taxaBase={pizzaria.taxa_entrega_base || 0}
-                taxaAdicional={pizzaria.taxa_adicional_por_km || 0}
-              />
-            </CardContent>
-          </Card>
-
           {/* Configurações de Taxa */}
           <Card className="bg-white/5 border-white/10">
             <CardHeader>
@@ -582,11 +560,9 @@ export default function Configuracoes() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div>
                   <Label className="text-slate-400">Taxa de Entrega Base (R$)</Label>
-                  <Input
-                    type="number"
-                    step="0.50"
+                  <CurrencyInput
                     value={pizzaria.taxa_entrega_base || 0}
-                    onChange={(e) => setPizzaria({ ...pizzaria, taxa_entrega_base: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) => setPizzaria({ ...pizzaria, taxa_entrega_base: parseFloat(e.target.value.replace(/[^\d,]/g, '').replace(',', '.')) || 0 })}
                     className="bg-slate-800 border-slate-700 text-white"
                   />
                   <p className="text-xs text-slate-500 mt-1">Valor cobrado dentro do raio base</p>
@@ -603,11 +579,9 @@ export default function Configuracoes() {
                 </div>
                 <div>
                   <Label className="text-slate-400">Taxa Adicional por KM (R$)</Label>
-                  <Input
-                    type="number"
-                    step="0.50"
+                  <CurrencyInput
                     value={pizzaria.taxa_adicional_por_km || 0}
-                    onChange={(e) => setPizzaria({ ...pizzaria, taxa_adicional_por_km: parseFloat(e.target.value) || 0 })}
+                    onChange={(e) => setPizzaria({ ...pizzaria, taxa_adicional_por_km: parseFloat(e.target.value.replace(/[^\d,]/g, '').replace(',', '.')) || 0 })}
                     className="bg-slate-800 border-slate-700 text-white"
                   />
                   <p className="text-xs text-slate-500 mt-1">Valor por km além do raio base</p>
@@ -623,13 +597,11 @@ export default function Configuracoes() {
                 <div className="space-y-4">
                   <div>
                     <Label className="text-slate-400 mb-2 block">Valor Mínimo para Entrega Grátis (R$)</Label>
-                    <Input
-                      type="number"
-                      step="10"
+                    <CurrencyInput
                       value={pizzaria.valor_minimo_entrega_gratis || 0}
-                      onChange={(e) => setPizzaria({ ...pizzaria, valor_minimo_entrega_gratis: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) => setPizzaria({ ...pizzaria, valor_minimo_entrega_gratis: parseFloat(e.target.value.replace(/[^\d,]/g, '').replace(',', '.')) || 0 })}
                       className="bg-slate-800 border-slate-700 text-white"
-                      placeholder="Ex: 80.00"
+                      placeholder="Ex: R$ 80,00"
                     />
                     <p className="text-xs text-slate-500 mt-1">
                       Se o pedido atingir este valor, a entrega será grátis. Digite 0 para desabilitar.
