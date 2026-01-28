@@ -40,10 +40,15 @@ function MapUpdater({ center, raio }) {
   const map = useMap();
   
   useEffect(() => {
-    if (center && raio) {
-      // Calcular bounds para incluir o círculo completo
-      const bounds = L.circle(center, raio * 1000).getBounds();
-      map.fitBounds(bounds, { padding: [50, 50] });
+    if (center && raio && map) {
+      setTimeout(() => {
+        try {
+          const bounds = L.circle(center, raio * 1000).getBounds();
+          map.fitBounds(bounds, { padding: [50, 50] });
+        } catch (e) {
+          console.log('Erro ao ajustar mapa:', e);
+        }
+      }, 100);
     }
   }, [map, center, raio]);
   
@@ -51,7 +56,7 @@ function MapUpdater({ center, raio }) {
 }
 
 export default function MapaRaioEntrega({ latitude, longitude, raioKm, taxaBase, taxaAdicional }) {
-  const center = latitude && longitude ? [latitude, longitude] : [-23.5505, -46.6333]; // São Paulo como padrão
+  const center = latitude && longitude ? [latitude, longitude] : [-23.5505, -46.6333];
   const hasLocation = latitude && longitude;
 
   return (
@@ -62,6 +67,9 @@ export default function MapaRaioEntrega({ latitude, longitude, raioKm, taxaBase,
           zoom={13}
           className="w-full h-full"
           zoomControl={true}
+          whenReady={(map) => {
+            setTimeout(() => map.target.invalidateSize(), 100);
+          }}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
