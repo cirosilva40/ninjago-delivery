@@ -562,13 +562,17 @@ export default function Configuracoes() {
                   <Label className="text-slate-400">Taxa de Entrega Base (R$)</Label>
                   <Input
                     type="text"
-                    value={pizzaria.taxa_entrega_base || ''}
+                    value={pizzaria.taxa_entrega_base}
                     onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
+                      const value = e.target.value.replace(/[^0-9,]/g, '');
+                      setPizzaria({ ...pizzaria, taxa_entrega_base: value });
+                    }}
+                    onBlur={(e) => {
+                      const value = e.target.value.replace(',', '.');
                       setPizzaria({ ...pizzaria, taxa_entrega_base: value ? parseFloat(value) : 0 });
                     }}
                     className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="Ex: 4.00"
+                    placeholder="Ex: 4,90"
                   />
                   <p className="text-xs text-slate-500 mt-1">Valor cobrado dentro do raio base</p>
                 </div>
@@ -576,13 +580,17 @@ export default function Configuracoes() {
                   <Label className="text-slate-400">Raio Base (km)</Label>
                   <Input
                     type="text"
-                    value={pizzaria.raio_entrega_km || ''}
+                    value={pizzaria.raio_entrega_km}
                     onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
+                      const value = e.target.value.replace(/[^0-9,]/g, '');
+                      setPizzaria({ ...pizzaria, raio_entrega_km: value });
+                    }}
+                    onBlur={(e) => {
+                      const value = e.target.value.replace(',', '.');
                       setPizzaria({ ...pizzaria, raio_entrega_km: value ? parseFloat(value) : 0 });
                     }}
                     className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="Ex: 5 ou 5.5"
+                    placeholder="Ex: 5 ou 5,5"
                   />
                   <p className="text-xs text-slate-500 mt-1">Distância coberta pela taxa base</p>
                 </div>
@@ -590,13 +598,17 @@ export default function Configuracoes() {
                   <Label className="text-slate-400">Taxa Adicional por KM (R$)</Label>
                   <Input
                     type="text"
-                    value={pizzaria.taxa_adicional_por_km || ''}
+                    value={pizzaria.taxa_adicional_por_km}
                     onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
+                      const value = e.target.value.replace(/[^0-9,]/g, '');
+                      setPizzaria({ ...pizzaria, taxa_adicional_por_km: value });
+                    }}
+                    onBlur={(e) => {
+                      const value = e.target.value.replace(',', '.');
                       setPizzaria({ ...pizzaria, taxa_adicional_por_km: value ? parseFloat(value) : 0 });
                     }}
                     className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="Ex: 1.00"
+                    placeholder="Ex: 1,00"
                   />
                   <p className="text-xs text-slate-500 mt-1">Valor por km além do raio base</p>
                 </div>
