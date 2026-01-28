@@ -661,7 +661,7 @@ export default function Configuracoes() {
                       <p className="text-emerald-400 font-bold text-lg">
                         {pizzaria.entrega_gratis_dentro_raio_base 
                           ? 'GRÁTIS'
-                          : `R$ ${(pizzaria.taxa_entrega_base || 0).toFixed(2)}`
+                          : `R$ ${(parseFloat(pizzaria.taxa_entrega_base) || 0).toFixed(2)}`
                         }
                       </p>
                     </div>
@@ -669,16 +669,16 @@ export default function Configuracoes() {
                       <p className="text-slate-400">Cliente a 15 km (fora do raio):</p>
                       <p className="text-amber-400 font-bold text-lg">
                         R$ {(
-                          (pizzaria.taxa_entrega_base || 0) + 
-                          (Math.max(0, 15 - (pizzaria.raio_entrega_km || 0)) * (pizzaria.taxa_adicional_por_km || 0))
+                          (parseFloat(pizzaria.taxa_entrega_base) || 0) + 
+                          (Math.max(0, 15 - (parseFloat(pizzaria.raio_entrega_km) || 0)) * (parseFloat(pizzaria.taxa_adicional_por_km) || 0))
                         ).toFixed(2)}
                       </p>
                     </div>
                   </div>
                   
-                  {pizzaria.valor_minimo_entrega_gratis > 0 && (
+                  {parseFloat(pizzaria.valor_minimo_entrega_gratis) > 0 && (
                     <p className="pt-2 border-t border-white/10 text-emerald-400">
-                      💡 Pedidos acima de R$ {pizzaria.valor_minimo_entrega_gratis.toFixed(2)} têm entrega grátis
+                      💡 Pedidos acima de R$ {(parseFloat(pizzaria.valor_minimo_entrega_gratis) || 0).toFixed(2)} têm entrega grátis
                     </p>
                   )}
                 </div>
