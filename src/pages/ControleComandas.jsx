@@ -202,7 +202,7 @@ export default function ControleComandas() {
                           {formaPag.label}
                         </Badge>
                         {pedido.troco_para && (
-                          <Badge variant="outline">
+                          <Badge variant="outline" className={isLight ? 'border-gray-300 text-gray-700' : 'border-white/30 text-white'}>
                             Troco p/ R$ {pedido.troco_para.toFixed(2)}
                           </Badge>
                         )}
