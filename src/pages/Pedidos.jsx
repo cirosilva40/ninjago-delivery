@@ -37,7 +37,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import PedidoModal from '@/components/pedidos/PedidoModal';
 import AtribuirEntregaModal from '@/components/pedidos/AtribuirEntregaModal';
+import { enviarNotificacaoStatusPedido, deveEnviarNotificacao } from '@/components/pedidos/NotificacaoHelper';
 import moment from 'moment';
+import { toast } from 'sonner';
 
 const statusConfig = {
   novo: { label: 'Novo', color: 'bg-blue-500/20 text-blue-400', icon: Clock },
@@ -72,13 +74,23 @@ export default function Pedidos() {
 
   const updateStatus = async (pedido, newStatus) => {
     try {
+      const statusAntigo = pedido.status;
+      
       await base44.entities.Pedido.update(pedido.id, { 
         status: newStatus,
         ...(newStatus === 'pronto' ? { horario_pronto: new Date().toISOString() } : {})
       });
+      
+      // Enviar notificação se necessário
+      if (deveEnviarNotificacao(statusAntigo, newStatus)) {
+        await enviarNotificacaoStatusPedido({ ...pedido, status: newStatus }, newStatus);
+        toast.success('Status atualizado e cliente notificado! 📲');
+      }
+      
       refetch();
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
+      toast.error('Erro ao atualizar status');
     }
   };
 
