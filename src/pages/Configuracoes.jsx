@@ -560,29 +560,43 @@ export default function Configuracoes() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div>
                   <Label className="text-slate-400">Taxa de Entrega Base (R$)</Label>
-                  <CurrencyInput
-                    value={pizzaria.taxa_entrega_base || 0}
-                    onChange={(e) => setPizzaria({ ...pizzaria, taxa_entrega_base: parseFloat(e.target.value.replace(/[^\d,]/g, '').replace(',', '.')) || 0 })}
+                  <Input
+                    type="text"
+                    value={pizzaria.taxa_entrega_base || ''}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
+                      setPizzaria({ ...pizzaria, taxa_entrega_base: value ? parseFloat(value) : 0 });
+                    }}
                     className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="Ex: 4.00"
                   />
                   <p className="text-xs text-slate-500 mt-1">Valor cobrado dentro do raio base</p>
                 </div>
                 <div>
                   <Label className="text-slate-400">Raio Base (km)</Label>
                   <Input
-                    type="number"
-                    value={pizzaria.raio_entrega_km || 0}
-                    onChange={(e) => setPizzaria({ ...pizzaria, raio_entrega_km: parseInt(e.target.value) || 0 })}
+                    type="text"
+                    value={pizzaria.raio_entrega_km || ''}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
+                      setPizzaria({ ...pizzaria, raio_entrega_km: value ? parseFloat(value) : 0 });
+                    }}
                     className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="Ex: 5 ou 5.5"
                   />
                   <p className="text-xs text-slate-500 mt-1">Distância coberta pela taxa base</p>
                 </div>
                 <div>
                   <Label className="text-slate-400">Taxa Adicional por KM (R$)</Label>
-                  <CurrencyInput
-                    value={pizzaria.taxa_adicional_por_km || 0}
-                    onChange={(e) => setPizzaria({ ...pizzaria, taxa_adicional_por_km: parseFloat(e.target.value.replace(/[^\d,]/g, '').replace(',', '.')) || 0 })}
+                  <Input
+                    type="text"
+                    value={pizzaria.taxa_adicional_por_km || ''}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
+                      setPizzaria({ ...pizzaria, taxa_adicional_por_km: value ? parseFloat(value) : 0 });
+                    }}
                     className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="Ex: 1.00"
                   />
                   <p className="text-xs text-slate-500 mt-1">Valor por km além do raio base</p>
                 </div>
