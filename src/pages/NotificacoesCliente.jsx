@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { Toaster } from 'sonner';
 import moment from 'moment';
 
 export default function NotificacoesCliente() {
@@ -140,6 +141,7 @@ export default function NotificacoesCliente() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <Toaster position="top-center" richColors />
       <div className="max-w-3xl mx-auto p-4 sm:p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

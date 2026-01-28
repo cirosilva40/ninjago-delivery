@@ -44,6 +44,7 @@ import { createPageUrl } from '@/utils';
 import ProductDetailModal from '../components/cliente/ProductDetailModal';
 import ProdutoCard from '../components/cliente/ProdutoCard';
 import { enviarNotificacaoStatusPedido } from '../components/pedidos/NotificacaoHelper';
+import { Toaster } from 'sonner';
 
 export default function CardapioCliente() {
   const navigate = useNavigate();
@@ -546,6 +547,7 @@ export default function CardapioCliente() {
   return (
     <div className={`min-h-screen ${isLight ? 'bg-gradient-to-br from-gray-50 to-gray-100' : 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'}`}
       style={{ '--cor-primaria': corPrimaria }}>
+      <Toaster position="top-center" richColors />
       {/* Header */}
       <header className={`sticky top-0 z-50 backdrop-blur-xl ${isLight ? 'bg-white/95 border-gray-200' : 'bg-slate-900/95 border-white/10'} border-b shadow-lg`}>
         <div className="px-3 sm:px-4 py-3">
