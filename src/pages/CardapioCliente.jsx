@@ -18,6 +18,7 @@ import {
   Star,
   Tag,
   X,
+  Bell,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +43,7 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import ProductDetailModal from '../components/cliente/ProductDetailModal';
 import ProdutoCard from '../components/cliente/ProdutoCard';
+import { enviarNotificacaoStatusPedido } from '../components/pedidos/NotificacaoHelper';
 
 export default function CardapioCliente() {
   const navigate = useNavigate();
@@ -457,7 +459,7 @@ export default function CardapioCliente() {
       }
 
       // Criar o pedido
-      const novoPedido = await base44.entities.Pedido.create({
+      const pedidoData = {
         pizzaria_id: 'default',
         numero_pedido: `PED${Date.now()}`,
         tipo_pedido: 'delivery',
@@ -509,7 +511,12 @@ export default function CardapioCliente() {
         observacoes: formCliente.observacoes,
         horario_pedido: new Date().toISOString(),
         origem: 'site',
-      });
+      };
+
+      const novoPedido = await base44.entities.Pedido.create(pedidoData);
+
+      // Enviar notificação inicial ao cliente
+      await enviarNotificacaoStatusPedido(novoPedido, 'novo');
 
       // Redirecionar para página de acompanhamento
       navigate(createPageUrl('AcompanharPedido') + `?id=${novoPedido.id}`);
@@ -556,6 +563,16 @@ export default function CardapioCliente() {
             </div>
             
             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+              {clienteLogado && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(createPageUrl('NotificacoesCliente'))}
+                  className={`p-2 relative ${isLight ? 'text-gray-700' : 'text-white'}`}
+                >
+                  <Bell className="w-5 h-5" />
+                </Button>
+              )}
               {clienteLogado ? (
                 <Button
                   variant="ghost"

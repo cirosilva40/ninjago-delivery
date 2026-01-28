@@ -17,6 +17,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { enviarNotificacaoStatusPedido, deveEnviarNotificacao } from '@/components/pedidos/NotificacaoHelper';
+import { toast } from 'sonner';
 import moment from 'moment';
 
 const statusConfig = {
@@ -37,10 +39,20 @@ export default function Cozinha() {
   const pedidosProntos = pedidos.filter(p => p.status === 'pronto');
 
   const marcarPronto = async (pedidoId) => {
+    const pedido = pedidos.find(p => p.id === pedidoId);
+    const statusAntigo = pedido?.status;
+    
     await base44.entities.Pedido.update(pedidoId, { 
       status: 'pronto',
       horario_pronto: new Date().toISOString()
     });
+    
+    // Enviar notificação ao cliente
+    if (pedido && deveEnviarNotificacao(statusAntigo, 'pronto')) {
+      await enviarNotificacaoStatusPedido({ ...pedido, status: 'pronto' }, 'pronto');
+      toast.success('Pedido pronto e cliente notificado! 📲');
+    }
+    
     refetch();
   };
 
