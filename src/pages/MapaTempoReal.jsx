@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { GoogleMap, LoadScript, Marker, InfoWindow, Polyline } from '@react-google-maps/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MapPin,
@@ -11,10 +11,8 @@ import {
   Navigation,
   Clock,
   RefreshCw,
-  Maximize2,
   List,
   Map as MapIcon,
-  Circle,
   ExternalLink,
   Route,
   Play,
@@ -31,76 +29,110 @@ import {
 } from '@/components/ui/dialog';
 import moment from 'moment';
 import { toast } from 'sonner';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
 
-// Fix for default marker icons
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+const mapContainerStyle = {
+  width: '100%',
+  height: '100%',
+};
 
-// Custom icons
-const createCustomIcon = (color) => L.divIcon({
-  className: 'custom-marker',
-  html: `<div style="background: ${color}; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2">
-      <circle cx="12" cy="12" r="10"/>
-    </svg>
-  </div>`,
-  iconSize: [32, 32],
-  iconAnchor: [16, 16],
-});
-
-const bikeIcon = L.divIcon({
-  className: 'bike-marker',
-  html: `<div style="background: linear-gradient(135deg, #10b981, #059669); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 4px 15px rgba(16,185,129,0.4);">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>
-    </svg>
-  </div>`,
-  iconSize: [40, 40],
-  iconAnchor: [20, 20],
-});
-
-const destinationIcon = L.divIcon({
-  className: 'destination-marker',
-  html: `<div style="background: linear-gradient(135deg, #f97316, #ef4444); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 4px 15px rgba(249,115,22,0.4);">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-    </svg>
-  </div>`,
-  iconSize: [36, 36],
-  iconAnchor: [18, 36],
-});
-
-const pizzariaIcon = L.divIcon({
-  className: 'pizzaria-marker',
-  html: `<div style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 4px 15px rgba(139,92,246,0.4);">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-      <circle cx="8" cy="12" r="1.5"/><circle cx="12" cy="8" r="1.5"/><circle cx="16" cy="12" r="1.5"/><circle cx="12" cy="16" r="1.5"/>
-    </svg>
-  </div>`,
-  iconSize: [44, 44],
-  iconAnchor: [22, 22],
-});
-
-// Auto-center map component
-function AutoCenter({ positions }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (positions.length > 0) {
-      const bounds = L.latLngBounds(positions);
-      map.fitBounds(bounds, { padding: [50, 50] });
+const mapOptions = {
+  disableDefaultUI: false,
+  zoomControl: true,
+  mapTypeControl: false,
+  scaleControl: true,
+  streetViewControl: false,
+  rotateControl: false,
+  fullscreenControl: true,
+  styles: [
+    {
+      "elementType": "geometry",
+      "stylers": [{ "color": "#242f3e" }]
+    },
+    {
+      "elementType": "labels.text.stroke",
+      "stylers": [{ "color": "#242f3e" }]
+    },
+    {
+      "elementType": "labels.text.fill",
+      "stylers": [{ "color": "#746855" }]
+    },
+    {
+      "featureType": "administrative.locality",
+      "elementType": "labels.text.fill",
+      "stylers": [{ "color": "#d59563" }]
+    },
+    {
+      "featureType": "poi",
+      "elementType": "labels.text.fill",
+      "stylers": [{ "color": "#d59563" }]
+    },
+    {
+      "featureType": "poi.park",
+      "elementType": "geometry",
+      "stylers": [{ "color": "#263c3f" }]
+    },
+    {
+      "featureType": "poi.park",
+      "elementType": "labels.text.fill",
+      "stylers": [{ "color": "#6b9a76" }]
+    },
+    {
+      "featureType": "road",
+      "elementType": "geometry",
+      "stylers": [{ "color": "#38414e" }]
+    },
+    {
+      "featureType": "road",
+      "elementType": "geometry.stroke",
+      "stylers": [{ "color": "#212a37" }]
+    },
+    {
+      "featureType": "road",
+      "elementType": "labels.text.fill",
+      "stylers": [{ "color": "#9ca5b3" }]
+    },
+    {
+      "featureType": "road.highway",
+      "elementType": "geometry",
+      "stylers": [{ "color": "#746855" }]
+    },
+    {
+      "featureType": "road.highway",
+      "elementType": "geometry.stroke",
+      "stylers": [{ "color": "#1f2835" }]
+    },
+    {
+      "featureType": "road.highway",
+      "elementType": "labels.text.fill",
+      "stylers": [{ "color": "#f3d19c" }]
+    },
+    {
+      "featureType": "transit",
+      "elementType": "geometry",
+      "stylers": [{ "color": "#2f3948" }]
+    },
+    {
+      "featureType": "transit.station",
+      "elementType": "labels.text.fill",
+      "stylers": [{ "color": "#d59563" }]
+    },
+    {
+      "featureType": "water",
+      "elementType": "geometry",
+      "stylers": [{ "color": "#17263c" }]
+    },
+    {
+      "featureType": "water",
+      "elementType": "labels.text.fill",
+      "stylers": [{ "color": "#515c6d" }]
+    },
+    {
+      "featureType": "water",
+      "elementType": "labels.text.stroke",
+      "stylers": [{ "color": "#17263c" }]
     }
-  }, [positions, map]);
-  
-  return null;
-}
+  ]
+};
 
 const statusConfig = {
   pendente: { label: 'Pendente', color: 'bg-yellow-500' },
@@ -109,27 +141,17 @@ const statusConfig = {
   entregue: { label: 'Entregue', color: 'bg-emerald-500' },
 };
 
-// Map controller component to fly to position
-function MapController({ center, zoom }) {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (center && center[0] && center[1]) {
-      map.flyTo(center, zoom || 16, { duration: 1.5 });
-    }
-  }, [center, zoom, map]);
-  
-  return null;
-}
-
 export default function MapaTempoReal() {
   const [viewMode, setViewMode] = useState('map');
   const [selectedEntrega, setSelectedEntrega] = useState(null);
+  const [selectedEntregador, setSelectedEntregador] = useState(null);
+  const [selectedPizzaria, setSelectedPizzaria] = useState(false);
   const [gerandoRota, setGerandoRota] = useState(false);
   const [rotaOtimizada, setRotaOtimizada] = useState(null);
   const [showAtribuirRotaModal, setShowAtribuirRotaModal] = useState(false);
   const [atribuindoRota, setAtribuindoRota] = useState(false);
   const [selectedEntregadorId, setSelectedEntregadorId] = useState(null);
+  const [map, setMap] = useState(null);
   const [horarioInicio, setHorarioInicio] = useState(() => {
     const now = moment();
     return now.format('HH:mm');
@@ -139,15 +161,14 @@ export default function MapaTempoReal() {
   const { data: pizzarias = [], refetch: refetchPizzaria } = useQuery({
     queryKey: ['pizzaria-config-mapa'],
     queryFn: () => base44.entities.Pizzaria.list('-created_date', 1),
-    refetchInterval: 10000, // Atualiza a cada 10 segundos
+    refetchInterval: 10000,
   });
 
-  // Coordenadas do estabelecimento (ou padrão São Paulo)
   const pizzaria = pizzarias[0];
-  const defaultCenter = [
-    pizzaria?.latitude || -23.5505, 
-    pizzaria?.longitude || -46.6333
-  ];
+  const defaultCenter = {
+    lat: pizzaria?.latitude || -23.5505,
+    lng: pizzaria?.longitude || -46.6333
+  };
 
   const { data: entregas = [], refetch } = useQuery({
     queryKey: ['entregas-mapa'],
@@ -165,14 +186,54 @@ export default function MapaTempoReal() {
     refetchInterval: 5000,
   });
 
-  // Collect all positions for auto-centering
-  const allPositions = [
-    ...entregadores.filter(e => e.latitude && e.longitude).map(e => [e.latitude, e.longitude]),
-    ...entregas.filter(e => e.latitude_destino && e.longitude_destino).map(e => [e.latitude_destino, e.longitude_destino]),
-    defaultCenter,
-  ];
+  const { data: pedidosProntos = [] } = useQuery({
+    queryKey: ['pedidos-prontos-rota'],
+    queryFn: () => base44.entities.Pedido.filter({ status: 'pronto' }, '-created_date', 50),
+    refetchInterval: 10000,
+  });
 
-  const openGoogleMaps = (lat, lng, address) => {
+  // Auto-fit bounds quando houver mudanças
+  useEffect(() => {
+    if (map && entregadores.length > 0) {
+      const bounds = new window.google.maps.LatLngBounds();
+      
+      // Add pizzaria
+      if (pizzaria?.latitude && pizzaria?.longitude) {
+        bounds.extend({ lat: pizzaria.latitude, lng: pizzaria.longitude });
+      }
+      
+      // Add entregadores
+      entregadores.forEach(e => {
+        if (e.latitude && e.longitude) {
+          bounds.extend({ lat: e.latitude, lng: e.longitude });
+        }
+      });
+      
+      // Add entregas
+      entregas.forEach(e => {
+        if (e.latitude_destino && e.longitude_destino) {
+          bounds.extend({ lat: e.latitude_destino, lng: e.longitude_destino });
+        }
+      });
+      
+      if (!bounds.isEmpty() && !selectedEntregadorId) {
+        map.fitBounds(bounds, 50);
+      }
+    }
+  }, [map, entregadores, entregas, pizzaria, selectedEntregadorId]);
+
+  // Centralizar em entregador selecionado
+  useEffect(() => {
+    if (map && selectedEntregadorId) {
+      const entregador = entregadores.find(e => e.id === selectedEntregadorId);
+      if (entregador?.latitude && entregador?.longitude) {
+        map.panTo({ lat: entregador.latitude, lng: entregador.longitude });
+        map.setZoom(16);
+      }
+    }
+  }, [selectedEntregadorId, map, entregadores]);
+
+  const openGoogleMaps = (lat, lng) => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
     window.open(url, '_blank');
   };
@@ -182,20 +243,11 @@ export default function MapaTempoReal() {
     window.open(url, '_blank');
   };
 
-  // Buscar pedidos prontos para gerar rota
-  const { data: pedidosProntos = [] } = useQuery({
-    queryKey: ['pedidos-prontos-rota'],
-    queryFn: () => base44.entities.Pedido.filter({ status: 'pronto' }, '-created_date', 50),
-    refetchInterval: 10000,
-  });
-
-  // Gerar melhor rota usando API de roteirização
   const gerarMelhorRota = async () => {
     if (pedidosProntos.length === 0) return;
     
     setGerandoRota(true);
     try {
-      // Montar lista de endereços
       const enderecos = pedidosProntos.map(p => ({
         id: p.id,
         numero_pedido: p.numero_pedido,
@@ -204,7 +256,6 @@ export default function MapaTempoReal() {
         valor_total: p.valor_total,
       }));
 
-      // Usar LLM com contexto da internet para otimizar rota
       const prompt = `
 Você é um especialista em otimização de rotas de entrega.
 
@@ -251,12 +302,10 @@ Retorne a rota otimizada com as seguintes informações.
         }
       });
 
-      // Reordenar pedidos conforme sequência otimizada
       const pedidosOrdenados = resultado.sequencia_pedidos.map(numeroPedido => 
         pedidosProntos.find(p => p.numero_pedido === numeroPedido)
       ).filter(Boolean);
 
-      // Se alguns pedidos não foram incluídos na sequência, adicionar no final
       const pedidosNaoIncluidos = pedidosProntos.filter(p => 
         !resultado.sequencia_pedidos.includes(p.numero_pedido)
       );
@@ -275,7 +324,6 @@ Retorne a rota otimizada com as seguintes informações.
       console.error('Erro ao gerar rota:', error);
       toast.error('Erro ao gerar rota otimizada');
       
-      // Fallback: ordenar por bairro
       const pedidosOrdenados = [...pedidosProntos].sort((a, b) => {
         const bairroA = a.cliente_bairro || '';
         const bairroB = b.cliente_bairro || '';
@@ -294,7 +342,6 @@ Retorne a rota otimizada com as seguintes informações.
     }
   };
 
-  // Abrir rota completa no Google Maps
   const abrirRotaGoogleMaps = () => {
     if (!rotaOtimizada || rotaOtimizada.pedidos.length === 0) return;
 
@@ -309,6 +356,18 @@ Retorne a rota otimizada com as seguintes informações.
     const url = `https://www.google.com/maps/dir/?api=1&origin=Sua+Localização&destination=${destino}&waypoints=${waypoints}&travelmode=driving`;
     window.open(url, '_blank');
   };
+
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+  if (!apiKey) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Card className="p-6 bg-red-500/10 border-red-500/30">
+          <p className="text-red-400">Configure a chave da API do Google Maps nas variáveis de ambiente</p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -448,130 +507,167 @@ Retorne a rota otimizada com as seguintes informações.
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Map */}
+        {/* Google Map */}
         <div className={`${viewMode === 'map' ? 'lg:col-span-2' : 'hidden lg:block lg:col-span-2'}`}>
           <Card className="overflow-hidden rounded-2xl bg-white/5 border-white/10 h-[600px]">
-            {defaultCenter[0] && defaultCenter[1] && (
-              <MapContainer
-                key={`${defaultCenter[0]}-${defaultCenter[1]}`}
+            <LoadScript googleMapsApiKey={apiKey}>
+              <GoogleMap
+                mapContainerStyle={mapContainerStyle}
                 center={defaultCenter}
                 zoom={13}
-                style={{ height: '100%', width: '100%' }}
-                className="rounded-2xl"
-                whenReady={() => {
-                  setTimeout(() => {
-                    window.dispatchEvent(new Event('resize'));
-                  }, 100);
-                }}
+                options={mapOptions}
+                onLoad={setMap}
               >
-                <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                  attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-                />
-                
-                {allPositions.length > 1 && !selectedEntregadorId && <AutoCenter positions={allPositions} />}
-                
-                {selectedEntregadorId && (() => {
-                  const entregador = entregadores.find(e => e.id === selectedEntregadorId);
-                  return entregador?.latitude && entregador?.longitude ? (
-                    <MapController center={[entregador.latitude, entregador.longitude]} zoom={16} />
-                  ) : null;
-                })()}
-
-              {/* Pizzaria Marker */}
-              <Marker position={defaultCenter} icon={pizzariaIcon}>
-                <Popup>
-                  <div className="p-2">
-                    <p className="font-bold">🚀 {pizzaria?.nome || 'NinjaGO Delivery'}</p>
-                    <p className="text-sm text-gray-600">Ponto de origem</p>
-                    {pizzaria?.endereco && (
-                      <p className="text-xs text-gray-500">{pizzaria.endereco}</p>
-                    )}
-                  </div>
-                </Popup>
-              </Marker>
-
-              {/* Entregadores Markers */}
-              {entregadores.filter(e => e.latitude && e.longitude).map((entregador) => {
-                const isSelected = selectedEntregadorId === entregador.id;
-                const icon = isSelected ? L.divIcon({
-                  className: 'bike-marker-selected',
-                  html: `<div style="background: linear-gradient(135deg, #f97316, #ef4444); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 4px solid white; box-shadow: 0 6px 20px rgba(249,115,22,0.6); animation: pulse 2s infinite;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/>
-                    </svg>
-                  </div>
-                  <style>
-                    @keyframes pulse {
-                      0%, 100% { transform: scale(1); }
-                      50% { transform: scale(1.1); }
-                    }
-                  </style>`,
-                  iconSize: [50, 50],
-                  iconAnchor: [25, 25],
-                }) : bikeIcon;
-                
-                return (
+                {/* Pizzaria Marker */}
+                {pizzaria?.latitude && pizzaria?.longitude && (
                   <Marker
-                    key={entregador.id}
-                    position={[entregador.latitude, entregador.longitude]}
-                    icon={icon}
+                    position={{ lat: pizzaria.latitude, lng: pizzaria.longitude }}
+                    icon={{
+                      url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                        <svg width="44" height="44" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+                              <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+                            </linearGradient>
+                          </defs>
+                          <rect width="44" height="44" rx="12" fill="url(#grad1)" stroke="white" stroke-width="3"/>
+                          <circle cx="14" cy="22" r="2" fill="white"/>
+                          <circle cx="22" cy="14" r="2" fill="white"/>
+                          <circle cx="30" cy="22" r="2" fill="white"/>
+                          <circle cx="22" cy="30" r="2" fill="white"/>
+                        </svg>
+                      `),
+                      scaledSize: new window.google.maps.Size(44, 44),
+                      anchor: new window.google.maps.Point(22, 22),
+                    }}
+                    onClick={() => setSelectedPizzaria(true)}
+                  />
+                )}
+                
+                {selectedPizzaria && (
+                  <InfoWindow
+                    position={{ lat: pizzaria.latitude, lng: pizzaria.longitude }}
+                    onCloseClick={() => setSelectedPizzaria(false)}
                   >
-                    <Popup>
-                      <div className="p-2 min-w-[200px]">
-                        <p className="font-bold text-lg">{entregador.nome}</p>
-                        <p className="text-sm text-gray-600">{entregador.veiculo}</p>
-                        <div className="mt-2 flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${statusConfig[entregador.status]?.color || 'bg-gray-400'}`} />
-                          <span className="text-sm capitalize">{entregador.status?.replace('_', ' ')}</span>
-                        </div>
-                        <a 
-                          href={`tel:${entregador.telefone}`}
-                          className="mt-2 block text-blue-600 text-sm"
-                        >
-                          📞 {entregador.telefone}
-                        </a>
-                      </div>
-                    </Popup>
-                  </Marker>
-                );
-              })}
-
-              {/* Entregas Markers */}
-              {entregas.filter(e => e.latitude_destino && e.longitude_destino).map((entrega) => (
-                <Marker
-                  key={entrega.id}
-                  position={[entrega.latitude_destino, entrega.longitude_destino]}
-                  icon={destinationIcon}
-                >
-                  <Popup>
-                    <div className="p-2 min-w-[220px]">
-                      <p className="font-bold">Pedido #{entrega.numero_pedido}</p>
-                      <p className="text-sm">{entrega.cliente_nome}</p>
-                      <p className="text-sm text-gray-600">{entrega.endereco_completo}</p>
-                      <p className="text-lg font-bold text-green-600 mt-2">
-                        R$ {entrega.valor_pedido?.toFixed(2)}
-                      </p>
-                      <div className="mt-2 flex gap-2">
-                        <button 
-                          onClick={() => openGoogleMaps(entrega.latitude_destino, entrega.longitude_destino, entrega.endereco_completo)}
-                          className="text-xs bg-blue-500 text-white px-2 py-1 rounded"
-                        >
-                          Google Maps
-                        </button>
-                        <button 
-                          onClick={() => openWaze(entrega.latitude_destino, entrega.longitude_destino)}
-                          className="text-xs bg-cyan-500 text-white px-2 py-1 rounded"
-                        >
-                          Waze
-                        </button>
-                      </div>
+                    <div className="p-2">
+                      <p className="font-bold">🚀 {pizzaria?.nome || 'NinjaGO Delivery'}</p>
+                      <p className="text-sm text-gray-600">Ponto de origem</p>
+                      {pizzaria?.endereco && (
+                        <p className="text-xs text-gray-500">{pizzaria.endereco}</p>
+                      )}
                     </div>
-                  </Popup>
-                </Marker>
-              ))}
-              </MapContainer>
-            )}
+                  </InfoWindow>
+                )}
+
+                {/* Entregadores Markers */}
+                {entregadores.filter(e => e.latitude && e.longitude).map((entregador) => {
+                  const isSelected = selectedEntregadorId === entregador.id;
+                  return (
+                    <React.Fragment key={entregador.id}>
+                      <Marker
+                        position={{ lat: entregador.latitude, lng: entregador.longitude }}
+                        icon={{
+                          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                            <svg width="${isSelected ? '50' : '40'}" height="${isSelected ? '50' : '40'}" xmlns="http://www.w3.org/2000/svg">
+                              <defs>
+                                <linearGradient id="grad-bike-${entregador.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+                                  <stop offset="0%" style="stop-color:${isSelected ? '#f97316' : '#10b981'};stop-opacity:1" />
+                                  <stop offset="100%" style="stop-color:${isSelected ? '#ef4444' : '#059669'};stop-opacity:1" />
+                                </linearGradient>
+                              </defs>
+                              <circle cx="${isSelected ? '25' : '20'}" cy="${isSelected ? '25' : '20'}" r="${isSelected ? '22' : '17'}" fill="url(#grad-bike-${entregador.id})" stroke="white" stroke-width="${isSelected ? '4' : '3'}"/>
+                              <path d="M${isSelected ? '13' : '10'} ${isSelected ? '30' : '25'} Q${isSelected ? '25' : '20'} ${isSelected ? '20' : '17'} ${isSelected ? '37' : '30'} ${isSelected ? '30' : '25'}" stroke="white" stroke-width="2.5" fill="none"/>
+                              <circle cx="${isSelected ? '37' : '30'}" cy="${isSelected ? '30' : '25'}" r="3.5" stroke="white" stroke-width="2" fill="none"/>
+                              <circle cx="${isSelected ? '13' : '10'}" cy="${isSelected ? '30' : '25'}" r="3.5" stroke="white" stroke-width="2" fill="none"/>
+                            </svg>
+                          `),
+                          scaledSize: new window.google.maps.Size(isSelected ? 50 : 40, isSelected ? 50 : 40),
+                          anchor: new window.google.maps.Point(isSelected ? 25 : 20, isSelected ? 25 : 20),
+                        }}
+                        onClick={() => setSelectedEntregador(entregador)}
+                      />
+                      {selectedEntregador?.id === entregador.id && (
+                        <InfoWindow
+                          position={{ lat: entregador.latitude, lng: entregador.longitude }}
+                          onCloseClick={() => setSelectedEntregador(null)}
+                        >
+                          <div className="p-2 min-w-[200px]">
+                            <p className="font-bold text-lg">{entregador.nome}</p>
+                            <p className="text-sm text-gray-600">{entregador.veiculo}</p>
+                            <div className="mt-2 flex items-center gap-2">
+                              <span className={`w-2 h-2 rounded-full ${statusConfig[entregador.status]?.color || 'bg-gray-400'}`} />
+                              <span className="text-sm capitalize">{entregador.status?.replace('_', ' ')}</span>
+                            </div>
+                            <a 
+                              href={`tel:${entregador.telefone}`}
+                              className="mt-2 block text-blue-600 text-sm"
+                            >
+                              📞 {entregador.telefone}
+                            </a>
+                          </div>
+                        </InfoWindow>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+
+                {/* Entregas Markers */}
+                {entregas.filter(e => e.latitude_destino && e.longitude_destino).map((entrega) => (
+                  <React.Fragment key={entrega.id}>
+                    <Marker
+                      position={{ lat: entrega.latitude_destino, lng: entrega.longitude_destino }}
+                      icon={{
+                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                          <svg width="36" height="46" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                              <linearGradient id="grad-dest" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#f97316;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#ef4444;stop-opacity:1" />
+                              </linearGradient>
+                            </defs>
+                            <path d="M18 2c-7 0-13 5.5-13 12.5 0 8 13 29.5 13 29.5s13-21.5 13-29.5c0-7-6-12.5-13-12.5z" fill="url(#grad-dest)" stroke="white" stroke-width="3"/>
+                            <circle cx="18" cy="14" r="4" fill="white"/>
+                          </svg>
+                        `),
+                        scaledSize: new window.google.maps.Size(36, 46),
+                        anchor: new window.google.maps.Point(18, 46),
+                      }}
+                      onClick={() => setSelectedEntrega(entrega)}
+                    />
+                    {selectedEntrega?.id === entrega.id && (
+                      <InfoWindow
+                        position={{ lat: entrega.latitude_destino, lng: entrega.longitude_destino }}
+                        onCloseClick={() => setSelectedEntrega(null)}
+                      >
+                        <div className="p-2 min-w-[220px]">
+                          <p className="font-bold">Pedido #{entrega.numero_pedido}</p>
+                          <p className="text-sm">{entrega.cliente_nome}</p>
+                          <p className="text-sm text-gray-600">{entrega.endereco_completo}</p>
+                          <p className="text-lg font-bold text-green-600 mt-2">
+                            R$ {entrega.valor_pedido?.toFixed(2)}
+                          </p>
+                          <div className="mt-2 flex gap-2">
+                            <button 
+                              onClick={() => openGoogleMaps(entrega.latitude_destino, entrega.longitude_destino)}
+                              className="text-xs bg-blue-500 text-white px-2 py-1 rounded"
+                            >
+                              Google Maps
+                            </button>
+                            <button 
+                              onClick={() => openWaze(entrega.latitude_destino, entrega.longitude_destino)}
+                              className="text-xs bg-cyan-500 text-white px-2 py-1 rounded"
+                            >
+                              Waze
+                            </button>
+                          </div>
+                        </div>
+                      </InfoWindow>
+                    )}
+                  </React.Fragment>
+                ))}
+              </GoogleMap>
+            </LoadScript>
           </Card>
         </div>
 
@@ -648,8 +744,7 @@ Retorne a rota otimizada com as seguintes informações.
                             className="flex-1 border-slate-700 text-slate-300"
                             onClick={() => openGoogleMaps(
                               entrega.latitude_destino || -23.5505,
-                              entrega.longitude_destino || -46.6333,
-                              entrega.endereco_completo
+                              entrega.longitude_destino || -46.6333
                             )}
                           >
                             <Navigation className="w-4 h-4 mr-1" />
@@ -761,7 +856,6 @@ Retorne a rota otimizada com as seguintes informações.
           </DialogHeader>
 
           <div className="space-y-4 mt-4">
-            {/* Resumo da Rota */}
             <div className="p-4 rounded-xl bg-white/5 border border-white/10">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-slate-400">Total de entregas:</span>
@@ -777,7 +871,6 @@ Retorne a rota otimizada com as seguintes informações.
               </div>
             </div>
 
-            {/* Lista de Motoboys Disponíveis */}
             <div>
               <h4 className="text-sm font-medium text-slate-400 mb-3">Selecione o Motoboy:</h4>
               <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -793,9 +886,7 @@ Retorne a rota otimizada com as seguintes informações.
                       onClick={async () => {
                         setAtribuindoRota(true);
                         try {
-                          // Criar entregas para cada pedido da rota
                           for (const pedido of rotaOtimizada.pedidos) {
-                            // Criar registro de entrega
                             await base44.entities.Entrega.create({
                               pizzaria_id: pizzaria?.id || 'default',
                               pedido_id: pedido.id,
@@ -814,14 +905,11 @@ Retorne a rota otimizada com as seguintes informações.
                               itens_resumo: pedido.itens?.map(i => `${i.quantidade}x ${i.nome}`).join(', '),
                             });
 
-                            // Atualizar status do pedido
                             await base44.entities.Pedido.update(pedido.id, { status: 'em_entrega' });
                           }
 
-                          // Atualizar status do motoboy
                           await base44.entities.Entregador.update(motoboy.id, { status: 'em_entrega' });
 
-                          // Criar notificação
                           await base44.entities.Notificacao.create({
                             pizzaria_id: pizzaria?.id,
                             destinatario_id: motoboy.id,
@@ -831,11 +919,13 @@ Retorne a rota otimizada com as seguintes informações.
                             dados: { quantidade: rotaOtimizada.pedidos.length },
                           });
 
+                          toast.success('Rota atribuída com sucesso!');
                           setShowAtribuirRotaModal(false);
                           setRotaOtimizada(null);
                           refetch();
                         } catch (error) {
                           console.error('Erro ao atribuir rota:', error);
+                          toast.error('Erro ao atribuir rota');
                         } finally {
                           setAtribuindoRota(false);
                         }
