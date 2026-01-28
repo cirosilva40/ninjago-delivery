@@ -659,6 +659,28 @@ export default function Configuracoes() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Mapa Visual do Raio de Entrega */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-purple-500" />
+                Área de Cobertura
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                Visualização do raio de entrega em tempo real
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <MapaRaioEntrega
+                latitude={pizzaria.latitude}
+                longitude={pizzaria.longitude}
+                raioKm={pizzaria.raio_entrega_km || 10}
+                taxaBase={pizzaria.taxa_entrega_base || 0}
+                taxaAdicional={pizzaria.taxa_adicional_por_km || 0}
+              />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Tab Pagamento */}
