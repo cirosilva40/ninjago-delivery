@@ -102,10 +102,10 @@ export default function MapaRaioEntrega({ latitude, longitude, raioKm, taxaBase,
             <Popup>
               <div className="text-center">
                 <div className="text-sm font-bold text-gray-900">Raio Base: {raioKm} km</div>
-                <p className="text-xs text-gray-600">Taxa: R$ {taxaBase?.toFixed(2)}</p>
-                {taxaAdicional > 0 && (
+                <p className="text-xs text-gray-600">Taxa: R$ {(parseFloat(taxaBase) || 0).toFixed(2)}</p>
+                {parseFloat(taxaAdicional) > 0 && (
                   <p className="text-xs text-amber-600 mt-1">
-                    Além deste raio: +R$ {taxaAdicional?.toFixed(2)}/km
+                    Além deste raio: +R$ {(parseFloat(taxaAdicional) || 0).toFixed(2)}/km
                   </p>
                 )}
               </div>
