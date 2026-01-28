@@ -61,6 +61,10 @@ export default function CardapioCliente() {
   const [loginError, setLoginError] = useState('');
   const [cadastroSenha, setCadastroSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [cupomCodigo, setCupomCodigo] = useState('');
+  const [cupomAplicado, setCupomAplicado] = useState(null);
+  const [taxaEntrega, setTaxaEntrega] = useState(0);
+  const [checkoutStep, setCheckoutStep] = useState(1); // 1: endereço, 2: pagamento, 3: revisão
   
   const [formCliente, setFormCliente] = useState({
     nome: '',
@@ -177,8 +181,113 @@ export default function CardapioCliente() {
     }
   };
 
-  const calcularTotal = () => {
+  const calcularSubtotal = () => {
     return carrinho.reduce((total, item) => total + (item.preco * item.quantidade), 0);
+  };
+
+  const calcularDesconto = () => {
+    if (!cupomAplicado) return 0;
+    const subtotal = calcularSubtotal();
+    
+    if (cupomAplicado.tipo === 'desconto_valor') {
+      return cupomAplicado.valor_desconto;
+    } else if (cupomAplicado.tipo === 'desconto_percentual') {
+      return subtotal * (cupomAplicado.valor_desconto / 100);
+    } else if (cupomAplicado.tipo === 'entrega_gratis') {
+      return taxaEntrega;
+    }
+    return 0;
+  };
+
+  const calcularTotal = () => {
+    const subtotal = calcularSubtotal();
+    const desconto = calcularDesconto();
+    return subtotal + taxaEntrega - desconto;
+  };
+
+  // Calcular taxa de entrega dinamicamente
+  const calcularTaxaEntrega = async () => {
+    if (!formCliente.cep || !pizzariaConfig.latitude || !pizzariaConfig.longitude) {
+      setTaxaEntrega(pizzariaConfig.taxa_entrega_base || 5);
+      return;
+    }
+
+    try {
+      // Buscar coordenadas do CEP do cliente
+      const response = await fetch(`https://viacep.com.br/ws/${formCliente.cep.replace(/\D/g, '')}/json/`);
+      const data = await response.json();
+      
+      if (data.erro) {
+        setTaxaEntrega(pizzariaConfig.taxa_entrega_base || 5);
+        return;
+      }
+
+      // Calcular distância (simplificado - em produção usar API de distância real)
+      // Aqui estamos usando uma aproximação básica
+      const subtotal = calcularSubtotal();
+      
+      // Verificar entrega grátis
+      if (pizzariaConfig.valor_minimo_entrega_gratis > 0 && 
+          subtotal >= pizzariaConfig.valor_minimo_entrega_gratis) {
+        setTaxaEntrega(0);
+        return;
+      }
+
+      // Simular distância (5-20km)
+      const distanciaKm = Math.random() * 15 + 5;
+      
+      if (distanciaKm <= pizzariaConfig.raio_entrega_km) {
+        // Dentro do raio base
+        if (pizzariaConfig.entrega_gratis_dentro_raio_base) {
+          setTaxaEntrega(0);
+        } else {
+          setTaxaEntrega(pizzariaConfig.taxa_entrega_base || 5);
+        }
+      } else {
+        // Fora do raio base
+        const kmExtra = distanciaKm - pizzariaConfig.raio_entrega_km;
+        const taxaExtra = kmExtra * (pizzariaConfig.taxa_adicional_por_km || 0);
+        setTaxaEntrega((pizzariaConfig.taxa_entrega_base || 5) + taxaExtra);
+      }
+    } catch (error) {
+      console.error('Erro ao calcular taxa:', error);
+      setTaxaEntrega(pizzariaConfig.taxa_entrega_base || 5);
+    }
+  };
+
+  const aplicarCupom = async () => {
+    if (!cupomCodigo.trim()) return;
+
+    try {
+      const cupons = await base44.entities.ResgatePontos.filter({ 
+        codigo_cupom: cupomCodigo.toUpperCase(),
+        status: 'ativo'
+      });
+
+      if (cupons.length === 0) {
+        alert('Cupom inválido ou já utilizado');
+        return;
+      }
+
+      const cupom = cupons[0];
+      const hoje = new Date();
+      const validade = new Date(cupom.data_validade);
+
+      if (hoje > validade) {
+        alert('Este cupom expirou');
+        return;
+      }
+
+      // Buscar detalhes da recompensa
+      const recompensas = await base44.entities.Recompensa.filter({ id: cupom.recompensa_id });
+      if (recompensas.length > 0) {
+        setCupomAplicado(recompensas[0]);
+        alert('Cupom aplicado com sucesso! 🎉');
+      }
+    } catch (error) {
+      console.error('Erro ao aplicar cupom:', error);
+      alert('Erro ao aplicar cupom');
+    }
   };
 
   const buscarCep = async () => {
@@ -197,6 +306,8 @@ export default function CardapioCliente() {
           cidade: data.localidade,
           estado: data.uf,
         });
+        // Recalcular taxa após preencher CEP
+        calcularTaxaEntrega();
       }
     } catch (error) {
       console.error('Erro ao buscar CEP:', error);
@@ -204,6 +315,13 @@ export default function CardapioCliente() {
       setBuscandoCep(false);
     }
   };
+
+  // Recalcular taxa quando CEP mudar
+  useEffect(() => {
+    if (formCliente.cep && formCliente.cep.length >= 8) {
+      calcularTaxaEntrega();
+    }
+  }, [formCliente.cep, pizzariaConfig]);
 
   const usarLocalizacao = () => {
     setBuscandoLocalizacao(true);
@@ -304,7 +422,7 @@ export default function CardapioCliente() {
             cidade: formCliente.cidade,
             estado: formCliente.estado,
             total_pedidos: (clienteLogado.total_pedidos || 0) + 1,
-            pontos_fidelidade: (clienteLogado.pontos_fidelidade || 0) + Math.floor(calcularTotal()),
+            pontos_fidelidade: (clienteLogado.pontos_fidelidade || 0) + Math.floor(calcularSubtotal()),
           });
           clienteId = clienteLogado.id;
         } else {
@@ -331,7 +449,7 @@ export default function CardapioCliente() {
             latitude: formCliente.latitude,
             longitude: formCliente.longitude,
             total_pedidos: 1,
-            pontos_fidelidade: Math.floor(calcularTotal()),
+            pontos_fidelidade: Math.floor(calcularSubtotal()),
           });
           clienteId = novoCliente.id;
           localStorage.setItem('cliente_logado', JSON.stringify(novoCliente));
@@ -381,10 +499,10 @@ export default function CardapioCliente() {
             observacao: observacaoItem,
           };
         }),
-        valor_produtos: calcularTotal(),
-        taxa_entrega: 5, // Valor fixo por enquanto
-        desconto: 0,
-        valor_total: calcularTotal() + 5,
+        valor_produtos: calcularSubtotal(),
+        taxa_entrega: taxaEntrega,
+        desconto: calcularDesconto(),
+        valor_total: calcularTotal(),
         forma_pagamento: formCliente.forma_pagamento,
         troco_para: formCliente.troco_para || 0,
         status: 'novo',
@@ -791,18 +909,26 @@ export default function CardapioCliente() {
                 </div>
               ))}
 
-              <div className="border-t border-white/10 pt-4">
-                <div className="flex justify-between text-lg mb-2">
+              <div className="border-t border-white/10 pt-4 space-y-2">
+                <div className="flex justify-between text-lg">
                   <span className="text-slate-400">Subtotal:</span>
-                  <span className="text-white font-semibold">R$ {calcularTotal().toFixed(2)}</span>
+                  <span className="text-white font-semibold">R$ {calcularSubtotal().toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-lg mb-4">
+                <div className="flex justify-between text-lg">
                   <span className="text-slate-400">Taxa de entrega:</span>
-                  <span className="text-white font-semibold">R$ 5,00</span>
+                  <span className={`font-semibold ${taxaEntrega === 0 ? 'text-emerald-400' : 'text-white'}`}>
+                    {taxaEntrega === 0 ? 'GRÁTIS' : `R$ ${taxaEntrega.toFixed(2)}`}
+                  </span>
                 </div>
-                <div className="flex justify-between text-2xl font-bold">
+                {cupomAplicado && (
+                  <div className="flex justify-between text-lg">
+                    <span className="text-emerald-400">Desconto (cupom):</span>
+                    <span className="text-emerald-400 font-semibold">- R$ {calcularDesconto().toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-2xl font-bold pt-2 border-t border-white/10">
                   <span className="text-white">Total:</span>
-                  <span className="text-emerald-400">R$ {(calcularTotal() + 5).toFixed(2)}</span>
+                  <span className="text-emerald-400">R$ {calcularTotal().toFixed(2)}</span>
                 </div>
               </div>
 
@@ -822,9 +948,17 @@ export default function CardapioCliente() {
 
       {/* Modal de Checkout */}
       <Dialog open={showCheckout} onOpenChange={setShowCheckout}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">Finalizar Pedido</DialogTitle>
+            <DialogTitle className="text-2xl font-bold flex items-center justify-between">
+              <span>Finalizar Pedido</span>
+              {checkoutStep > 1 && (
+                <div className="flex items-center gap-2 text-sm font-normal text-slate-400">
+                  {checkoutStep === 2 && <span>Passo 2 de 3</span>}
+                  {checkoutStep === 3 && <span>Passo 3 de 3 - Revisão</span>}
+                </div>
+              )}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6">
@@ -915,8 +1049,56 @@ export default function CardapioCliente() {
             {/* Formulário */}
             {tipoCliente && tipoCliente !== 'login' && (
               <>
-                <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
-                  <h3 className="font-semibold text-white">Seus Dados</h3>
+                {/* Resumo do Pedido (sempre visível) */}
+                <div className="p-4 rounded-xl bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/30">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-white flex items-center gap-2">
+                      <ShoppingCart className="w-5 h-5" />
+                      Resumo do Pedido
+                    </h3>
+                    <button 
+                      onClick={() => setShowCheckout(false)}
+                      className="text-orange-400 text-sm hover:underline"
+                    >
+                      Editar carrinho
+                    </button>
+                  </div>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {carrinho.map((item) => (
+                      <div key={item.id} className="flex justify-between text-sm">
+                        <span className="text-slate-300">{item.quantidade}x {item.nome}</span>
+                        <span className="text-white font-medium">R$ {(item.preco * item.quantidade).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t border-white/10 mt-3 pt-3 space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Subtotal:</span>
+                      <span className="text-white font-semibold">R$ {calcularSubtotal().toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Taxa de entrega:</span>
+                      <span className={`font-semibold ${taxaEntrega === 0 ? 'text-emerald-400' : 'text-white'}`}>
+                        {taxaEntrega === 0 ? 'GRÁTIS' : `R$ ${taxaEntrega.toFixed(2)}`}
+                      </span>
+                    </div>
+                    {cupomAplicado && (
+                      <div className="flex justify-between">
+                        <span className="text-emerald-400">Desconto:</span>
+                        <span className="text-emerald-400 font-semibold">- R$ {calcularDesconto().toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-lg font-bold pt-2 border-t border-white/10">
+                      <span className="text-white">Total:</span>
+                      <span className="text-emerald-400">R$ {calcularTotal().toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {checkoutStep === 1 && (
+                  <>
+                    <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                      <h3 className="font-semibold text-white">Seus Dados</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label>Nome Completo</Label>
@@ -1046,73 +1228,194 @@ export default function CardapioCliente() {
                         placeholder="Apto, bloco, etc."
                       />
                     </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
-                  <h3 className="font-semibold text-white">Pagamento</h3>
-                  <div>
-                    <Label>Forma de Pagamento</Label>
-                    <Select value={formCliente.forma_pagamento} onValueChange={(v) => setFormCliente({ ...formCliente, forma_pagamento: v })}>
-                      <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-700">
-                        {formasPagamento.map((forma) => (
-                          <SelectItem key={forma.id} value={forma.tipo}>
-                            {forma.nome}
-                          </SelectItem>
-                        ))}
-                        <SelectItem value="pagar_na_entrega">Pagar na Entrega</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  {formCliente.forma_pagamento === 'dinheiro' && (
-                    <div>
-                      <Label>Troco para (opcional)</Label>
-                      <Input
-                        type="number"
-                        value={formCliente.troco_para}
-                        onChange={(e) => setFormCliente({ ...formCliente, troco_para: parseFloat(e.target.value) })}
-                        className="bg-slate-800 border-slate-700 text-white"
-                        placeholder="R$ 0,00"
-                      />
+                      </div>
                     </div>
-                  )}
-                </div>
 
-                <div>
-                  <Label>Observações (opcional)</Label>
-                  <Textarea
-                    value={formCliente.observacoes}
-                    onChange={(e) => setFormCliente({ ...formCliente, observacoes: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="Alguma observação sobre o pedido?"
-                    rows={3}
-                  />
-                </div>
-
-                {tipoCliente === 'convidado' && (
-                  <div className="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/30">
-                    <p className="text-sm text-yellow-300">
-                      ⚠️ Comprando como convidado, você não acumula pontos no programa de fidelidade.
-                    </p>
-                  </div>
+                    <Button
+                      onClick={() => {
+                        if (!formCliente.cep || !formCliente.endereco || !formCliente.numero) {
+                          alert('Preencha o endereço completo');
+                          return;
+                        }
+                        setCheckoutStep(2);
+                      }}
+                      className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600"
+                    >
+                      Continuar para Pagamento
+                    </Button>
+                  </>
                 )}
 
-                <div className="border-t border-slate-700 pt-4">
-                  <div className="flex justify-between text-2xl font-bold mb-4">
-                    <span className="text-white">Total:</span>
-                    <span className="text-emerald-400">R$ {(calcularTotal() + 5).toFixed(2)}</span>
-                  </div>
-                  <Button
-                    onClick={finalizarPedido}
-                    className="w-full h-14 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-bold"
-                  >
-                    Confirmar Pedido
-                  </Button>
-                </div>
+                {checkoutStep === 2 && (
+                  <>
+                    <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                      <h3 className="font-semibold text-white">Forma de Pagamento</h3>
+                      <div>
+                        <Label>Forma de Pagamento</Label>
+                        <Select value={formCliente.forma_pagamento} onValueChange={(v) => setFormCliente({ ...formCliente, forma_pagamento: v })}>
+                          <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-800 border-slate-700">
+                            {formasPagamento.map((forma) => (
+                              <SelectItem key={forma.id} value={forma.tipo}>
+                                {forma.nome}
+                              </SelectItem>
+                            ))}
+                            <SelectItem value="pagar_na_entrega">Pagar na Entrega</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      {formCliente.forma_pagamento === 'dinheiro' && (
+                        <div>
+                          <Label>Troco para (opcional)</Label>
+                          <Input
+                            type="number"
+                            value={formCliente.troco_para}
+                            onChange={(e) => setFormCliente({ ...formCliente, troco_para: parseFloat(e.target.value) })}
+                            className="bg-slate-800 border-slate-700 text-white"
+                            placeholder="R$ 0,00"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Cupom de Desconto */}
+                    <div className="space-y-4 p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/30">
+                      <h3 className="font-semibold text-white flex items-center gap-2">
+                        <Tag className="w-5 h-5 text-emerald-400" />
+                        Cupom de Desconto
+                      </h3>
+                      {cupomAplicado ? (
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/20 border border-emerald-500/50">
+                          <div>
+                            <p className="font-bold text-emerald-300">{cupomAplicado.titulo}</p>
+                            <p className="text-sm text-emerald-400">Desconto: R$ {calcularDesconto().toFixed(2)}</p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setCupomAplicado(null);
+                              setCupomCodigo('');
+                            }}
+                            className="text-red-400"
+                          >
+                            Remover
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Input
+                            value={cupomCodigo}
+                            onChange={(e) => setCupomCodigo(e.target.value.toUpperCase())}
+                            className="bg-slate-800 border-slate-700 text-white"
+                            placeholder="Digite o código do cupom"
+                          />
+                          <Button
+                            onClick={aplicarCupom}
+                            variant="outline"
+                            className="border-emerald-500/50 text-emerald-400"
+                          >
+                            Aplicar
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <Label>Observações (opcional)</Label>
+                      <Textarea
+                        value={formCliente.observacoes}
+                        onChange={(e) => setFormCliente({ ...formCliente, observacoes: e.target.value })}
+                        className="bg-slate-800 border-slate-700 text-white"
+                        placeholder="Alguma observação sobre o pedido?"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={() => setCheckoutStep(1)}
+                        variant="outline"
+                        className="flex-1 border-slate-600"
+                      >
+                        Voltar
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          if (!formCliente.forma_pagamento) {
+                            alert('Selecione uma forma de pagamento');
+                            return;
+                          }
+                          setCheckoutStep(3);
+                        }}
+                        className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
+                      >
+                        Revisar Pedido
+                      </Button>
+                    </div>
+                  </>
+                )}
+
+                {checkoutStep === 3 && (
+                  <>
+                    {/* Revisão Final */}
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                        <h3 className="font-semibold text-white mb-3">📍 Endereço de Entrega</h3>
+                        <p className="text-slate-300">
+                          {formCliente.endereco}, {formCliente.numero}
+                          {formCliente.complemento && ` - ${formCliente.complemento}`}
+                        </p>
+                        <p className="text-slate-300">
+                          {formCliente.bairro} - {formCliente.cidade}/{formCliente.estado}
+                        </p>
+                        <p className="text-slate-400 text-sm">CEP: {formCliente.cep}</p>
+                      </div>
+
+                      <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                        <h3 className="font-semibold text-white mb-3">💳 Pagamento</h3>
+                        <p className="text-slate-300 capitalize">{formCliente.forma_pagamento.replace('_', ' ')}</p>
+                        {formCliente.troco_para > 0 && (
+                          <p className="text-slate-400 text-sm">Troco para: R$ {formCliente.troco_para.toFixed(2)}</p>
+                        )}
+                      </div>
+
+                      {formCliente.observacoes && (
+                        <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                          <h3 className="font-semibold text-white mb-2">📝 Observações</h3>
+                          <p className="text-slate-300">{formCliente.observacoes}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {tipoCliente === 'convidado' && (
+                      <div className="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/30">
+                        <p className="text-sm text-yellow-300">
+                          ⚠️ Comprando como convidado, você não acumula pontos no programa de fidelidade.
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={() => setCheckoutStep(2)}
+                        variant="outline"
+                        className="flex-1 border-slate-600"
+                      >
+                        Voltar
+                      </Button>
+                      <Button
+                        onClick={finalizarPedido}
+                        className="flex-1 h-14 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-bold"
+                      >
+                        Confirmar Pedido
+                      </Button>
+                    </div>
+                  </>
+                )}
               </>
             )}
           </div>
