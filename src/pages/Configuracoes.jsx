@@ -624,18 +624,13 @@ export default function Configuracoes() {
                   <div>
                     <Label className="text-slate-400 mb-2 block">Valor Mínimo para Entrega Grátis (R$)</Label>
                     <Input
-                      type="text"
-                      value={pizzaria.valor_minimo_entrega_gratis}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/[^0-9,]/g, '');
-                        setPizzaria({ ...pizzaria, valor_minimo_entrega_gratis: value });
-                      }}
-                      onBlur={(e) => {
-                        const value = e.target.value.replace(',', '.');
-                        setPizzaria({ ...pizzaria, valor_minimo_entrega_gratis: value ? parseFloat(value) : 0 });
-                      }}
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={pizzaria.valor_minimo_entrega_gratis || 0}
+                      onChange={(e) => setPizzaria({ ...pizzaria, valor_minimo_entrega_gratis: parseFloat(e.target.value) || 0 })}
                       className="bg-slate-800 border-slate-700 text-white"
-                      placeholder="Ex: 80,00"
+                      placeholder="Ex: 80.00"
                     />
                     <p className="text-xs text-slate-500 mt-1">
                       Se o pedido atingir este valor, a entrega será grátis. Digite 0 para desabilitar.
