@@ -76,6 +76,13 @@ export default function CardapioCliente() {
     const pizzariaParam = urlParams.get('pizzaria_id');
     if (pizzariaParam) {
       setPizzariaId(pizzariaParam);
+      localStorage.setItem('pizzaria_id_atual', pizzariaParam);
+    } else {
+      // Tentar recuperar do localStorage
+      const savedPizzariaId = localStorage.getItem('pizzaria_id_atual');
+      if (savedPizzariaId) {
+        setPizzariaId(savedPizzariaId);
+      }
     }
   }, []);
   
@@ -389,7 +396,9 @@ export default function CardapioCliente() {
       }
 
       const cliente = clientes[0];
-      localStorage.setItem('cliente_logado', JSON.stringify(cliente));
+      // Salvar cliente com pizzaria_id para futuras referências
+      const clienteComPizzaria = { ...cliente, pizzaria_id_atual: pizzariaId };
+      localStorage.setItem('cliente_logado', JSON.stringify(clienteComPizzaria));
       setClienteLogado(cliente);
       setFormCliente({
         ...formCliente,
@@ -475,7 +484,8 @@ export default function CardapioCliente() {
             pontos_fidelidade: Math.floor(calcularSubtotal()),
           });
           clienteId = novoCliente.id;
-          localStorage.setItem('cliente_logado', JSON.stringify(novoCliente));
+          const clienteComPizzaria = { ...novoCliente, pizzaria_id_atual: pizzariaId };
+          localStorage.setItem('cliente_logado', JSON.stringify(clienteComPizzaria));
         }
       }
 
@@ -539,8 +549,8 @@ export default function CardapioCliente() {
       // Enviar notificação inicial ao cliente
       await enviarNotificacaoStatusPedido(novoPedido, 'novo');
 
-      // Redirecionar para página de acompanhamento
-      navigate(createPageUrl('AcompanharPedido') + `?id=${novoPedido.id}`);
+      // Redirecionar para página de acompanhamento com pizzaria_id
+      navigate(createPageUrl('AcompanharPedido') + `?id=${novoPedido.id}&pizzaria_id=${pizzariaId}`);
       
     } catch (error) {
       console.error('Erro ao finalizar pedido:', error);

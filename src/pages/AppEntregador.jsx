@@ -277,13 +277,13 @@ export default function AppEntregador() {
 
       await base44.entities.Entrega.update(entregaId, updates);
       
-      // Criar notificação
+      // Criar notificação para a pizzaria
       await base44.entities.Notificacao.create({
         pizzaria_id: entregador?.pizzaria_id,
         tipo: newStatus === 'entregue' ? 'entrega_concluida' : 'entrega_aceita',
         titulo: newStatus === 'entregue' ? 'Entrega Concluída' : 'Entrega Aceita',
         mensagem: `Pedido #${entrega?.numero_pedido} - ${newStatus === 'entregue' ? 'Entregue' : 'Aceita'} por ${entregador?.nome}`,
-        dados: { entrega_id: entregaId },
+        dados: { entrega_id: entregaId, pedido_id: entrega?.pedido_id },
       });
 
       await refetch();
