@@ -372,15 +372,44 @@ export default function CardapioCliente() {
         async (position) => {
           const { latitude, longitude } = position.coords;
           
-          // Usar API de geocoding reverso (aqui simulado)
-          setFormCliente({
-            ...formCliente,
-            latitude,
-            longitude,
-          });
-          
-          alert(`Localização capturada!\nLat: ${latitude}, Lng: ${longitude}\nPor favor, preencha o endereço completo.`);
-          setBuscandoLocalizacao(false);
+          try {
+            // Chamar função backend para geocodificação reversa
+            const { data } = await base44.functions.invoke('geocodificarEndereco', {
+              latitude,
+              longitude
+            });
+
+            if (data.success && data.endereco) {
+              setFormCliente({
+                ...formCliente,
+                cep: data.endereco.cep || '',
+                endereco: data.endereco.logradouro || '',
+                numero: data.endereco.numero || '',
+                bairro: data.endereco.bairro || '',
+                cidade: data.endereco.cidade || '',
+                estado: data.endereco.estado || '',
+                latitude,
+                longitude,
+              });
+              
+              // Recalcular taxa de entrega após preencher o endereço
+              calcularTaxaEntrega();
+              
+              alert('✅ Localização capturada e endereço preenchido automaticamente!');
+            } else {
+              throw new Error('Não foi possível obter o endereço');
+            }
+          } catch (error) {
+            console.error('Erro ao geocodificar:', error);
+            setFormCliente({
+              ...formCliente,
+              latitude,
+              longitude,
+            });
+            alert('⚠️ Localização capturada, mas não foi possível obter o endereço automaticamente. Por favor, preencha manualmente.');
+          } finally {
+            setBuscandoLocalizacao(false);
+          }
         },
         (error) => {
           console.error('Erro ao obter localização:', error);
