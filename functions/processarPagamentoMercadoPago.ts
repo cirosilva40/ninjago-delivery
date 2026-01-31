@@ -90,8 +90,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Processar pagamento com cartão (crédito ou débito)
-    if (metodoPagamento === 'credit_card' || metodoPagamento === 'debit_card') {
+    // Processar pagamento com cartão (crédito, débito ou vale refeição)
+    if (metodoPagamento === 'credit_card' || metodoPagamento === 'debit_card' || metodoPagamento === 'vale_refeicao') {
       if (!dadosCartao || !dadosCartao.token) {
         return Response.json({ 
           error: 'Dados do cartão não fornecidos' 
@@ -100,7 +100,10 @@ Deno.serve(async (req) => {
 
       paymentData.token = dadosCartao.token;
       paymentData.payment_method_id = dadosCartao.payment_method_id;
+      
+      // Vale refeição sempre tem 1 parcela
       paymentData.installments = metodoPagamento === 'credit_card' ? (dadosCartao.installments || 1) : 1;
+      
       paymentData.payer = {
         email: clienteEmail,
         identification: {
@@ -134,9 +137,12 @@ Deno.serve(async (req) => {
       const novoStatus = data.status === 'approved' ? 'pago' : 
                          data.status === 'pending' ? 'pendente' : 'cancelado';
 
+      const tipoPagamento = metodoPagamento === 'credit_card' ? 'Crédito' : 
+                            metodoPagamento === 'debit_card' ? 'Débito' : 'Vale Refeição';
+      
       await base44.asServiceRole.entities.Pedido.update(pedidoId, {
         status_pagamento: novoStatus,
-        observacoes_financeiras: `Pagamento ${metodoPagamento === 'credit_card' ? 'Crédito' : 'Débito'} - ID: ${data.id}`
+        observacoes_financeiras: `Pagamento ${tipoPagamento} - ID: ${data.id}`
       });
 
       return Response.json({
