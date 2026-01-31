@@ -145,18 +145,24 @@ export default function AppEntregador() {
   };
 
   const { data: entregas = [], refetch } = useQuery({
-    queryKey: ['minhas-entregas', entregador?.id],
+    queryKey: ['minhas-entregas', entregador?.id, entregador?.pizzaria_id],
     queryFn: () => entregador?.id 
-      ? base44.entities.Entrega.filter({ entregador_id: entregador.id }, '-created_date', 100)
+      ? base44.entities.Entrega.filter({ 
+          entregador_id: entregador.id,
+          pizzaria_id: entregador.pizzaria_id 
+        }, '-created_date', 100)
       : Promise.resolve([]),
     enabled: !!entregador?.id,
     refetchInterval: 5000,
   });
 
   const { data: pagamentos = [] } = useQuery({
-    queryKey: ['meus-pagamentos', entregador?.id],
+    queryKey: ['meus-pagamentos', entregador?.id, entregador?.pizzaria_id],
     queryFn: () => entregador?.id 
-      ? base44.entities.Pagamento.filter({ entregador_id: entregador.id }, '-created_date', 50)
+      ? base44.entities.Pagamento.filter({ 
+          entregador_id: entregador.id,
+          pizzaria_id: entregador.pizzaria_id 
+        }, '-created_date', 50)
       : Promise.resolve([]),
     enabled: !!entregador?.id,
   });

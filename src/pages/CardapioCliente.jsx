@@ -48,6 +48,7 @@ import { Toaster } from 'sonner';
 
 export default function CardapioCliente() {
   const navigate = useNavigate();
+  const [pizzariaId, setPizzariaId] = useState('default'); // Pode ser obtido via URL ou seleção
   const [carrinho, setCarrinho] = useState([]);
   const [categoriaFiltro, setCategoriaFiltro] = useState('todos');
   const [busca, setBusca] = useState('');
@@ -68,6 +69,15 @@ export default function CardapioCliente() {
   const [cupomAplicado, setCupomAplicado] = useState(null);
   const [taxaEntrega, setTaxaEntrega] = useState(0);
   const [checkoutStep, setCheckoutStep] = useState(1); // 1: endereço, 2: pagamento, 3: revisão
+
+  // Obter pizzaria_id da URL se fornecido
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pizzariaParam = urlParams.get('pizzaria_id');
+    if (pizzariaParam) {
+      setPizzariaId(pizzariaParam);
+    }
+  }, []);
   
   const [formCliente, setFormCliente] = useState({
     nome: '',
@@ -107,18 +117,27 @@ export default function CardapioCliente() {
   }, []);
 
   const { data: produtos = [] } = useQuery({
-    queryKey: ['produtos-cardapio'],
-    queryFn: () => base44.entities.Produto.filter({ disponivel: true }, '-created_date', 100),
+    queryKey: ['produtos-cardapio', pizzariaId],
+    queryFn: () => base44.entities.Produto.filter({ 
+      disponivel: true, 
+      restaurante_id: pizzariaId 
+    }, '-created_date', 100),
+    enabled: !!pizzariaId,
   });
 
   const { data: formasPagamento = [] } = useQuery({
-    queryKey: ['formas-pagamento'],
-    queryFn: () => base44.entities.MetodoPagamento.filter({ ativo: true }),
+    queryKey: ['formas-pagamento', pizzariaId],
+    queryFn: () => base44.entities.MetodoPagamento.filter({ 
+      ativo: true,
+      restaurante_id: pizzariaId 
+    }),
+    enabled: !!pizzariaId,
   });
 
   const { data: pizzarias = [] } = useQuery({
-    queryKey: ['pizzaria-config'],
-    queryFn: () => base44.entities.Pizzaria.list('-created_date', 1),
+    queryKey: ['pizzaria-config', pizzariaId],
+    queryFn: () => base44.entities.Pizzaria.filter({ id: pizzariaId }),
+    enabled: !!pizzariaId,
   });
 
   const pizzariaConfig = pizzarias[0] || {};
@@ -264,7 +283,8 @@ export default function CardapioCliente() {
     try {
       const cupons = await base44.entities.ResgatePontos.filter({ 
         codigo_cupom: cupomCodigo.toUpperCase(),
-        status: 'ativo'
+        status: 'ativo',
+        cliente_id: clienteLogado?.id
       });
 
       if (cupons.length === 0) {
@@ -461,7 +481,7 @@ export default function CardapioCliente() {
 
       // Criar o pedido
       const pedidoData = {
-        pizzaria_id: 'default',
+        pizzaria_id: pizzariaId,
         numero_pedido: `PED${Date.now()}`,
         tipo_pedido: 'delivery',
         cliente_nome: formCliente.nome,
