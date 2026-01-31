@@ -26,25 +26,40 @@ import moment from 'moment';
 export default function PerfilCliente() {
   const navigate = useNavigate();
   const [clienteLogado, setClienteLogado] = useState(null);
+  const [pizzariaId, setPizzariaId] = useState('default');
 
   useEffect(() => {
     const clienteData = localStorage.getItem('cliente_logado');
     if (clienteData) {
-      setClienteLogado(JSON.parse(clienteData));
+      const cliente = JSON.parse(clienteData);
+      setClienteLogado(cliente);
+      
+      // Obter pizzaria_id
+      if (cliente.pizzaria_id_atual) {
+        setPizzariaId(cliente.pizzaria_id_atual);
+      } else {
+        const savedPizzariaId = localStorage.getItem('pizzaria_id_atual');
+        if (savedPizzariaId) {
+          setPizzariaId(savedPizzariaId);
+        }
+      }
     } else {
       navigate(createPageUrl('AcessoCliente'));
     }
   }, [navigate]);
 
   const { data: pedidos = [] } = useQuery({
-    queryKey: ['meus-pedidos', clienteLogado?.telefone],
-    queryFn: () => base44.entities.Pedido.filter({ cliente_telefone: clienteLogado?.telefone }, '-created_date', 50),
-    enabled: !!clienteLogado,
+    queryKey: ['meus-pedidos', clienteLogado?.telefone, pizzariaId],
+    queryFn: () => base44.entities.Pedido.filter({ 
+      cliente_telefone: clienteLogado?.telefone,
+      pizzaria_id: pizzariaId
+    }, '-created_date', 50),
+    enabled: !!clienteLogado && !!pizzariaId,
   });
 
   const handleLogout = () => {
     localStorage.removeItem('cliente_logado');
-    navigate(createPageUrl('CardapioCliente'));
+    navigate(createPageUrl('CardapioCliente') + (pizzariaId ? `?pizzaria_id=${pizzariaId}` : ''));
   };
 
   if (!clienteLogado) return null;
@@ -66,7 +81,7 @@ export default function PerfilCliente() {
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
-              onClick={() => navigate(createPageUrl('CardapioCliente'))}
+              onClick={() => navigate(createPageUrl('CardapioCliente') + (pizzariaId ? `?pizzaria_id=${pizzariaId}` : ''))}
               className="text-white"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
@@ -197,7 +212,7 @@ export default function PerfilCliente() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="rounded-xl bg-white/5 border border-white/10 p-5 hover:bg-white/8 transition-all cursor-pointer"
-                    onClick={() => navigate(createPageUrl('AcompanharPedido') + `?id=${pedido.id}`)}
+                    onClick={() => navigate(createPageUrl('AcompanharPedido') + `?id=${pedido.id}&pizzaria_id=${pizzariaId}`)}
                   >
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
