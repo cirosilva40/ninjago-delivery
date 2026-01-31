@@ -30,10 +30,16 @@ const statusSteps = [
 
 export default function AcompanharPedido() {
   const [pedidoId, setPedidoId] = useState(null);
+  const [pizzariaId, setPizzariaId] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setPedidoId(params.get('id'));
+    const pizzaria = params.get('pizzaria_id');
+    if (pizzaria) {
+      setPizzariaId(pizzaria);
+      localStorage.setItem('pizzaria_id_atual', pizzaria);
+    }
   }, []);
 
   const { data: pedido } = useQuery({
@@ -75,7 +81,7 @@ export default function AcompanharPedido() {
                 <p className="text-xs text-slate-400">Pedido #{pedidoAtual.numero_pedido}</p>
               </div>
             </div>
-            <Link to={createPageUrl('CardapioCliente')}>
+            <Link to={createPageUrl('CardapioCliente') + (pizzariaId ? `?pizzaria_id=${pizzariaId}` : '')}>
               <Button variant="outline" className="border-slate-600 text-slate-300">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Voltar

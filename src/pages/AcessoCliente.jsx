@@ -161,7 +161,10 @@ export default function AcessoCliente() {
       setTimeout(async () => {
         const clientes = await base44.entities.Cliente.filter({ id: clienteId });
         const cliente = clientes[0];
-        localStorage.setItem('cliente_logado', JSON.stringify(cliente));
+        // Salvar com pizzaria_id atual se disponível
+        const pizzariaId = localStorage.getItem('pizzaria_id_atual') || 'default';
+        const clienteComPizzaria = { ...cliente, pizzaria_id_atual: pizzariaId };
+        localStorage.setItem('cliente_logado', JSON.stringify(clienteComPizzaria));
         navigate(createPageUrl('PerfilCliente'));
       }, 1500);
     } catch (error) {
