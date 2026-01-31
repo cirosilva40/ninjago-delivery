@@ -106,7 +106,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "Dashboard",
+    mainPage: "CardapioCliente",
     Pages: PAGES,
     Layout: __Layout,
 };
