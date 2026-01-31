@@ -69,6 +69,7 @@ export default function CardapioCliente() {
   const [cupomAplicado, setCupomAplicado] = useState(null);
   const [taxaEntrega, setTaxaEntrega] = useState(0);
   const [checkoutStep, setCheckoutStep] = useState(1); // 1: endereço, 2: pagamento, 3: revisão
+  const [processandoPagamento, setProcessandoPagamento] = useState(false);
 
   // Obter pizzaria_id da URL se fornecido
   useEffect(() => {
@@ -436,6 +437,8 @@ export default function CardapioCliente() {
       return;
     }
 
+    setProcessandoPagamento(true);
+    
     try {
       // Se for cliente cadastrado, salvar/atualizar dados
       let clienteId = null;
@@ -549,12 +552,40 @@ export default function CardapioCliente() {
       // Enviar notificação inicial ao cliente
       await enviarNotificacaoStatusPedido(novoPedido, 'novo');
 
+      // Se for pagamento online, processar com Mercado Pago
+      if (formCliente.forma_pagamento === 'online') {
+        try {
+          const { data } = await base44.functions.invoke('criarPagamentoMercadoPago', {
+            pedidoId: novoPedido.id,
+            valorTotal: calcularTotal(),
+            pizzariaId: pizzariaId,
+            clienteNome: formCliente.nome,
+            clienteTelefone: formCliente.telefone,
+            clienteEmail: formCliente.email || `${formCliente.telefone}@cliente.com`
+          });
+
+          if (data.init_point) {
+            // Redirecionar para página de pagamento do Mercado Pago
+            window.location.href = data.init_point;
+            return;
+          } else {
+            throw new Error('Erro ao gerar link de pagamento');
+          }
+        } catch (error) {
+          console.error('Erro ao processar pagamento:', error);
+          alert('Erro ao processar pagamento online. Tente novamente ou escolha outra forma de pagamento.');
+          setProcessandoPagamento(false);
+          return;
+        }
+      }
+
       // Redirecionar para página de acompanhamento com pizzaria_id
       navigate(createPageUrl('AcompanharPedido') + `?id=${novoPedido.id}&pizzaria_id=${pizzariaId}`);
       
     } catch (error) {
       console.error('Erro ao finalizar pedido:', error);
       alert('Erro ao finalizar pedido. Tente novamente.');
+      setProcessandoPagamento(false);
     }
   };
 
@@ -1306,6 +1337,7 @@ export default function CardapioCliente() {
                             <SelectValue placeholder="Selecione" />
                           </SelectTrigger>
                           <SelectContent className="bg-slate-800 border-slate-700">
+                            <SelectItem value="online">💳 Pagamento Online (Mercado Pago)</SelectItem>
                             {formasPagamento.map((forma) => (
                               <SelectItem key={forma.id} value={forma.tipo}>
                                 {forma.nome}
@@ -1458,9 +1490,11 @@ export default function CardapioCliente() {
                       </Button>
                       <Button
                         onClick={finalizarPedido}
+                        disabled={processandoPagamento}
                         className="flex-1 h-14 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-bold"
                       >
-                        Confirmar Pedido
+                        {processandoPagamento ? 'Processando...' : 
+                         formCliente.forma_pagamento === 'online' ? 'Ir para Pagamento' : 'Confirmar Pedido'}
                       </Button>
                     </div>
                   </>
