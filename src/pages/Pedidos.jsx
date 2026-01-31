@@ -60,6 +60,17 @@ export default function Pedidos() {
   const [editingPedido, setEditingPedido] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+  const [user, setUser] = useState(null);
+  const [pizzariaId, setPizzariaId] = useState(null);
+
+  React.useEffect(() => {
+    const loadUser = async () => {
+      const userData = await base44.auth.me();
+      setUser(userData);
+      setPizzariaId(userData.pizzaria_id || 'default');
+    };
+    loadUser();
+  }, []);
 
   const handleViewModeChange = (mode) => {
     setViewMode(mode);
@@ -67,8 +78,15 @@ export default function Pedidos() {
   };
 
   const { data: pedidos = [], refetch } = useQuery({
-    queryKey: ['pedidos'],
-    queryFn: () => base44.entities.Pedido.list('-created_date', 100),
+    queryKey: ['pedidos', pizzariaId],
+    queryFn: async () => {
+      if (!pizzariaId) return [];
+      if (user?.role === 'admin') {
+        return base44.entities.Pedido.list('-created_date', 100);
+      }
+      return base44.entities.Pedido.filter({ pizzaria_id: pizzariaId }, '-created_date', 100);
+    },
+    enabled: !!pizzariaId,
     refetchInterval: 10000,
   });
 
@@ -511,7 +529,7 @@ export default function Pedidos() {
           setEditingPedido(null);
         }}
         pedido={editingPedido}
-        pizzariaId="default"
+        pizzariaId={pizzariaId}
         onSave={refetch}
       />
 
@@ -522,7 +540,7 @@ export default function Pedidos() {
           setSelectedPedido(null);
         }}
         pedido={selectedPedido}
-        pizzariaId="default"
+        pizzariaId={pizzariaId}
         onAtribuir={refetch}
       />
     </div>

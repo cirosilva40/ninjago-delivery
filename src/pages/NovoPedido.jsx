@@ -67,6 +67,17 @@ export default function NovoPedido() {
   const [cepError, setCepError] = useState('');
   const [salvando, setSalvando] = useState(false);
   const [pedidoCriado, setPedidoCriado] = useState(null);
+  const [user, setUser] = useState(null);
+  const [pizzariaId, setPizzariaId] = useState(null);
+
+  React.useEffect(() => {
+    const loadUser = async () => {
+      const userData = await base44.auth.me();
+      setUser(userData);
+      setPizzariaId(userData.pizzaria_id || 'default');
+    };
+    loadUser();
+  }, []);
 
   const [form, setForm] = useState({
     cliente_nome: '',
@@ -91,13 +102,27 @@ export default function NovoPedido() {
   const [distanciaCalculada, setDistanciaCalculada] = useState(null);
 
   const { data: produtos = [] } = useQuery({
-    queryKey: ['produtos-disponiveis'],
-    queryFn: () => base44.entities.Produto.filter({ disponivel: true }, 'categoria', 500),
+    queryKey: ['produtos-disponiveis', pizzariaId],
+    queryFn: async () => {
+      if (!pizzariaId) return [];
+      if (user?.role === 'admin') {
+        return base44.entities.Produto.filter({ disponivel: true }, 'categoria', 500);
+      }
+      return base44.entities.Produto.filter({ disponivel: true, restaurante_id: pizzariaId }, 'categoria', 500);
+    },
+    enabled: !!pizzariaId,
   });
 
   const { data: pizzarias = [] } = useQuery({
-    queryKey: ['pizzarias'],
-    queryFn: () => base44.entities.Pizzaria.list('-created_date', 1),
+    queryKey: ['pizzarias', pizzariaId],
+    queryFn: async () => {
+      if (!pizzariaId) return [];
+      if (user?.role === 'admin') {
+        return base44.entities.Pizzaria.list('-created_date', 1);
+      }
+      return base44.entities.Pizzaria.filter({ id: pizzariaId }, '-created_date', 1);
+    },
+    enabled: !!pizzariaId,
   });
 
   const pizzaria = pizzarias[0] || {};
@@ -454,7 +479,7 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
       const numeroPedido = proximoNumero.toString().padStart(2, '0');
       
       const pedido = await base44.entities.Pedido.create({
-        pizzaria_id: 'default',
+        pizzaria_id: pizzariaId,
         numero_pedido: numeroPedido,
         tipo_pedido: tipoPedido,
         cliente_nome: form.cliente_nome,

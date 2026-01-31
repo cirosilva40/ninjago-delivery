@@ -58,6 +58,8 @@ export default function Entregadores() {
   const [editingEntregador, setEditingEntregador] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+  const [user, setUser] = useState(null);
+  const [pizzariaId, setPizzariaId] = useState(null);
   const [form, setForm] = useState({
     nome: '',
     email: '',
@@ -68,9 +70,25 @@ export default function Entregadores() {
     status: 'offline',
   });
 
+  React.useEffect(() => {
+    const loadUser = async () => {
+      const userData = await base44.auth.me();
+      setUser(userData);
+      setPizzariaId(userData.pizzaria_id || 'default');
+    };
+    loadUser();
+  }, []);
+
   const { data: entregadores = [], refetch } = useQuery({
-    queryKey: ['entregadores'],
-    queryFn: () => base44.entities.Entregador.list('-created_date', 100),
+    queryKey: ['entregadores', pizzariaId],
+    queryFn: async () => {
+      if (!pizzariaId) return [];
+      if (user?.role === 'admin') {
+        return base44.entities.Entregador.list('-created_date', 100);
+      }
+      return base44.entities.Entregador.filter({ pizzaria_id: pizzariaId }, '-created_date', 100);
+    },
+    enabled: !!pizzariaId,
   });
 
   const { data: entregas = [] } = useQuery({
@@ -99,12 +117,12 @@ export default function Entregadores() {
       if (editingEntregador) {
         await base44.entities.Entregador.update(editingEntregador.id, {
           ...form,
-          pizzaria_id: 'default',
+          pizzaria_id: pizzariaId,
         });
       } else {
         await base44.entities.Entregador.create({
           ...form,
-          pizzaria_id: 'default',
+          pizzaria_id: pizzariaId,
           saldo_taxas: 0,
           total_entregas: 0,
           avaliacao_media: 5,

@@ -70,6 +70,8 @@ export default function Produtos() {
   const [categoriaFilter, setCategoriaFilter] = useState('todas');
   const [showModal, setShowModal] = useState(false);
   const [editingProduto, setEditingProduto] = useState(null);
+  const [user, setUser] = useState(null);
+  const [pizzariaId, setPizzariaId] = useState(null);
   const [form, setForm] = useState({
     nome: '',
     descricao: '',
@@ -92,6 +94,15 @@ export default function Produtos() {
   });
 
   const todasCategorias = { ...categoriaConfig, ...categoriasCustom };
+
+  React.useEffect(() => {
+    const loadUser = async () => {
+      const userData = await base44.auth.me();
+      setUser(userData);
+      setPizzariaId(userData.pizzaria_id || 'default');
+    };
+    loadUser();
+  }, []);
 
   const salvarNovaCategoria = () => {
     if (!novaCategoria.key || !novaCategoria.label) return;
@@ -122,8 +133,15 @@ export default function Produtos() {
   };
 
   const { data: produtos = [], refetch } = useQuery({
-    queryKey: ['produtos'],
-    queryFn: () => base44.entities.Produto.list('-created_date', 500),
+    queryKey: ['produtos', pizzariaId],
+    queryFn: async () => {
+      if (!pizzariaId) return [];
+      if (user?.role === 'admin') {
+        return base44.entities.Produto.list('-created_date', 500);
+      }
+      return base44.entities.Produto.filter({ restaurante_id: pizzariaId }, '-created_date', 500);
+    },
+    enabled: !!pizzariaId,
   });
 
   const filteredProdutos = produtos.filter(p => {
@@ -139,7 +157,7 @@ export default function Produtos() {
       const data = {
         ...form,
         preco: parseFloat(form.preco) || 0,
-        restaurante_id: 'default',
+        restaurante_id: pizzariaId,
       };
 
       if (editingProduto) {

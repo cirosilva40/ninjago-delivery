@@ -46,6 +46,8 @@ import {
 import MapaRaioEntrega from '@/components/configuracoes/MapaRaioEntrega';
 
 export default function Configuracoes() {
+  const [user, setUser] = useState(null);
+  const [pizzariaId, setPizzariaId] = useState(null);
   const [pizzaria, setPizzaria] = useState({
     nome: 'Minha Pizzaria',
     cnpj: '',
@@ -83,14 +85,37 @@ export default function Configuracoes() {
     ativa: true,
   });
 
+  React.useEffect(() => {
+    const loadUser = async () => {
+      const userData = await base44.auth.me();
+      setUser(userData);
+      setPizzariaId(userData.pizzaria_id || 'default');
+    };
+    loadUser();
+  }, []);
+
   const { data: pizzarias = [], refetch } = useQuery({
-    queryKey: ['pizzarias'],
-    queryFn: () => base44.entities.Pizzaria.list('-created_date', 1),
+    queryKey: ['pizzarias', pizzariaId],
+    queryFn: async () => {
+      if (!pizzariaId) return [];
+      if (user?.role === 'admin') {
+        return base44.entities.Pizzaria.list('-created_date', 1);
+      }
+      return base44.entities.Pizzaria.filter({ id: pizzariaId }, '-created_date', 1);
+    },
+    enabled: !!pizzariaId,
   });
 
   const { data: recompensas = [], refetch: refetchRecompensas } = useQuery({
-    queryKey: ['recompensas-admin'],
-    queryFn: () => base44.entities.Recompensa.list('-created_date'),
+    queryKey: ['recompensas-admin', pizzariaId],
+    queryFn: async () => {
+      if (!pizzariaId) return [];
+      if (user?.role === 'admin') {
+        return base44.entities.Recompensa.list('-created_date');
+      }
+      return base44.entities.Recompensa.filter({ pizzaria_id: pizzariaId }, '-created_date');
+    },
+    enabled: !!pizzariaId,
   });
 
   useEffect(() => {
@@ -133,7 +158,10 @@ export default function Configuracoes() {
       if (recompensaEditando) {
         await base44.entities.Recompensa.update(recompensaEditando.id, formRecompensa);
       } else {
-        await base44.entities.Recompensa.create(formRecompensa);
+        await base44.entities.Recompensa.create({
+          ...formRecompensa,
+          pizzaria_id: pizzariaId,
+        });
       }
       refetchRecompensas();
       setShowRecompensaModal(false);
