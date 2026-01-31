@@ -1330,12 +1330,14 @@ export default function CardapioCliente() {
                             <SelectValue placeholder="Selecione" />
                           </SelectTrigger>
                           <SelectContent className="bg-slate-800 border-slate-700">
-                            <SelectItem value="online">💳 Pagamento Online (Mercado Pago)</SelectItem>
-                            {formasPagamento.map((forma) => (
-                              <SelectItem key={forma.id} value={forma.tipo}>
-                                {forma.nome}
-                              </SelectItem>
-                            ))}
+                            <SelectItem value="online">💳 Pagamento Online</SelectItem>
+                            {formasPagamento
+                              .filter(forma => !['pix', 'cartao_credito', 'cartao_debito', 'online', 'vale_refeicao'].includes(forma.tipo))
+                              .map((forma) => (
+                                <SelectItem key={forma.id} value={forma.tipo}>
+                                  {forma.nome}
+                                </SelectItem>
+                              ))}
                             <SelectItem value="pagar_na_entrega">Pagar na Entrega</SelectItem>
                           </SelectContent>
                         </Select>
@@ -1357,7 +1359,7 @@ export default function CardapioCliente() {
                       {formCliente.forma_pagamento === 'online' && (
                         <div className="space-y-4 p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
                           <Label className="text-white">Escolha o método de pagamento online</Label>
-                          <div className="grid grid-cols-3 gap-3">
+                          <div className="grid grid-cols-2 gap-3">
                             <button
                               type="button"
                               onClick={() => setMetodoPagamentoOnline('pix')}
@@ -1394,6 +1396,18 @@ export default function CardapioCliente() {
                               <div className="text-3xl mb-2">💰</div>
                               <p className="text-sm font-medium text-white">Débito</p>
                             </button>
+                            <button
+                              type="button"
+                              onClick={() => setMetodoPagamentoOnline('vale_refeicao')}
+                              className={`p-4 rounded-lg border-2 transition-all ${
+                                metodoPagamentoOnline === 'vale_refeicao'
+                                  ? 'border-yellow-500 bg-yellow-500/20'
+                                  : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
+                              }`}
+                            >
+                              <div className="text-3xl mb-2">🎫</div>
+                              <p className="text-sm font-medium text-white">Vale Refeição</p>
+                            </button>
                           </div>
                           {metodoPagamentoOnline && (
                             <div className="mt-3 p-3 rounded-lg bg-slate-700/50">
@@ -1401,6 +1415,7 @@ export default function CardapioCliente() {
                                 {metodoPagamentoOnline === 'pix' && '✓ Você será redirecionado para gerar o código PIX'}
                                 {metodoPagamentoOnline === 'credit_card' && '✓ Você será redirecionado para inserir os dados do cartão de crédito'}
                                 {metodoPagamentoOnline === 'debit_card' && '✓ Você será redirecionado para inserir os dados do cartão de débito'}
+                                {metodoPagamentoOnline === 'vale_refeicao' && '✓ Você será redirecionado para inserir os dados do vale refeição'}
                               </p>
                             </div>
                           )}
@@ -1659,13 +1674,13 @@ export default function CardapioCliente() {
                          </div>
                        )}
 
-                       {(metodoPagamentoOnline === 'credit_card' || metodoPagamentoOnline === 'debit_card') && (
-                         <div className="space-y-4">
-                           <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
-                             <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-                               <div className="text-2xl">💳</div>
-                               Dados do Cartão {metodoPagamentoOnline === 'credit_card' ? 'de Crédito' : 'de Débito'}
-                             </h3>
+                       {(metodoPagamentoOnline === 'credit_card' || metodoPagamentoOnline === 'debit_card' || metodoPagamentoOnline === 'vale_refeicao') && (
+                          <div className="space-y-4">
+                            <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
+                              <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+                                <div className="text-2xl">{metodoPagamentoOnline === 'vale_refeicao' ? '🎫' : '💳'}</div>
+                                Dados do {metodoPagamentoOnline === 'credit_card' ? 'Cartão de Crédito' : metodoPagamentoOnline === 'debit_card' ? 'Cartão de Débito' : 'Vale Refeição'}
+                              </h3>
                              <div className="space-y-4">
                                <div>
                                  <Label>Número do Cartão</Label>
@@ -1736,6 +1751,13 @@ export default function CardapioCliente() {
                                        ))}
                                      </SelectContent>
                                    </Select>
+                                 </div>
+                               )}
+                               {metodoPagamentoOnline === 'vale_refeicao' && (
+                                 <div className="p-3 rounded-lg bg-yellow-500/20 border border-yellow-500/50">
+                                   <p className="text-sm text-yellow-300">
+                                     ℹ️ Vale refeição não permite parcelamento - pagamento à vista
+                                   </p>
                                  </div>
                                )}
                              </div>
