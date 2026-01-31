@@ -12,7 +12,8 @@ Deno.serve(async (req) => {
       pizzariaId,
       clienteNome,
       clienteTelefone,
-      clienteEmail
+      clienteEmail,
+      metodoPagamento // 'pix', 'credit_card', 'debit_card'
     } = payload;
 
     if (!pedidoId || !valorTotal || !pizzariaId) {
@@ -36,6 +37,20 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Pizzaria não encontrada' }, { status: 404 });
     }
 
+    // Configurar métodos de pagamento aceitos
+    const paymentMethods = {};
+    if (metodoPagamento === 'pix') {
+      paymentMethods.excluded_payment_methods = [{ id: 'visa' }, { id: 'master' }];
+      paymentMethods.excluded_payment_types = [{ id: 'credit_card' }, { id: 'debit_card' }, { id: 'ticket' }];
+      paymentMethods.installments = 1;
+    } else if (metodoPagamento === 'credit_card') {
+      paymentMethods.excluded_payment_types = [{ id: 'ticket' }, { id: 'bank_transfer' }, { id: 'atm' }];
+      paymentMethods.installments = 12;
+    } else if (metodoPagamento === 'debit_card') {
+      paymentMethods.excluded_payment_types = [{ id: 'credit_card' }, { id: 'ticket' }, { id: 'bank_transfer' }];
+      paymentMethods.installments = 1;
+    }
+
     // Cria a preferência de pagamento no Mercado Pago
     const preference = {
       items: [
@@ -53,6 +68,7 @@ Deno.serve(async (req) => {
         },
         email: clienteEmail || `${clienteTelefone}@cliente.com`
       },
+      payment_methods: paymentMethods,
       back_urls: {
         success: `${req.headers.get('origin')}/acompanhar-pedido?pedidoId=${pedidoId}&pizzariaId=${pizzariaId}&status=success`,
         failure: `${req.headers.get('origin')}/cardapio-cliente?pizzariaId=${pizzariaId}&status=failure`,

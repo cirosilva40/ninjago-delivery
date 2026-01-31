@@ -70,6 +70,7 @@ export default function CardapioCliente() {
   const [taxaEntrega, setTaxaEntrega] = useState(0);
   const [checkoutStep, setCheckoutStep] = useState(1); // 1: endereço, 2: pagamento, 3: revisão
   const [processandoPagamento, setProcessandoPagamento] = useState(false);
+  const [metodoPagamentoOnline, setMetodoPagamentoOnline] = useState(''); // 'pix', 'credit_card', 'debit_card'
 
   // Obter pizzaria_id da URL se fornecido
   useEffect(() => {
@@ -561,7 +562,8 @@ export default function CardapioCliente() {
             pizzariaId: pizzariaId,
             clienteNome: formCliente.nome,
             clienteTelefone: formCliente.telefone,
-            clienteEmail: formCliente.email || `${formCliente.telefone}@cliente.com`
+            clienteEmail: formCliente.email || `${formCliente.telefone}@cliente.com`,
+            metodoPagamento: metodoPagamentoOnline
           });
 
           if (data.init_point) {
@@ -1360,6 +1362,59 @@ export default function CardapioCliente() {
                           />
                         </div>
                       )}
+
+                      {formCliente.forma_pagamento === 'online' && (
+                        <div className="space-y-4 p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
+                          <Label className="text-white">Escolha o método de pagamento online</Label>
+                          <div className="grid grid-cols-3 gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setMetodoPagamentoOnline('pix')}
+                              className={`p-4 rounded-lg border-2 transition-all ${
+                                metodoPagamentoOnline === 'pix'
+                                  ? 'border-emerald-500 bg-emerald-500/20'
+                                  : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
+                              }`}
+                            >
+                              <div className="text-3xl mb-2">🔳</div>
+                              <p className="text-sm font-medium text-white">PIX</p>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setMetodoPagamentoOnline('credit_card')}
+                              className={`p-4 rounded-lg border-2 transition-all ${
+                                metodoPagamentoOnline === 'credit_card'
+                                  ? 'border-blue-500 bg-blue-500/20'
+                                  : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
+                              }`}
+                            >
+                              <div className="text-3xl mb-2">💳</div>
+                              <p className="text-sm font-medium text-white">Crédito</p>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setMetodoPagamentoOnline('debit_card')}
+                              className={`p-4 rounded-lg border-2 transition-all ${
+                                metodoPagamentoOnline === 'debit_card'
+                                  ? 'border-purple-500 bg-purple-500/20'
+                                  : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
+                              }`}
+                            >
+                              <div className="text-3xl mb-2">💰</div>
+                              <p className="text-sm font-medium text-white">Débito</p>
+                            </button>
+                          </div>
+                          {metodoPagamentoOnline && (
+                            <div className="mt-3 p-3 rounded-lg bg-slate-700/50">
+                              <p className="text-xs text-slate-300">
+                                {metodoPagamentoOnline === 'pix' && '✓ Você será redirecionado para gerar o código PIX'}
+                                {metodoPagamentoOnline === 'credit_card' && '✓ Você será redirecionado para inserir os dados do cartão de crédito'}
+                                {metodoPagamentoOnline === 'debit_card' && '✓ Você será redirecionado para inserir os dados do cartão de débito'}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Cupom de Desconto */}
@@ -1430,6 +1485,10 @@ export default function CardapioCliente() {
                             alert('Selecione uma forma de pagamento');
                             return;
                           }
+                          if (formCliente.forma_pagamento === 'online' && !metodoPagamentoOnline) {
+                            alert('Selecione o método de pagamento online (PIX, Crédito ou Débito)');
+                            return;
+                          }
                           setCheckoutStep(3);
                         }}
                         className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
@@ -1458,7 +1517,19 @@ export default function CardapioCliente() {
 
                       <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
                         <h3 className="font-semibold text-white mb-3">💳 Pagamento</h3>
-                        <p className="text-slate-300 capitalize">{formCliente.forma_pagamento.replace('_', ' ')}</p>
+                        <p className="text-slate-300 capitalize">
+                          {formCliente.forma_pagamento === 'online' ? (
+                            <>
+                              Pagamento Online - {
+                                metodoPagamentoOnline === 'pix' ? 'PIX' :
+                                metodoPagamentoOnline === 'credit_card' ? 'Cartão de Crédito' :
+                                metodoPagamentoOnline === 'debit_card' ? 'Cartão de Débito' : ''
+                              }
+                            </>
+                          ) : (
+                            formCliente.forma_pagamento.replace('_', ' ')
+                          )}
+                        </p>
                         {formCliente.troco_para > 0 && (
                           <p className="text-slate-400 text-sm">Troco para: R$ {formCliente.troco_para.toFixed(2)}</p>
                         )}
