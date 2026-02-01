@@ -20,19 +20,13 @@ import { createPageUrl } from '@/utils';
 
 export default function AcessoCliente() {
   const navigate = useNavigate();
-  const [modo, setModo] = useState('login'); // 'login', 'primeiro-acesso', 'recuperar-senha'
-  const [etapa, setEtapa] = useState(1); // 1: email, 2: código, 3: criar senha
+  const [modo, setModo] = useState('login'); // 'login', 'primeiro-acesso'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const [codigo, setCodigo] = useState('');
-  const [novaSenha, setNovaSenha] = useState('');
-  const [confirmarSenha, setConfirmarSenha] = useState('');
-  const [codigoGerado, setCodigoGerado] = useState('');
-  const [clienteId, setClienteId] = useState(null);
 
   // Login Normal
   const handleLogin = async (e) => {
