@@ -89,6 +89,7 @@ export default function AcessoCliente() {
             email,
             nome: email.split('@')[0], // Usar parte do email como nome temporário
             telefone: '', // Será preenchido posteriormente
+            senha: 'temp_' + Math.random().toString(36).substring(7) // Senha temporária que será alterada
           });
           
           // Gerar código de 6 dígitos
@@ -113,6 +114,7 @@ export default function AcessoCliente() {
           setLoading(false);
           return;
         } catch (createError) {
+          console.error('Erro detalhado:', createError);
           setError('Erro ao criar conta. Tente novamente.');
           setLoading(false);
           return;
