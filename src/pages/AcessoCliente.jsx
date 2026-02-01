@@ -214,154 +214,65 @@ export default function AcessoCliente() {
             </form>
           )}
 
-          {/* Primeiro Acesso / Recuperar Senha */}
-          {(modo === 'primeiro-acesso' || modo === 'recuperar-senha') && (
-            <>
-              {/* Etapa 1: Email */}
-              {etapa === 1 && (
-                <form onSubmit={modo === 'primeiro-acesso' ? handlePrimeiroAcessoEmail : handleRecuperarSenhaEmail} className="space-y-4">
-                  <div>
-                    <Label className="text-slate-400">Email Cadastrado</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <Input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10 bg-slate-800 border-slate-700 text-white"
-                        placeholder="seu@email.com"
-                        required
-                      />
-                    </div>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Use o email cadastrado pelo restaurante
-                    </p>
-                  </div>
+          {/* Primeiro Acesso */}
+          {modo === 'primeiro-acesso' && (
+            <form onSubmit={handlePrimeiroAcessoEmail} className="space-y-4">
+              <div>
+                <Label className="text-slate-400">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 bg-slate-800 border-slate-700 text-white"
+                    placeholder="seu@email.com"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <Label className="text-slate-400">Senha Temporária</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    type="password"
+                    value={senha}
+                    onChange={(e) => setSenha(e.target.value)}
+                    className="pl-10 bg-slate-800 border-slate-700 text-white"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  A senha foi enviada pelo restaurante
+                </p>
+              </div>
 
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-semibold"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Enviando...
-                      </>
-                    ) : (
-                      <>
-                        <Mail className="w-5 h-5 mr-2" />
-                        Enviar Código
-                      </>
-                    )}
-                  </Button>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-semibold"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Entrando...
+                  </>
+                ) : (
+                  'Entrar'
+                )}
+              </Button>
 
-                  <button
-                    type="button"
-                    onClick={voltarParaLogin}
-                    className="w-full text-center text-sm text-slate-400 hover:text-slate-300 flex items-center justify-center gap-2"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    Voltar para login
-                  </button>
-                </form>
-              )}
-
-              {/* Etapa 2: Código */}
-              {etapa === 2 && (
-                <form onSubmit={handleVerificarCodigo} className="space-y-4">
-                  <div>
-                    <Label className="text-slate-400">Código de Verificação</Label>
-                    <div className="relative">
-                      <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <Input
-                        type="text"
-                        value={codigo}
-                        onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        className="pl-10 bg-slate-800 border-slate-700 text-white text-center text-2xl tracking-widest"
-                        placeholder="000000"
-                        maxLength={6}
-                        required
-                      />
-                    </div>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Digite o código de 6 dígitos enviado para {email}
-                    </p>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-semibold"
-                  >
-                    Verificar Código
-                  </Button>
-
-                  <button
-                    type="button"
-                    onClick={() => setEtapa(1)}
-                    className="w-full text-center text-sm text-slate-400 hover:text-slate-300"
-                  >
-                    Não recebeu? Enviar novamente
-                  </button>
-                </form>
-              )}
-
-              {/* Etapa 3: Criar Senha */}
-              {etapa === 3 && (
-                <form onSubmit={handleCriarSenha} className="space-y-4">
-                  <div>
-                    <Label className="text-slate-400">Nova Senha</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <Input
-                        type="password"
-                        value={novaSenha}
-                        onChange={(e) => setNovaSenha(e.target.value)}
-                        className="pl-10 bg-slate-800 border-slate-700 text-white"
-                        placeholder="••••••••"
-                        required
-                      />
-                    </div>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Mínimo de 6 caracteres
-                    </p>
-                  </div>
-
-                  <div>
-                    <Label className="text-slate-400">Confirmar Senha</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <Input
-                        type="password"
-                        value={confirmarSenha}
-                        onChange={(e) => setConfirmarSenha(e.target.value)}
-                        className="pl-10 bg-slate-800 border-slate-700 text-white"
-                        placeholder="••••••••"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-semibold"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Salvando...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="w-5 h-5 mr-2" />
-                        Criar Senha e Entrar
-                      </>
-                    )}
-                  </Button>
-                </form>
-              )}
-            </>
+              <button
+                type="button"
+                onClick={voltarParaLogin}
+                className="w-full text-center text-sm text-slate-400 hover:text-slate-300 flex items-center justify-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Voltar para login
+              </button>
+            </form>
           )}
 
           {/* Link para voltar ao cardápio */}
