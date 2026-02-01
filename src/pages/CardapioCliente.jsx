@@ -1885,13 +1885,112 @@ export default function CardapioCliente() {
 
                                  setProcessandoPagamento(true);
                                  try {
-                                   // Aqui você precisaria tokenizar o cartão usando o SDK do Mercado Pago no frontend
-                                   // Por segurança, nunca envie dados de cartão direto para seu backend
-                                   alert('⚠️ Integração completa de cartão requer SDK do Mercado Pago no frontend para tokenização segura. Esta é uma versão simplificada.');
+                                   // Criar pedido e processar pagamento com cartão
+                                   let clienteId = null;
+                                   if (tipoCliente === 'cadastrado') {
+                                     if (clienteLogado) {
+                                       await base44.entities.Cliente.update(clienteLogado.id, {
+                                         nome: formCliente.nome,
+                                         telefone: formCliente.telefone,
+                                         email: formCliente.email,
+                                         cep: formCliente.cep,
+                                         endereco: formCliente.endereco,
+                                         numero: formCliente.numero,
+                                         complemento: formCliente.complemento,
+                                         bairro: formCliente.bairro,
+                                         cidade: formCliente.cidade,
+                                         estado: formCliente.estado,
+                                         total_pedidos: (clienteLogado.total_pedidos || 0) + 1,
+                                         pontos_fidelidade: (clienteLogado.pontos_fidelidade || 0) + Math.floor(calcularSubtotal()),
+                                       });
+                                       clienteId = clienteLogado.id;
+                                     } else {
+                                       const clientesExistentes = await base44.entities.Cliente.filter({ telefone: formCliente.telefone });
+                                       if (clientesExistentes.length > 0) {
+                                         alert('Já existe uma conta com este telefone. Faça login.');
+                                         setProcessandoPagamento(false);
+                                         return;
+                                       }
+                                       const novoCliente = await base44.entities.Cliente.create({
+                                         nome: formCliente.nome,
+                                         telefone: formCliente.telefone,
+                                         senha: cadastroSenha,
+                                         email: formCliente.email,
+                                         cep: formCliente.cep,
+                                         endereco: formCliente.endereco,
+                                         numero: formCliente.numero,
+                                         complemento: formCliente.complemento,
+                                         bairro: formCliente.bairro,
+                                         cidade: formCliente.cidade,
+                                         estado: formCliente.estado,
+                                         latitude: formCliente.latitude,
+                                         longitude: formCliente.longitude,
+                                         total_pedidos: 1,
+                                         pontos_fidelidade: Math.floor(calcularSubtotal()),
+                                       });
+                                       clienteId = novoCliente.id;
+                                       localStorage.setItem('cliente_logado', JSON.stringify({ ...novoCliente, pizzaria_id_atual: pizzariaId }));
+                                     }
+                                   }
 
-                                   const pedidoId = localStorage.getItem('pedido_aguardando_pagamento');
-                                   localStorage.removeItem('pedido_aguardando_pagamento');
-                                   navigate(createPageUrl('AcompanharPedido') + `?id=${pedidoId}&pizzaria_id=${pizzariaId}`);
+                                   const pedidoData = {
+                                     pizzaria_id: pizzariaId,
+                                     numero_pedido: `PED${Date.now()}`,
+                                     tipo_pedido: 'delivery',
+                                     cliente_nome: formCliente.nome,
+                                     cliente_telefone: formCliente.telefone,
+                                     cliente_cep: formCliente.cep,
+                                     cliente_endereco: formCliente.endereco,
+                                     cliente_numero: formCliente.numero,
+                                     cliente_bairro: formCliente.bairro,
+                                     cliente_cidade: formCliente.cidade,
+                                     cliente_estado: formCliente.estado,
+                                     cliente_complemento: formCliente.complemento,
+                                     latitude: formCliente.latitude,
+                                     longitude: formCliente.longitude,
+                                     itens: carrinho.map(item => ({
+                                       produto_id: item.id,
+                                       nome: item.nome,
+                                       quantidade: item.quantidade,
+                                       preco_unitario: item.preco_final || item.preco,
+                                       observacao: ''
+                                     })),
+                                     valor_produtos: calcularSubtotal(),
+                                     taxa_entrega: taxaEntrega,
+                                     desconto: calcularDesconto(),
+                                     valor_total: calcularTotal(),
+                                     forma_pagamento: metodoPagamentoOnline === 'credit_card' ? 'cartao_credito' : metodoPagamentoOnline === 'debit_card' ? 'cartao_debito' : 'vale_refeicao',
+                                     status: 'novo',
+                                     status_pagamento: 'pendente',
+                                     observacoes: formCliente.observacoes,
+                                     horario_pedido: new Date().toISOString(),
+                                     origem: 'site',
+                                   };
+
+                                   const novoPedido = await base44.entities.Pedido.create(pedidoData);
+
+                                   // Processar pagamento com cartão
+                                   const { data } = await base44.functions.invoke('processarPagamentoMercadoPago', {
+                                     pedidoId: novoPedido.id,
+                                     valorTotal: calcularTotal(),
+                                     pizzariaId,
+                                     metodoPagamento: metodoPagamentoOnline,
+                                     clienteEmail: formCliente.email || `${formCliente.telefone}@cliente.com`,
+                                     dadosCartao: {
+                                       numero: dadosCartao.numero,
+                                       nome: dadosCartao.nome,
+                                       validade: dadosCartao.validade,
+                                       cvv: dadosCartao.cvv,
+                                       cpf: dadosCartao.cpf,
+                                       parcelas: metodoPagamentoOnline === 'credit_card' ? dadosCartao.parcelas : 1
+                                     }
+                                   });
+
+                                   if (data.success) {
+                                     navigate(createPageUrl('AcompanharPedido') + `?id=${novoPedido.id}&pizzaria_id=${pizzariaId}`);
+                                   } else {
+                                     alert('Erro ao processar pagamento: ' + (data.error || 'Tente novamente'));
+                                   }
                                  } catch (error) {
                                    alert('Erro ao processar pagamento');
                                    console.error(error);
