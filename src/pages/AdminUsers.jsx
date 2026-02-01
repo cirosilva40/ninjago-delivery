@@ -178,11 +178,16 @@ export default function AdminUsers() {
     
     setCadastrando(true);
     try {
-      // Convidar usuário através do sistema base44
-      await base44.users.inviteUser(cadastroForm.email, cadastroForm.role);
+      console.log('🔵 Tentando convidar usuário:', {
+        email: cadastroForm.email,
+        role: cadastroForm.role,
+        nome: cadastroForm.nome_completo
+      });
       
-      // Salvar dados adicionais no usuário (após convite ser aceito, os dados já estarão lá)
-      // Por enquanto, apenas enviamos o convite
+      // Convidar usuário através do sistema base44
+      const resultado = await base44.users.inviteUser(cadastroForm.email, cadastroForm.role);
+      
+      console.log('✅ Usuário convidado com sucesso:', resultado);
       
       setCadastroSuccess(true);
       setTimeout(() => {
@@ -204,16 +209,22 @@ export default function AdminUsers() {
       }, 2000);
       refetch();
     } catch (error) {
-      console.error('Erro ao cadastrar usuário:', error);
+      console.error('❌ Erro completo ao cadastrar usuário:', error);
+      console.error('❌ Tipo do erro:', typeof error);
+      console.error('❌ Error.message:', error.message);
+      console.error('❌ Error.stack:', error.stack);
+      console.error('❌ Error stringified:', JSON.stringify(error, null, 2));
       
       // Mensagem amigável para erros comuns
-      const errorMsg = error.message || '';
-      if (errorMsg.includes('invalid') || errorMsg.includes('CPF') || errorMsg.includes('CNPJ') || errorMsg.includes('document')) {
-        alert('❌ O CPF/CNPJ informado parece estar inválido. Por favor, verifique o número e tente novamente.');
-      } else if (errorMsg.includes('already exists') || errorMsg.includes('duplicate') || errorMsg.includes('email')) {
+      const errorMsg = error.message || error.toString() || '';
+      console.log('📝 Mensagem de erro para análise:', errorMsg);
+      
+      if (errorMsg.includes('already exists') || errorMsg.includes('duplicate') || errorMsg.toLowerCase().includes('email')) {
         alert('❌ Este email já está cadastrado no sistema.');
+      } else if (errorMsg.includes('invalid') || errorMsg.includes('CPF') || errorMsg.includes('CNPJ') || errorMsg.includes('document')) {
+        alert('❌ O CPF/CNPJ informado parece estar inválido. Por favor, verifique o número e tente novamente.');
       } else {
-        alert('❌ Erro ao cadastrar usuário. Tente novamente.');
+        alert(`❌ Erro ao cadastrar usuário: ${errorMsg || 'Erro desconhecido'}`);
       }
     } finally {
       setCadastrando(false);
