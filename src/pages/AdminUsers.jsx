@@ -91,11 +91,13 @@ export default function AdminUsers() {
     taxa_entrega_base: 5,
     raio_entrega_km: 5,
     status: 'ativa',
-    plano: 'basico'
+    plano: 'basico',
+    logo_url: ''
   });
   const [cadastrandoEstabelecimento, setCadastrandoEstabelecimento] = useState(false);
   const [showEditEstabelecimento, setShowEditEstabelecimento] = useState(false);
   const [editingEstabelecimento, setEditingEstabelecimento] = useState(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   
   // Validação de e-mail
   const isValidEmail = (email) => {
@@ -349,7 +351,8 @@ export default function AdminUsers() {
           taxa_entrega_base: 5,
           raio_entrega_km: 5,
           status: 'ativa',
-          plano: 'basico'
+          plano: 'basico',
+          logo_url: ''
         });
       }, 2000);
       refetchEstabelecimentos();
@@ -392,9 +395,43 @@ export default function AdminUsers() {
       taxa_entrega_base: estabelecimento.taxa_entrega_base || 5,
       raio_entrega_km: estabelecimento.raio_entrega_km || 5,
       status: estabelecimento.status || 'ativa',
-      plano: estabelecimento.plano || 'basico'
+      plano: estabelecimento.plano || 'basico',
+      logo_url: estabelecimento.logo_url || ''
     });
     setShowEditEstabelecimento(true);
+  };
+
+  const handleLogoUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecione apenas arquivos de imagem');
+      return;
+    }
+
+    // Validar tamanho (máx 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A imagem deve ter no máximo 5MB');
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      const { data } = await base44.functions.invoke('uploadLogoEstabelecimento', { file });
+      
+      if (data.file_url) {
+        setEstabelecimentoForm({ ...estabelecimentoForm, logo_url: data.file_url });
+      } else {
+        alert('Erro ao fazer upload da imagem');
+      }
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      alert('Erro ao fazer upload da imagem. Tente novamente.');
+    } finally {
+      setUploadingLogo(false);
+    }
   };
 
   const admins = usuarios.filter(u => u.role === 'admin').length;
@@ -1231,6 +1268,60 @@ export default function AdminUsers() {
                 <Building2 className="w-5 h-5 text-orange-400" />
                 Dados do Estabelecimento
               </h3>
+
+              {/* Upload de Logo */}
+              <div className="col-span-2">
+                <Label className="text-slate-400 mb-3 block">Logotipo do Estabelecimento</Label>
+                <div className="flex items-center gap-4">
+                  {estabelecimentoForm.logo_url ? (
+                    <div className="relative">
+                      <img 
+                        src={estabelecimentoForm.logo_url} 
+                        alt="Logo" 
+                        className="w-24 h-24 rounded-xl object-cover border-2 border-slate-700"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setEstabelecimentoForm({ ...estabelecimentoForm, logo_url: '' })}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white hover:bg-red-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 rounded-xl bg-slate-800 border-2 border-dashed border-slate-600 flex items-center justify-center">
+                      <Building2 className="w-8 h-8 text-slate-600" />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      id="logo-upload-edit"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                      disabled={uploadingLogo}
+                    />
+                    <label htmlFor="logo-upload-edit">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="border-slate-600 text-slate-300 cursor-pointer"
+                        disabled={uploadingLogo}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          document.getElementById('logo-upload-edit').click();
+                        }}
+                      >
+                        {uploadingLogo ? 'Enviando...' : estabelecimentoForm.logo_url ? 'Alterar Logo' : 'Fazer Upload do Logo'}
+                      </Button>
+                    </label>
+                    <p className="text-xs text-slate-500 mt-2">
+                      PNG, JPG ou JPEG (máx. 5MB)
+                    </p>
+                  </div>
+                </div>
+              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
