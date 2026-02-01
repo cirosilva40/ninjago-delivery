@@ -102,14 +102,10 @@ export default function AcessoCliente() {
 
   const voltarParaLogin = () => {
     setModo('login');
-    setEtapa(1);
     setError('');
     setSuccess('');
     setEmail('');
     setSenha('');
-    setCodigo('');
-    setNovaSenha('');
-    setConfirmarSenha('');
   };
 
   return (
