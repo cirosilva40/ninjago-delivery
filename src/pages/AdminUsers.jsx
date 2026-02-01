@@ -184,10 +184,16 @@ export default function AdminUsers() {
         nome: cadastroForm.nome_completo
       });
       
-      // Convidar usuário através do sistema base44
-      const resultado = await base44.users.inviteUser(cadastroForm.email, cadastroForm.role);
+      // Convidar usuário como 'user' primeiro (limitação do sistema)
+      // Admins só podem ser criados após o usuário aceitar o convite
+      const resultado = await base44.users.inviteUser(cadastroForm.email, 'user');
       
       console.log('✅ Usuário convidado com sucesso:', resultado);
+      
+      // Se era para ser admin, mostrar mensagem explicativa
+      if (cadastroForm.role === 'admin') {
+        alert('✅ Convite enviado! Após o usuário aceitar o convite, você poderá promovê-lo a administrador clicando nas opções do usuário.');
+      }
       
       setCadastroSuccess(true);
       setTimeout(() => {
@@ -1422,6 +1428,11 @@ export default function AdminUsers() {
               <p className="text-sm text-blue-300">
                 📧 Um email será enviado para <strong>{cadastroForm.email || 'o endereço informado'}</strong> com instruções para criar a senha e acessar o sistema.
               </p>
+              {cadastroForm.role === 'admin' && (
+                <p className="text-sm text-yellow-300 mt-2">
+                  ⚠️ O usuário será convidado como Usuário comum. Após aceitar o convite, você poderá promovê-lo a Administrador.
+                </p>
+              )}
             </div>
 
             {cadastroSuccess && (
