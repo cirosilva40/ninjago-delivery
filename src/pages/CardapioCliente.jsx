@@ -1378,15 +1378,88 @@ export default function CardapioCliente() {
                       </div>
                       
                       {formCliente.forma_pagamento === 'dinheiro' && (
-                        <div>
-                          <Label>Troco para (opcional)</Label>
-                          <Input
-                            type="number"
-                            value={formCliente.troco_para}
-                            onChange={(e) => setFormCliente({ ...formCliente, troco_para: parseFloat(e.target.value) })}
-                            className="bg-slate-800 border-slate-700 text-white"
-                            placeholder="R$ 0,00"
-                          />
+                        <div className="space-y-3 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+                          <Label className="text-white">Precisa de troco?</Label>
+                          <Select 
+                            value={formCliente.troco_para > 0 ? 'sim' : 'nao'} 
+                            onValueChange={(v) => {
+                              if (v === 'nao') {
+                                setFormCliente({ ...formCliente, troco_para: 0 });
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-slate-800 border-slate-700">
+                              <SelectItem value="nao">Não preciso de troco</SelectItem>
+                              <SelectItem value="sim">Sim, preciso de troco</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {formCliente.troco_para > 0 && (
+                            <div>
+                              <Label>Troco para quanto?</Label>
+                              <Input
+                                type="number"
+                                value={formCliente.troco_para}
+                                onChange={(e) => setFormCliente({ ...formCliente, troco_para: parseFloat(e.target.value) })}
+                                className="bg-slate-800 border-slate-700 text-white"
+                                placeholder="Ex: 50.00"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {formCliente.forma_pagamento === 'pagar_na_entrega' && (
+                        <div className="space-y-3 p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                          <Label className="text-white">Como vai pagar na entrega?</Label>
+                          <Select 
+                            value={formCliente.metodo_entrega || ''} 
+                            onValueChange={(v) => setFormCliente({ ...formCliente, metodo_entrega: v })}
+                          >
+                            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                              <SelectValue placeholder="Selecione o método" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-slate-800 border-slate-700">
+                              <SelectItem value="dinheiro">💵 Dinheiro</SelectItem>
+                              <SelectItem value="pix">🔳 PIX</SelectItem>
+                              <SelectItem value="cartao">💳 Cartão (Crédito/Débito)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {formCliente.metodo_entrega === 'dinheiro' && (
+                            <div className="space-y-3">
+                              <Label className="text-white">Precisa de troco?</Label>
+                              <Select 
+                                value={formCliente.troco_para > 0 ? 'sim' : 'nao'} 
+                                onValueChange={(v) => {
+                                  if (v === 'nao') {
+                                    setFormCliente({ ...formCliente, troco_para: 0 });
+                                  }
+                                }}
+                              >
+                                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="bg-slate-800 border-slate-700">
+                                  <SelectItem value="nao">Não preciso de troco</SelectItem>
+                                  <SelectItem value="sim">Sim, preciso de troco</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {formCliente.troco_para > 0 && (
+                                <div>
+                                  <Label>Troco para quanto?</Label>
+                                  <Input
+                                    type="number"
+                                    value={formCliente.troco_para}
+                                    onChange={(e) => setFormCliente({ ...formCliente, troco_para: parseFloat(e.target.value) })}
+                                    className="bg-slate-800 border-slate-700 text-white"
+                                    placeholder="Ex: 50.00"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
 
