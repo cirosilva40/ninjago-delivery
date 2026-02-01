@@ -105,6 +105,7 @@ export default function AdminUsers() {
   const [editingEstabelecimento, setEditingEstabelecimento] = useState(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFotoUsuario, setUploadingFotoUsuario] = useState(false);
+  const [generatingPassword, setGeneratingPassword] = useState(false);
   
   // Validação de e-mail
   const isValidEmail = (email) => {
