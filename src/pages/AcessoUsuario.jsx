@@ -318,56 +318,6 @@ export default function AcessoUsuario() {
                 </form>
               )}
 
-              {etapa === 2 && modo === 'primeiro-acesso' && (
-                <form onSubmit={handleVerificarSenhaTemporaria} className="space-y-4">
-                  <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30">
-                    <p className="text-sm text-blue-300">
-                      Sua senha temporária é: <strong className="font-mono text-lg text-blue-100">{senhaTemporaria}</strong>
-                    </p>
-                  </div>
-                  <div>
-                    <Label className="text-slate-400">Digite a Senha Temporária</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <Input
-                        type="password"
-                        value={codigo}
-                        onChange={(e) => setCodigo(e.target.value)}
-                        className="pl-10 bg-slate-800 border-slate-700 text-white"
-                        placeholder="••••••••"
-                        required
-                      />
-                    </div>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Digite a senha exibida acima para fazer login
-                    </p>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-semibold"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Verificando...
-                      </>
-                    ) : (
-                      'Verificar Senha'
-                    )}
-                  </Button>
-
-                  <button
-                    type="button"
-                    onClick={() => setEtapa(1)}
-                    className="w-full text-center text-sm text-slate-400 hover:text-slate-300"
-                  >
-                    Voltar
-                  </button>
-                </form>
-              )}
-
               {etapa === 2 && modo === 'recuperar-senha' && (
                 <form onSubmit={handleVerificarCodigo} className="space-y-4">
                   <div>
