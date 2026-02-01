@@ -64,42 +64,60 @@ Deno.serve(async (req) => {
 
     // Processar pagamento via PIX
     if (metodoPagamento === 'pix') {
-      paymentData.payment_method_id = 'pix';
+      const preference = new Preference(client);
       
-      const response = await fetch('https://api.mercadopago.com/v1/payments', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-          'X-Idempotency-Key': `${pedidoId}-${Date.now()}`
-        },
-        body: JSON.stringify(paymentData)
+      const preferenceData = await preference.create({
+        body: {
+          items: items,
+          payer: {
+            email: clienteEmail
+          },
+          external_reference: pedidoId,
+          payment_methods: {
+            excluded_payment_types: [
+              { id: 'credit_card' },
+              { id: 'debit_card' },
+              { id: 'ticket' }
+            ],
+            installments: 1
+          },
+          back_urls: {
+            success: `${req.headers.get('origin')}/acompanhar-pedido?id=${pedidoId}`,
+            failure: `${req.headers.get('origin')}/cardapio`,
+            pending: `${req.headers.get('origin')}/acompanhar-pedido?id=${pedidoId}`
+          },
+          auto_return: 'approved',
+          statement_descriptor: pizzaria.nome
+        }
       });
 
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('Erro do Mercado Pago:', errorData);
-        return Response.json({ 
-          error: 'Erro ao criar pagamento PIX',
-          details: errorData
-        }, { status: response.status });
-      }
-
-      const data = await response.json();
+      // Criar pagamento PIX
+      const payment = new Payment(client);
+      const paymentData = await payment.create({
+        body: {
+          transaction_amount: valorTotal,
+          description: `Pedido #${pedido.numero_pedido} - ${pizzaria.nome}`,
+          payment_method_id: 'pix',
+          payer: {
+            email: clienteEmail
+          }
+        }
+      });
 
       // Atualizar pedido com informações do PIX
       await base44.asServiceRole.entities.Pedido.update(pedidoId, {
         status_pagamento: 'pendente',
-        observacoes_financeiras: `Pagamento PIX - ID: ${data.id}`
+        observacoes_financeiras: `Pagamento PIX - ID: ${paymentData.id}`
       });
 
       return Response.json({
         success: true,
         tipo: 'pix',
-        qr_code: data.point_of_interaction?.transaction_data?.qr_code,
-        qr_code_base64: data.point_of_interaction?.transaction_data?.qr_code_base64,
-        payment_id: data.id,
-        status: data.status
+        qr_code: paymentData.point_of_interaction?.transaction_data?.qr_code,
+        qr_code_base64: paymentData.point_of_interaction?.transaction_data?.qr_code_base64,
+        payment_id: paymentData.id,
+        preference_id: preferenceData.id,
+        status: paymentData.status
       });
     }
 
