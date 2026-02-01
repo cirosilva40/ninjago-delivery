@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { MercadoPagoConfig, Preference, Payment } from 'npm:mercadopago@2.0.0';
 
 Deno.serve(async (req) => {
   try {
@@ -28,6 +29,9 @@ Deno.serve(async (req) => {
       }, { status: 500 });
     }
 
+    // Configurar cliente do Mercado Pago
+    const client = new MercadoPagoConfig({ accessToken });
+
     // Buscar dados do pedido
     const pedido = await base44.asServiceRole.entities.Pedido.get(pedidoId);
     if (!pedido) {
@@ -40,14 +44,23 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Pizzaria não encontrada' }, { status: 404 });
     }
 
-    let paymentData = {
-      transaction_amount: valorTotal,
-      description: `Pedido #${pedido.numero_pedido} - ${pizzaria.nome}`,
-      external_reference: pedidoId,
-      payer: {
-        email: clienteEmail
-      }
-    };
+    // Preparar itens do pedido
+    const items = pedido.itens.map(item => ({
+      title: item.nome,
+      quantity: item.quantidade,
+      unit_price: item.preco_unitario,
+      currency_id: 'BRL'
+    }));
+
+    // Adicionar taxa de entrega se houver
+    if (pedido.taxa_entrega > 0) {
+      items.push({
+        title: 'Taxa de Entrega',
+        quantity: 1,
+        unit_price: pedido.taxa_entrega,
+        currency_id: 'BRL'
+      });
+    }
 
     // Processar pagamento via PIX
     if (metodoPagamento === 'pix') {
