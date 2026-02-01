@@ -94,7 +94,11 @@ export default function AdminUsers() {
     raio_entrega_km: 5,
     status: 'ativa',
     plano: 'basico',
-    logo_url: ''
+    logo_url: '',
+    // Dados do cliente inicial
+    cliente_nome: '',
+    cliente_email: '',
+    cliente_telefone: ''
   });
   const [cadastrandoEstabelecimento, setCadastrandoEstabelecimento] = useState(false);
   const [showEditEstabelecimento, setShowEditEstabelecimento] = useState(false);
@@ -324,16 +328,42 @@ export default function AdminUsers() {
     }
     
     if (estabelecimentoForm.email && !isValidEmail(estabelecimentoForm.email)) {
-      alert('Por favor, insira um e-mail válido');
+      alert('Por favor, insira um e-mail válido para o estabelecimento');
+      return;
+    }
+
+    if (estabelecimentoForm.cliente_email && !isValidEmail(estabelecimentoForm.cliente_email)) {
+      alert('Por favor, insira um e-mail válido para o cliente');
       return;
     }
 
     setCadastrandoEstabelecimento(true);
     try {
+      let estabelecimentoData = { ...estabelecimentoForm };
+      // Remover campos do cliente do objeto de estabelecimento
+      delete estabelecimentoData.cliente_nome;
+      delete estabelecimentoData.cliente_email;
+      delete estabelecimentoData.cliente_telefone;
+
       if (editingEstabelecimento) {
-        await base44.entities.Pizzaria.update(editingEstabelecimento.id, estabelecimentoForm);
+        await base44.entities.Pizzaria.update(editingEstabelecimento.id, estabelecimentoData);
       } else {
-        await base44.entities.Pizzaria.create(estabelecimentoForm);
+        const novoEstabelecimento = await base44.entities.Pizzaria.create(estabelecimentoData);
+        
+        // Criar cliente inicial se fornecido
+        if (estabelecimentoForm.cliente_email || estabelecimentoForm.cliente_nome) {
+          try {
+            await base44.entities.Cliente.create({
+              nome: estabelecimentoForm.cliente_nome || 'Cliente',
+              email: estabelecimentoForm.cliente_email || '',
+              telefone: estabelecimentoForm.cliente_telefone || '',
+              // Não definir senha - cliente criará no primeiro acesso
+            });
+          } catch (clienteError) {
+            console.log('Aviso: Não foi possível criar cliente inicial:', clienteError);
+            // Não falha o cadastro do estabelecimento se o cliente falhar
+          }
+        }
       }
       
       setCadastroSuccess(true);
@@ -358,7 +388,10 @@ export default function AdminUsers() {
           raio_entrega_km: 5,
           status: 'ativa',
           plano: 'basico',
-          logo_url: ''
+          logo_url: '',
+          cliente_nome: '',
+          cliente_email: '',
+          cliente_telefone: ''
         });
       }, 2000);
       refetchEstabelecimentos();
@@ -402,7 +435,10 @@ export default function AdminUsers() {
       raio_entrega_km: estabelecimento.raio_entrega_km || 5,
       status: estabelecimento.status || 'ativa',
       plano: estabelecimento.plano || 'basico',
-      logo_url: estabelecimento.logo_url || ''
+      logo_url: estabelecimento.logo_url || '',
+      cliente_nome: '',
+      cliente_email: '',
+      cliente_telefone: ''
     });
     setShowEditEstabelecimento(true);
   };
