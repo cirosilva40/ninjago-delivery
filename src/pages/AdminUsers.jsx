@@ -94,6 +94,14 @@ export default function AdminUsers() {
     plano: 'basico'
   });
   const [cadastrandoEstabelecimento, setCadastrandoEstabelecimento] = useState(false);
+  const [showEditEstabelecimento, setShowEditEstabelecimento] = useState(false);
+  const [editingEstabelecimento, setEditingEstabelecimento] = useState(null);
+  
+  // Validação de e-mail
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   useEffect(() => {
     loadCurrentUser();
@@ -150,6 +158,11 @@ export default function AdminUsers() {
   const handleCadastro = async () => {
     if (!cadastroForm.email || !cadastroForm.nome_completo) {
       alert('Preencha o email e o nome completo');
+      return;
+    }
+    
+    if (!isValidEmail(cadastroForm.email)) {
+      alert('Por favor, insira um e-mail válido');
       return;
     }
     
@@ -284,15 +297,26 @@ export default function AdminUsers() {
       alert('Preencha os campos obrigatórios: Nome, Telefone e Endereço');
       return;
     }
+    
+    if (estabelecimentoForm.email && !isValidEmail(estabelecimentoForm.email)) {
+      alert('Por favor, insira um e-mail válido');
+      return;
+    }
 
     setCadastrandoEstabelecimento(true);
     try {
-      await base44.entities.Pizzaria.create(estabelecimentoForm);
+      if (editingEstabelecimento) {
+        await base44.entities.Pizzaria.update(editingEstabelecimento.id, estabelecimentoForm);
+      } else {
+        await base44.entities.Pizzaria.create(estabelecimentoForm);
+      }
       
       setCadastroSuccess(true);
       setTimeout(() => {
         setCadastroSuccess(false);
         setShowCadastroEstabelecimento(false);
+        setShowEditEstabelecimento(false);
+        setEditingEstabelecimento(null);
         setEstabelecimentoForm({
           nome: '',
           cnpj: '',
@@ -332,6 +356,28 @@ export default function AdminUsers() {
       console.error('Erro ao excluir estabelecimento:', error);
       alert('Erro ao excluir estabelecimento. Tente novamente.');
     }
+  };
+  
+  const handleEditEstabelecimento = (estabelecimento) => {
+    setEditingEstabelecimento(estabelecimento);
+    setEstabelecimentoForm({
+      nome: estabelecimento.nome || '',
+      cnpj: estabelecimento.cnpj || '',
+      telefone: estabelecimento.telefone || '',
+      email: estabelecimento.email || '',
+      endereco: estabelecimento.endereco || '',
+      cidade: estabelecimento.cidade || '',
+      estado: estabelecimento.estado || '',
+      cep: estabelecimento.cep || '',
+      nome_exibicao_cliente: estabelecimento.nome_exibicao_cliente || '',
+      horario_abertura: estabelecimento.horario_abertura || '18:00',
+      horario_fechamento: estabelecimento.horario_fechamento || '23:00',
+      taxa_entrega_base: estabelecimento.taxa_entrega_base || 5,
+      raio_entrega_km: estabelecimento.raio_entrega_km || 5,
+      status: estabelecimento.status || 'ativa',
+      plano: estabelecimento.plano || 'basico'
+    });
+    setShowEditEstabelecimento(true);
   };
 
   const admins = usuarios.filter(u => u.role === 'admin').length;
@@ -655,6 +701,13 @@ export default function AdminUsers() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="bg-slate-900 border-slate-700">
                               <DropdownMenuItem 
+                                onClick={() => handleEditEstabelecimento(estab)}
+                                className="cursor-pointer"
+                              >
+                                <Edit className="w-4 h-4 mr-2" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
                                 onClick={() => handleDeleteEstabelecimento(estab)}
                                 className="cursor-pointer text-red-400 focus:text-red-300"
                               >
@@ -699,6 +752,23 @@ export default function AdminUsers() {
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <Building2 className="w-6 h-6 text-orange-500" />
               Cadastrar Novo Estabelecimento
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6 mt-4">
+            {/* ... conteúdo do modal ... */}
+            {/* (mantém o conteúdo existente) */}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Editar Estabelecimento */}
+      <Dialog open={showEditEstabelecimento} onOpenChange={setShowEditEstabelecimento}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Edit className="w-6 h-6 text-orange-500" />
+              Editar Estabelecimento
             </DialogTitle>
           </DialogHeader>
 
@@ -914,9 +984,238 @@ export default function AdminUsers() {
                 {cadastrandoEstabelecimento ? 'Cadastrando...' : cadastroSuccess ? 'Cadastrado!' : 'Cadastrar Estabelecimento'}
               </Button>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+            </div>
+            </DialogContent>
+            </Dialog>
+
+            {/* Modal Editar Estabelecimento (conteúdo duplicado do cadastro) */}
+            <Dialog open={showEditEstabelecimento} onOpenChange={setShowEditEstabelecimento}>
+            <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Edit className="w-6 h-6 text-orange-500" />
+              Editar Estabelecimento
+            </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-6 mt-4">
+            {/* Dados Básicos */}
+            <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+              <h3 className="font-semibold text-white flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-orange-400" />
+                Dados do Estabelecimento
+              </h3>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <Label className="text-slate-400">Nome do Estabelecimento *</Label>
+                  <Input
+                    value={estabelecimentoForm.nome}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, nome: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="Pizzaria do João"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <Label className="text-slate-400">Nome de Exibição para o Cliente</Label>
+                  <Input
+                    value={estabelecimentoForm.nome_exibicao_cliente}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, nome_exibicao_cliente: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="Nome que aparece no cardápio"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">CNPJ</Label>
+                  <CnpjInput
+                    value={estabelecimentoForm.cnpj}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cnpj: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Telefone *</Label>
+                  <TelefoneInput
+                    value={estabelecimentoForm.telefone}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, telefone: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <Label className="text-slate-400">Email</Label>
+                  <Input
+                    type="email"
+                    value={estabelecimentoForm.email}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, email: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="contato@estabelecimento.com"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Endereço */}
+            <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+              <h3 className="font-semibold text-white">Endereço</h3>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <Label className="text-slate-400">Endereço Completo *</Label>
+                  <Input
+                    value={estabelecimentoForm.endereco}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, endereco: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="Rua, número, bairro"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Cidade</Label>
+                  <Input
+                    value={estabelecimentoForm.cidade}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cidade: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="São Paulo"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Estado</Label>
+                  <Input
+                    value={estabelecimentoForm.estado}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, estado: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="SP"
+                    maxLength={2}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">CEP</Label>
+                  <CepInput
+                    value={estabelecimentoForm.cep}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cep: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Configurações */}
+            <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+              <h3 className="font-semibold text-white">Configurações</h3>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-400">Horário de Abertura</Label>
+                  <Input
+                    type="time"
+                    value={estabelecimentoForm.horario_abertura}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, horario_abertura: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Horário de Fechamento</Label>
+                  <Input
+                    type="time"
+                    value={estabelecimentoForm.horario_fechamento}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, horario_fechamento: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Taxa de Entrega Base (R$)</Label>
+                  <CurrencyInput
+                    value={estabelecimentoForm.taxa_entrega_base}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, taxa_entrega_base: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Raio de Entrega (km)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={estabelecimentoForm.raio_entrega_km}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, raio_entrega_km: parseFloat(e.target.value) })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Plano</Label>
+                  <Select 
+                    value={estabelecimentoForm.plano} 
+                    onValueChange={(v) => setEstabelecimentoForm({ ...estabelecimentoForm, plano: v })}
+                  >
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      <SelectItem value="basico">Básico</SelectItem>
+                      <SelectItem value="profissional">Profissional</SelectItem>
+                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Status</Label>
+                  <Select 
+                    value={estabelecimentoForm.status} 
+                    onValueChange={(v) => setEstabelecimentoForm({ ...estabelecimentoForm, status: v })}
+                  >
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      <SelectItem value="ativa">Ativo</SelectItem>
+                      <SelectItem value="inativa">Inativo</SelectItem>
+                      <SelectItem value="suspensa">Suspenso</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {cadastroSuccess && (
+              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                <p className="text-sm text-emerald-300 font-medium">
+                  ✅ Estabelecimento atualizado com sucesso!
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowEditEstabelecimento(false);
+                  setEditingEstabelecimento(null);
+                }}
+                className="border-slate-600 text-slate-300"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleCadastroEstabelecimento}
+                disabled={!estabelecimentoForm.nome || !estabelecimentoForm.telefone || !estabelecimentoForm.endereco || cadastrandoEstabelecimento || cadastroSuccess}
+                className="bg-gradient-to-r from-orange-500 to-red-600"
+              >
+                {cadastrandoEstabelecimento ? 'Salvando...' : cadastroSuccess ? 'Salvo!' : 'Salvar Alterações'}
+              </Button>
+            </div>
+            </div>
+            </DialogContent>
+            </Dialog>
 
       {/* Modal Cadastrar Usuário */}
       <Dialog open={showCadastroModal} onOpenChange={setShowCadastroModal}>

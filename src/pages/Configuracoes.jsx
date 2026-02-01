@@ -124,7 +124,17 @@ export default function Configuracoes() {
     }
   }, [pizzarias]);
 
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleSave = async () => {
+    if (pizzaria.email && !isValidEmail(pizzaria.email)) {
+      alert('Por favor, insira um e-mail válido');
+      return;
+    }
+    
     setLoading(true);
     try {
       if (pizzarias.length > 0) {
