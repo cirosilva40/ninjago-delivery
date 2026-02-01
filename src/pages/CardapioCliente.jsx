@@ -95,12 +95,6 @@ export default function CardapioCliente() {
   const [pixData, setPixData] = useState(null);
   const [aguardandoPix, setAguardandoPix] = useState(false);
 
-  // Log para debug
-  useEffect(() => {
-    console.log('pizzariaId:', pizzariaId);
-    console.log('produtos:', produtos);
-  }, [pizzariaId, produtos]);
-
   // Obter pizzaria_id da URL se fornecido
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
