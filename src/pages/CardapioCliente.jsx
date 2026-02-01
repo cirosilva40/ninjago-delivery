@@ -17,7 +17,7 @@ export default function CardapioCliente() {
     if (id) {
       setRestauranteId(id);
     } else {
-      setError('ID do restaurante não fornecido na URL.');
+      // Modo desenvolvimento: sem ID, apenas mostrar tela padrão
       setLoading(false);
     }
   }, [location.search]);
