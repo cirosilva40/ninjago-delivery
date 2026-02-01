@@ -1715,6 +1715,17 @@ export default function CardapioCliente() {
                              {!pixData ? (
                                <div className="text-center py-6">
                                  <p className="text-slate-300 mb-4">Clique no botão abaixo para gerar o código PIX</p>
+                                 <div className="flex gap-3">
+                                   <Button
+                                     onClick={() => {
+                                       setCheckoutStep(2);
+                                       setMetodoPagamentoOnline('');
+                                     }}
+                                     variant="outline"
+                                     className="flex-1 border-slate-600"
+                                   >
+                                     Voltar
+                                   </Button>
                                  <Button
                                    onClick={async () => {
                                      setAguardandoPix(true);
@@ -1825,11 +1836,12 @@ export default function CardapioCliente() {
                                      }
                                    }}
                                    disabled={aguardandoPix}
-                                   className="bg-emerald-500 hover:bg-emerald-600"
-                                 >
+                                   className="flex-1 bg-emerald-500 hover:bg-emerald-600"
+                                   >
                                    {aguardandoPix ? 'Gerando...' : 'Gerar Código PIX'}
-                                 </Button>
-                               </div>
+                                   </Button>
+                                   </div>
+                                   </div>
                              ) : (
                                <div className="space-y-4">
                                  {pixData.qr_code_base64 && (
@@ -1866,16 +1878,29 @@ export default function CardapioCliente() {
                                      ⏱️ Após realizar o pagamento, aguarde alguns instantes. O pedido será confirmado automaticamente.
                                    </p>
                                  </div>
-                                 <Button
-                                   onClick={() => {
-                                     const pedidoId = localStorage.getItem('pedido_aguardando_pagamento');
-                                     localStorage.removeItem('pedido_aguardando_pagamento');
-                                     navigate(createPageUrl('AcompanharPedido') + `?id=${pedidoId}&pizzaria_id=${pizzariaId}`);
-                                   }}
-                                   className="w-full bg-gradient-to-r from-orange-500 to-red-600"
-                                 >
-                                   Já paguei - Acompanhar Pedido
-                                 </Button>
+                                 <div className="flex gap-3">
+                                   <Button
+                                     onClick={() => {
+                                       setPixData(null);
+                                       setCheckoutStep(2);
+                                       setMetodoPagamentoOnline('');
+                                     }}
+                                     variant="outline"
+                                     className="flex-1 border-slate-600"
+                                   >
+                                     Escolher Outro Método
+                                   </Button>
+                                   <Button
+                                     onClick={() => {
+                                       const pedidoId = localStorage.getItem('pedido_aguardando_pagamento');
+                                       localStorage.removeItem('pedido_aguardando_pagamento');
+                                       navigate(createPageUrl('AcompanharPedido') + `?id=${pedidoId}&pizzaria_id=${pizzariaId}`);
+                                     }}
+                                     className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
+                                   >
+                                     Já Paguei
+                                   </Button>
+                                 </div>
                                </div>
                              )}
                            </div>
