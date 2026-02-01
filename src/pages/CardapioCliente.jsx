@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Frown, Store, ShoppingCart, Trash2, Plus, Minus, ArrowRight, User, MapPin, Phone, CreditCard, DollarSign, Check } from 'lucide-react';
+import { Frown, Store, ShoppingCart, Trash2, Plus, Minus, ArrowRight, User, MapPin, Phone, CreditCard, DollarSign, Check, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast, Toaster } from 'sonner';
 import ProdutoCard from '@/components/cliente/ProdutoCard';
 import ProductDetailModal from '@/components/cliente/ProductDetailModal';
+import CheckoutPagamento from '@/components/cliente/CheckoutPagamento';
 
 export default function CardapioCliente() {
   const location = useLocation();
@@ -23,19 +24,22 @@ export default function CardapioCliente() {
   const [carrinho, setCarrinho] = useState([]);
   const [showCarrinho, setShowCarrinho] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [showPagamento, setShowPagamento] = useState(false);
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);
   const [pedidoConcluido, setPedidoConcluido] = useState(false);
+  const [pedidoId, setPedidoId] = useState(null);
+  const [salvandoPedido, setSalvandoPedido] = useState(false);
   const [clienteForm, setClienteForm] = useState({
     nome: '',
     telefone: '',
+    email: '',
     cep: '',
     endereco: '',
     numero: '',
     bairro: '',
     cidade: '',
     estado: '',
-    complemento: '',
-    forma_pagamento: 'pix'
+    complemento: ''
   });
 
   useEffect(() => {
@@ -109,43 +113,86 @@ export default function CardapioCliente() {
       return;
     }
 
-    const pedidoData = {
-      pizzaria_id: restauranteId,
-      tipo_pedido: 'delivery',
-      cliente_nome: clienteForm.nome,
-      cliente_telefone: clienteForm.telefone,
-      cliente_cep: clienteForm.cep,
-      cliente_endereco: clienteForm.endereco,
-      cliente_numero: clienteForm.numero,
-      cliente_bairro: clienteForm.bairro,
-      cliente_cidade: clienteForm.cidade,
-      cliente_estado: clienteForm.estado,
-      cliente_complemento: clienteForm.complemento,
-      itens: carrinho.map(item => ({
-        produto_id: item.produto_id,
-        nome: item.nome,
-        quantidade: item.quantidade,
-        preco_unitario: item.preco
-      })),
-      valor_produtos: calcularTotal(),
-      taxa_entrega: estabelecimento.taxa_entrega_base || 0,
-      valor_total: calcularTotal() + (estabelecimento.taxa_entrega_base || 0),
-      forma_pagamento: clienteForm.forma_pagamento,
-      status: 'novo',
-      origem: 'site',
-      horario_pedido: new Date().toISOString()
-    };
-
+    setSalvandoPedido(true);
     try {
-      await base44.entities.Pedido.create(pedidoData);
-      setPedidoConcluido(true);
+      // Buscar pedidos de hoje para gerar número sequencial
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      const pedidosHoje = await base44.entities.Pedido.list('-created_date', 500);
+      
+      const pedidosHojeFiltrados = pedidosHoje.filter(p => {
+        const dataPedido = new Date(p.created_date);
+        dataPedido.setHours(0, 0, 0, 0);
+        return dataPedido.getTime() === hoje.getTime();
+      });
+
+      let proximoNumero = 1;
+      if (pedidosHojeFiltrados.length > 0) {
+        const numeros = pedidosHojeFiltrados.map(p => parseInt(p.numero_pedido) || 0);
+        const maiorNumero = Math.max(...numeros);
+        proximoNumero = maiorNumero + 1;
+      }
+
+      const numeroPedido = proximoNumero.toString().padStart(2, '0');
+
+      const pedidoData = {
+        pizzaria_id: restauranteId,
+        numero_pedido: numeroPedido,
+        tipo_pedido: 'delivery',
+        cliente_nome: clienteForm.nome,
+        cliente_telefone: clienteForm.telefone,
+        cliente_cep: clienteForm.cep,
+        cliente_endereco: clienteForm.endereco,
+        cliente_numero: clienteForm.numero,
+        cliente_bairro: clienteForm.bairro,
+        cliente_cidade: clienteForm.cidade,
+        cliente_estado: clienteForm.estado,
+        cliente_complemento: clienteForm.complemento,
+        itens: carrinho.map(item => ({
+          produto_id: item.produto_id,
+          nome: item.nome,
+          quantidade: item.quantidade,
+          preco_unitario: item.preco
+        })),
+        valor_produtos: calcularTotal(),
+        taxa_entrega: estabelecimento.taxa_entrega_base || 0,
+        valor_total: calcularTotal() + (estabelecimento.taxa_entrega_base || 0),
+        forma_pagamento: 'online',
+        status_pagamento: 'pendente',
+        status: 'novo',
+        origem: 'site',
+        horario_pedido: new Date().toISOString()
+      };
+
+      const novoPedido = await base44.entities.Pedido.create(pedidoData);
+      setPedidoId(novoPedido.id);
       setShowCheckout(false);
-      setCarrinho([]);
-      toast.success('Pedido enviado com sucesso!');
+      setShowPagamento(true);
+      toast.success('Pedido criado! Prossiga para o pagamento.');
     } catch (err) {
       console.error('Erro ao criar pedido:', err);
       toast.error('Erro ao enviar pedido. Tente novamente.');
+    } finally {
+      setSalvandoPedido(false);
     }
+  };
+
+  const handlePagamentoSucesso = () => {
+    setPedidoConcluido(true);
+    setShowPagamento(false);
+    setCarrinho([]);
+    setClienteForm({
+      nome: '',
+      telefone: '',
+      email: '',
+      cep: '',
+      endereco: '',
+      numero: '',
+      bairro: '',
+      cidade: '',
+      estado: '',
+      complemento: ''
+    });
   };
 
   if (loading) {
@@ -331,6 +378,11 @@ export default function CardapioCliente() {
               <Label className={isLight ? 'text-gray-700' : 'text-slate-300'}><Phone className="w-4 h-4 inline mr-2" />Telefone *</Label>
               <Input value={clienteForm.telefone} onChange={(e) => setClienteForm({...clienteForm, telefone: e.target.value})} className={isLight ? 'bg-white' : 'bg-slate-800'} />
             </div>
+
+            <div>
+              <Label className={isLight ? 'text-gray-700' : 'text-slate-300'}>Email (opcional)</Label>
+              <Input type="email" value={clienteForm.email} onChange={(e) => setClienteForm({...clienteForm, email: e.target.value})} className={isLight ? 'bg-white' : 'bg-slate-800'} placeholder="seu@email.com" />
+            </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -368,21 +420,6 @@ export default function CardapioCliente() {
               <Input value={clienteForm.complemento} onChange={(e) => setClienteForm({...clienteForm, complemento: e.target.value})} className={isLight ? 'bg-white' : 'bg-slate-800'} />
             </div>
             
-            <div>
-              <Label className={isLight ? 'text-gray-700' : 'text-slate-300'}><CreditCard className="w-4 h-4 inline mr-2" />Forma de Pagamento *</Label>
-              <Select value={clienteForm.forma_pagamento} onValueChange={(v) => setClienteForm({...clienteForm, forma_pagamento: v})}>
-                <SelectTrigger className={isLight ? 'bg-white' : 'bg-slate-800'}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pix">PIX</SelectItem>
-                  <SelectItem value="dinheiro">Dinheiro</SelectItem>
-                  <SelectItem value="cartao_credito">Cartão de Crédito</SelectItem>
-                  <SelectItem value="cartao_debito">Cartão de Débito</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
             <div className={`p-4 rounded-xl ${isLight ? 'bg-gray-50' : 'bg-slate-800/50'}`}>
               <div className="flex justify-between mb-2">
                 <span>Subtotal</span>
@@ -398,11 +435,43 @@ export default function CardapioCliente() {
               </div>
             </div>
             
-            <Button onClick={finalizarPedido} className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-lg py-6">
-              <DollarSign className="w-5 h-5 mr-2" />
-              Confirmar Pedido
+            <Button onClick={finalizarPedido} disabled={salvandoPedido} className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-lg py-6">
+              {salvandoPedido ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Criando pedido...
+                </>
+              ) : (
+                <>
+                  <ArrowRight className="w-5 h-5 mr-2" />
+                  Ir para Pagamento
+                </>
+              )}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Pagamento */}
+      <Dialog open={showPagamento} onOpenChange={setShowPagamento}>
+        <DialogContent className={`max-w-4xl max-h-[95vh] overflow-y-auto ${isLight ? 'bg-white' : 'bg-slate-900'}`}>
+          <DialogHeader>
+            <DialogTitle className={isLight ? 'text-gray-900' : 'text-white'}>Pagamento</DialogTitle>
+          </DialogHeader>
+          
+          {pedidoId && (
+            <CheckoutPagamento
+              pedidoId={pedidoId}
+              valorTotal={calcularTotal() + (estabelecimento?.taxa_entrega_base || 0)}
+              pizzariaId={restauranteId}
+              clienteEmail={clienteForm.email}
+              clienteNome={clienteForm.nome}
+              clienteTelefone={clienteForm.telefone}
+              onSuccess={handlePagamentoSucesso}
+              onCancel={() => setShowPagamento(false)}
+              tema={estabelecimento?.tema_cliente}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
