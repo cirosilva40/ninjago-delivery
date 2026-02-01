@@ -162,7 +162,6 @@ export default function AcessoUsuario() {
     setCodigo('');
     setNovaSenha('');
     setConfirmarSenha('');
-    setSenhaTemporaria('');
   };
 
   return (
