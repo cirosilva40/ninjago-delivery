@@ -56,12 +56,11 @@ export default function CardapioCliente() {
     const urlParams = new URLSearchParams(window.location.search);
     const pizzariaParam = urlParams.get('pizzaria_id');
     if (pizzariaParam) return pizzariaParam;
-
+    
     const savedPizzariaId = localStorage.getItem('pizzaria_id_atual');
-    // ID padrão para desenvolvimento
-    return savedPizzariaId || '697ea8faa6ffe9fc35c32a91';
+    return savedPizzariaId || null;
   };
-
+  
   const [pizzariaId, setPizzariaId] = useState(getInitialPizzariaId);
   const [carrinho, setCarrinho] = useState([]);
   const [categoriaFiltro, setCategoriaFiltro] = useState('todos');
@@ -187,23 +186,6 @@ export default function CardapioCliente() {
       p.descricao?.toLowerCase().includes(busca.toLowerCase());
     return matchCategoria && matchBusca;
   });
-
-  // Se não há pizzariaId, mostrar mensagem
-  if (!pizzariaId) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">⚠️ Configuração Necessária</h1>
-          <p className="text-slate-400 mb-4">
-            É necessário informar o ID da pizzaria na URL.
-          </p>
-          <p className="text-slate-500 text-sm">
-            Adicione <code className="bg-slate-800 px-2 py-1 rounded">?pizzaria_id=SEU_ID</code> na URL
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   const produtosDestaque = produtos.filter(p => p.destaque);
   const categorias = [...new Set(produtos.map(p => p.categoria))];
@@ -402,7 +384,7 @@ export default function CardapioCliente() {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
-
+          
           try {
             // Chamar função backend para geocodificação reversa
             const { data } = await base44.functions.invoke('geocodificarEndereco', {
@@ -422,7 +404,10 @@ export default function CardapioCliente() {
                 latitude,
                 longitude,
               });
-
+              
+              // Recalcular taxa de entrega após preencher o endereço
+              calcularTaxaEntrega();
+              
               alert('✅ Localização capturada e endereço preenchido automaticamente!');
             } else {
               throw new Error('Não foi possível obter o endereço');
@@ -1400,8 +1385,6 @@ export default function CardapioCliente() {
                             onValueChange={(v) => {
                               if (v === 'nao') {
                                 setFormCliente({ ...formCliente, troco_para: 0 });
-                              } else {
-                                setFormCliente({ ...formCliente, troco_para: 50 });
                               }
                             }}
                           >
@@ -1715,17 +1698,6 @@ export default function CardapioCliente() {
                              {!pixData ? (
                                <div className="text-center py-6">
                                  <p className="text-slate-300 mb-4">Clique no botão abaixo para gerar o código PIX</p>
-                                 <div className="flex gap-3">
-                                   <Button
-                                     onClick={() => {
-                                       setCheckoutStep(2);
-                                       setMetodoPagamentoOnline('');
-                                     }}
-                                     variant="outline"
-                                     className="flex-1 border-slate-600"
-                                   >
-                                     Voltar
-                                   </Button>
                                  <Button
                                    onClick={async () => {
                                      setAguardandoPix(true);
@@ -1836,12 +1808,11 @@ export default function CardapioCliente() {
                                      }
                                    }}
                                    disabled={aguardandoPix}
-                                   className="flex-1 bg-emerald-500 hover:bg-emerald-600"
-                                   >
+                                   className="bg-emerald-500 hover:bg-emerald-600"
+                                 >
                                    {aguardandoPix ? 'Gerando...' : 'Gerar Código PIX'}
-                                   </Button>
-                                   </div>
-                                   </div>
+                                 </Button>
+                               </div>
                              ) : (
                                <div className="space-y-4">
                                  {pixData.qr_code_base64 && (
@@ -1878,29 +1849,16 @@ export default function CardapioCliente() {
                                      ⏱️ Após realizar o pagamento, aguarde alguns instantes. O pedido será confirmado automaticamente.
                                    </p>
                                  </div>
-                                 <div className="flex gap-3">
-                                   <Button
-                                     onClick={() => {
-                                       setPixData(null);
-                                       setCheckoutStep(2);
-                                       setMetodoPagamentoOnline('');
-                                     }}
-                                     variant="outline"
-                                     className="flex-1 border-slate-600"
-                                   >
-                                     Escolher Outro Método
-                                   </Button>
-                                   <Button
-                                     onClick={() => {
-                                       const pedidoId = localStorage.getItem('pedido_aguardando_pagamento');
-                                       localStorage.removeItem('pedido_aguardando_pagamento');
-                                       navigate(createPageUrl('AcompanharPedido') + `?id=${pedidoId}&pizzaria_id=${pizzariaId}`);
-                                     }}
-                                     className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
-                                   >
-                                     Já Paguei
-                                   </Button>
-                                 </div>
+                                 <Button
+                                   onClick={() => {
+                                     const pedidoId = localStorage.getItem('pedido_aguardando_pagamento');
+                                     localStorage.removeItem('pedido_aguardando_pagamento');
+                                     navigate(createPageUrl('AcompanharPedido') + `?id=${pedidoId}&pizzaria_id=${pizzariaId}`);
+                                   }}
+                                   className="w-full bg-gradient-to-r from-orange-500 to-red-600"
+                                 >
+                                   Já paguei - Acompanhar Pedido
+                                 </Button>
                                </div>
                              )}
                            </div>

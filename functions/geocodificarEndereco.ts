@@ -2,7 +2,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
   try {
-    // Criar cliente sem exigir autenticação (permite clientes não logados)
     const base44 = createClientFromRequest(req);
     
     const payload = await req.json();

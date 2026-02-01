@@ -3,7 +3,6 @@ import { MercadoPagoConfig, Preference, Payment } from 'npm:mercadopago@2.0.0';
 
 Deno.serve(async (req) => {
   try {
-    // Criar cliente sem exigir autenticação (permite clientes não logados)
     const base44 = createClientFromRequest(req);
     
     const payload = await req.json();
