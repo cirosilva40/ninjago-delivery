@@ -62,14 +62,13 @@ export default function AcessoUsuario() {
         return;
       }
 
-      // Verificar se é primeira vez com senha temporária (precisa criar nova)
-      const senhaTemporaria = estab.issenhaTemporaria || estab.senha_temporaria;
-      if (senhaTemporaria) {
-        localStorage.setItem('estabelecimento_logado', JSON.stringify(estab));
-        localStorage.setItem('deve_criar_nova_senha', 'true');
+      // Salvar dados do estabelecimento no localStorage
+      localStorage.setItem('estabelecimento_logado', JSON.stringify(estab));
+      
+      // Se tem senha temporária marcada, redireciona para criar nova
+      if (estab.eh_senha_temporaria) {
         navigate(createPageUrl('CriarNovaSenha'));
       } else {
-        localStorage.setItem('estabelecimento_logado', JSON.stringify(estab));
         navigate(createPageUrl('Dashboard'));
       }
     } catch (error) {
