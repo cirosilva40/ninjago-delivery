@@ -267,10 +267,10 @@ export default function AcessoUsuario() {
             </form>
           )}
 
-          {(modo === 'primeiro-acesso' || modo === 'recuperar-senha') && (
+          {modo === 'recuperar-senha' && (
             <>
               {etapa === 1 && (
-                <form onSubmit={modo === 'primeiro-acesso' ? handlePrimeiroAcessoEmail : handleRecuperarSenhaEmail} className="space-y-4">
+                <form onSubmit={handleRecuperarSenhaEmail} className="space-y-4">
                   <div>
                     <Label className="text-slate-400">Email Cadastrado</Label>
                     <div className="relative">
