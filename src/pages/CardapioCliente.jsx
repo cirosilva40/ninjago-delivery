@@ -45,8 +45,10 @@ import ProductDetailModal from '../components/cliente/ProductDetailModal';
 import ProdutoCard from '../components/cliente/ProdutoCard';
 import { enviarNotificacaoStatusPedido } from '../components/pedidos/NotificacaoHelper';
 import { Toaster } from 'sonner';
+import { useMercadoPago, criarTokenCartao } from '../components/cliente/MercadoPagoHelper';
 
 export default function CardapioCliente() {
+  const { mp, isLoaded: mpLoaded } = useMercadoPago();
   const navigate = useNavigate();
   const [pizzariaId, setPizzariaId] = useState('default'); // Pode ser obtido via URL ou seleção
   const [carrinho, setCarrinho] = useState([]);
@@ -1883,9 +1885,17 @@ export default function CardapioCliente() {
                                    return;
                                  }
 
+                                 if (!mpLoaded || !mp) {
+                                   alert('Aguarde o carregamento do sistema de pagamento...');
+                                   return;
+                                 }
+
                                  setProcessandoPagamento(true);
                                  try {
-                                   // Criar pedido e processar pagamento com cartão
+                                   // 1. Criar token seguro do cartão usando SDK do Mercado Pago
+                                   const tokenData = await criarTokenCartao(mp, dadosCartao);
+
+                                   // 2. Criar pedido e processar pagamento com cartão
                                    let clienteId = null;
                                    if (tipoCliente === 'cadastrado') {
                                      if (clienteLogado) {
@@ -1969,7 +1979,7 @@ export default function CardapioCliente() {
 
                                    const novoPedido = await base44.entities.Pedido.create(pedidoData);
 
-                                   // Processar pagamento com cartão
+                                   // 3. Processar pagamento com token seguro
                                    const { data } = await base44.functions.invoke('processarPagamentoMercadoPago', {
                                      pedidoId: novoPedido.id,
                                      valorTotal: calcularTotal(),
@@ -1977,12 +1987,11 @@ export default function CardapioCliente() {
                                      metodoPagamento: metodoPagamentoOnline,
                                      clienteEmail: formCliente.email || `${formCliente.telefone}@cliente.com`,
                                      dadosCartao: {
-                                       numero: dadosCartao.numero,
-                                       nome: dadosCartao.nome,
-                                       validade: dadosCartao.validade,
-                                       cvv: dadosCartao.cvv,
-                                       cpf: dadosCartao.cpf,
-                                       parcelas: metodoPagamentoOnline === 'credit_card' ? dadosCartao.parcelas : 1
+                                       token: tokenData.token,
+                                       payment_method_id: tokenData.payment_method_id,
+                                       cardholder_name: tokenData.cardholder_name,
+                                       cardholder_cpf: tokenData.cardholder_cpf,
+                                       installments: metodoPagamentoOnline === 'credit_card' ? dadosCartao.parcelas : 1
                                      }
                                    });
 
@@ -1992,16 +2001,16 @@ export default function CardapioCliente() {
                                      alert('Erro ao processar pagamento: ' + (data.error || 'Tente novamente'));
                                    }
                                  } catch (error) {
-                                   alert('Erro ao processar pagamento');
+                                   alert('Erro ao processar pagamento: ' + (error.message || 'Verifique os dados do cartão'));
                                    console.error(error);
                                  } finally {
                                    setProcessandoPagamento(false);
                                  }
                                }}
-                               disabled={processandoPagamento}
+                               disabled={processandoPagamento || !mpLoaded}
                                className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
                              >
-                               {processandoPagamento ? 'Processando...' : 'Pagar Agora'}
+                               {processandoPagamento ? 'Processando...' : !mpLoaded ? 'Carregando...' : 'Pagar Agora'}
                              </Button>
                            </div>
                          </div>

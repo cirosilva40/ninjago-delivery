@@ -125,30 +125,11 @@ Deno.serve(async (req) => {
     if (metodoPagamento === 'credit_card' || metodoPagamento === 'debit_card' || metodoPagamento === 'vale_refeicao') {
       if (!dadosCartao || !dadosCartao.token) {
         return Response.json({ 
-          error: 'Dados do cartão não fornecidos' 
+          error: 'Token do cartão não fornecido' 
         }, { status: 400 });
       }
 
-      // Criar preferência para cartão
-      const preference = new Preference(client);
-      const preferenceData = await preference.create({
-        body: {
-          items: items,
-          payer: {
-            email: clienteEmail
-          },
-          external_reference: pedidoId,
-          back_urls: {
-            success: `${req.headers.get('origin')}/acompanhar-pedido?id=${pedidoId}`,
-            failure: `${req.headers.get('origin')}/cardapio`,
-            pending: `${req.headers.get('origin')}/acompanhar-pedido?id=${pedidoId}`
-          },
-          auto_return: 'approved',
-          statement_descriptor: pizzaria.nome
-        }
-      });
-
-      // Processar pagamento com cartão
+      // Processar pagamento com cartão usando o token seguro
       const payment = new Payment(client);
       const paymentData = await payment.create({
         body: {
@@ -173,7 +154,7 @@ Deno.serve(async (req) => {
 
       const tipoPagamento = metodoPagamento === 'credit_card' ? 'Crédito' : 
                             metodoPagamento === 'debit_card' ? 'Débito' : 'Vale Refeição';
-      
+
       await base44.asServiceRole.entities.Pedido.update(pedidoId, {
         status_pagamento: novoStatus,
         observacoes_financeiras: `Pagamento ${tipoPagamento} - ID: ${paymentData.id}`
@@ -183,7 +164,6 @@ Deno.serve(async (req) => {
         success: true,
         tipo: 'cartao',
         payment_id: paymentData.id,
-        preference_id: preferenceData.id,
         status: paymentData.status,
         status_detail: paymentData.status_detail
       });
