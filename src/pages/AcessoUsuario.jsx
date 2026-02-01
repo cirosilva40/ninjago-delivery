@@ -41,7 +41,6 @@ export default function AcessoUsuario() {
     setLoading(true);
 
     try {
-      // Buscar estabelecimento pelo email
       const estabelecimentos = await base44.entities.Pizzaria.filter({ email });
       
       if (estabelecimentos.length === 0) {
@@ -53,7 +52,7 @@ export default function AcessoUsuario() {
       const estab = estabelecimentos[0];
 
       if (!estab.senha) {
-        setError('Você ainda não criou sua senha. Use a opção "Primeiro Acesso".');
+        setError('Você ainda não recebeu uma senha. Entre em contato com o administrador.');
         setLoading(false);
         return;
       }
@@ -64,9 +63,16 @@ export default function AcessoUsuario() {
         return;
       }
 
-      // Salvar dados do estabelecimento no localStorage
-      localStorage.setItem('estabelecimento_logado', JSON.stringify(estab));
-      navigate(createPageUrl('Dashboard'));
+      // Verificar se é primeira vez com senha temporária (precisa criar nova)
+      const senhaTemporaria = estab.issenhaTemporaria || estab.senha_temporaria;
+      if (senhaTemporaria) {
+        localStorage.setItem('estabelecimento_logado', JSON.stringify(estab));
+        localStorage.setItem('deve_criar_nova_senha', 'true');
+        navigate(createPageUrl('CriarNovaSenha'));
+      } else {
+        localStorage.setItem('estabelecimento_logado', JSON.stringify(estab));
+        navigate(createPageUrl('Dashboard'));
+      }
     } catch (error) {
       setError('Erro ao fazer login. Verifique suas credenciais.');
     } finally {
