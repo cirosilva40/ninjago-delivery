@@ -477,6 +477,13 @@ export default function CardapioCliente() {
       return;
     }
 
+    // Se for pagamento online, ir para tela de pagamento SEM criar pedido ainda
+    if (formCliente.forma_pagamento === 'online') {
+      setCheckoutStep(4);
+      return;
+    }
+
+    // Se não for pagamento online, criar pedido normalmente
     setProcessandoPagamento(true);
     
     try {
@@ -484,7 +491,6 @@ export default function CardapioCliente() {
       let clienteId = null;
       if (tipoCliente === 'cadastrado') {
         if (clienteLogado) {
-          // Cliente já logado - atualizar
           await base44.entities.Cliente.update(clienteLogado.id, {
             nome: formCliente.nome,
             telefone: formCliente.telefone,
@@ -501,11 +507,11 @@ export default function CardapioCliente() {
           });
           clienteId = clienteLogado.id;
         } else {
-          // Criar novo cliente com senha
           const clientesExistentes = await base44.entities.Cliente.filter({ telefone: formCliente.telefone });
           
           if (clientesExistentes.length > 0) {
             alert('Já existe uma conta com este telefone. Faça login.');
+            setProcessandoPagamento(false);
             return;
           }
 
@@ -551,7 +557,6 @@ export default function CardapioCliente() {
         itens: carrinho.map(item => {
           let observacaoItem = '';
           
-          // Se tiver personalizações, adicionar aos detalhes
           if (item.personalizacoes) {
             const detalhes = [];
             Object.keys(item.personalizacoes).forEach(grupoKey => {
@@ -588,20 +593,7 @@ export default function CardapioCliente() {
       };
 
       const novoPedido = await base44.entities.Pedido.create(pedidoData);
-
-      // Enviar notificação inicial ao cliente
       await enviarNotificacaoStatusPedido(novoPedido, 'novo');
-
-      // Se for pagamento online, coletar dados de pagamento primeiro
-      if (formCliente.forma_pagamento === 'online') {
-        // Salvar o ID do pedido e ir para tela de pagamento
-        localStorage.setItem('pedido_aguardando_pagamento', novoPedido.id);
-        setCheckoutStep(4); // Ir para etapa de dados de pagamento
-        setProcessandoPagamento(false);
-        return;
-      }
-
-      // Redirecionar para página de acompanhamento com pizzaria_id
       navigate(createPageUrl('AcompanharPedido') + `?id=${novoPedido.id}&pizzaria_id=${pizzariaId}`);
       
     } catch (error) {
@@ -1624,9 +1616,92 @@ export default function CardapioCliente() {
                                    onClick={async () => {
                                      setAguardandoPix(true);
                                      try {
-                                       const pedidoId = localStorage.getItem('pedido_aguardando_pagamento');
+                                       // Primeiro, criar o pedido
+                                       let clienteId = null;
+                                       if (tipoCliente === 'cadastrado') {
+                                         if (clienteLogado) {
+                                           await base44.entities.Cliente.update(clienteLogado.id, {
+                                             nome: formCliente.nome,
+                                             telefone: formCliente.telefone,
+                                             email: formCliente.email,
+                                             cep: formCliente.cep,
+                                             endereco: formCliente.endereco,
+                                             numero: formCliente.numero,
+                                             complemento: formCliente.complemento,
+                                             bairro: formCliente.bairro,
+                                             cidade: formCliente.cidade,
+                                             estado: formCliente.estado,
+                                             total_pedidos: (clienteLogado.total_pedidos || 0) + 1,
+                                             pontos_fidelidade: (clienteLogado.pontos_fidelidade || 0) + Math.floor(calcularSubtotal()),
+                                           });
+                                           clienteId = clienteLogado.id;
+                                         } else {
+                                           const clientesExistentes = await base44.entities.Cliente.filter({ telefone: formCliente.telefone });
+                                           if (clientesExistentes.length > 0) {
+                                             alert('Já existe uma conta com este telefone. Faça login.');
+                                             return;
+                                           }
+                                           const novoCliente = await base44.entities.Cliente.create({
+                                             nome: formCliente.nome,
+                                             telefone: formCliente.telefone,
+                                             senha: cadastroSenha,
+                                             email: formCliente.email,
+                                             cep: formCliente.cep,
+                                             endereco: formCliente.endereco,
+                                             numero: formCliente.numero,
+                                             complemento: formCliente.complemento,
+                                             bairro: formCliente.bairro,
+                                             cidade: formCliente.cidade,
+                                             estado: formCliente.estado,
+                                             latitude: formCliente.latitude,
+                                             longitude: formCliente.longitude,
+                                             total_pedidos: 1,
+                                             pontos_fidelidade: Math.floor(calcularSubtotal()),
+                                           });
+                                           clienteId = novoCliente.id;
+                                           localStorage.setItem('cliente_logado', JSON.stringify({ ...novoCliente, pizzaria_id_atual: pizzariaId }));
+                                         }
+                                       }
+
+                                       const pedidoData = {
+                                         pizzaria_id: pizzariaId,
+                                         numero_pedido: `PED${Date.now()}`,
+                                         tipo_pedido: 'delivery',
+                                         cliente_nome: formCliente.nome,
+                                         cliente_telefone: formCliente.telefone,
+                                         cliente_cep: formCliente.cep,
+                                         cliente_endereco: formCliente.endereco,
+                                         cliente_numero: formCliente.numero,
+                                         cliente_bairro: formCliente.bairro,
+                                         cliente_cidade: formCliente.cidade,
+                                         cliente_estado: formCliente.estado,
+                                         cliente_complemento: formCliente.complemento,
+                                         latitude: formCliente.latitude,
+                                         longitude: formCliente.longitude,
+                                         itens: carrinho.map(item => ({
+                                           produto_id: item.id,
+                                           nome: item.nome,
+                                           quantidade: item.quantidade,
+                                           preco_unitario: item.preco_final || item.preco,
+                                           observacao: ''
+                                         })),
+                                         valor_produtos: calcularSubtotal(),
+                                         taxa_entrega: taxaEntrega,
+                                         desconto: calcularDesconto(),
+                                         valor_total: calcularTotal(),
+                                         forma_pagamento: 'pix',
+                                         status: 'novo',
+                                         status_pagamento: 'pendente',
+                                         observacoes: formCliente.observacoes,
+                                         horario_pedido: new Date().toISOString(),
+                                         origem: 'site',
+                                       };
+
+                                       const novoPedido = await base44.entities.Pedido.create(pedidoData);
+
+                                       // Agora gerar o PIX
                                        const { data } = await base44.functions.invoke('processarPagamentoMercadoPago', {
-                                         pedidoId,
+                                         pedidoId: novoPedido.id,
                                          valorTotal: calcularTotal(),
                                          pizzariaId,
                                          metodoPagamento: 'pix',
@@ -1635,6 +1710,7 @@ export default function CardapioCliente() {
 
                                        if (data.success) {
                                          setPixData(data);
+                                         localStorage.setItem('pedido_aguardando_pagamento', novoPedido.id);
                                        } else {
                                          alert('Erro ao gerar PIX: ' + (data.error || 'Tente novamente'));
                                        }
