@@ -15,28 +15,22 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'clienteId é obrigatório' }, { status: 400 });
     }
 
-    // Buscar o cliente pelo ID da pizzaria (email do estabelecimento)
-    const pizzaria = await base44.asServiceRole.entities.Pizzaria.list();
-    const estab = pizzaria.find(p => p.id === clienteId);
+    // Buscar o estabelecimento pelo ID
+    const estabs = await base44.asServiceRole.entities.Pizzaria.filter({ id: clienteId });
     
-    if (!estab || !estab.email) {
+    if (estabs.length === 0) {
       return Response.json({ error: 'Estabelecimento não encontrado' }, { status: 404 });
     }
 
-    // Buscar cliente pelo email do estabelecimento
-    const clientes = await base44.asServiceRole.entities.Cliente.filter({ email: estab.email });
-    
-    if (clientes.length === 0) {
-      return Response.json({ error: 'Cliente não encontrado para este estabelecimento' }, { status: 404 });
-    }
-
-    const cliente = clientes[0];
+    const estab = estabs[0];
 
     // Gerar senha temporária: 8 caracteres aleatórios
     const senhaTemporaria = Math.random().toString(36).substring(2, 10).toUpperCase();
 
-    await base44.asServiceRole.entities.Cliente.update(cliente.id, {
-      senha: senhaTemporaria
+    // Salvar senha temporária no estabelecimento com flag
+    await base44.asServiceRole.entities.Pizzaria.update(clienteId, {
+      senha: senhaTemporaria,
+      eh_senha_temporaria: true
     });
 
     return Response.json({
