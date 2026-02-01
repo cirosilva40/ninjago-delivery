@@ -443,8 +443,46 @@ export default function AcessoUsuario() {
                 </form>
               )}
 
+              {etapa === 2 && modo === 'recuperar-senha' && (
+                <form onSubmit={handleVerificarCodigo} className="space-y-4">
+                  <div>
+                    <Label className="text-slate-400">Código de Verificação</Label>
+                    <div className="relative">
+                      <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Input
+                        type="text"
+                        value={codigo}
+                        onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        className="pl-10 bg-slate-800 border-slate-700 text-white text-center text-2xl tracking-widest"
+                        placeholder="000000"
+                        maxLength={6}
+                        required
+                      />
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Digite o código de 6 dígitos enviado para {email}
+                    </p>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-semibold"
+                  >
+                    Verificar Código
+                  </Button>
+
+                  <button
+                    type="button"
+                    onClick={() => setEtapa(1)}
+                    className="w-full text-center text-sm text-slate-400 hover:text-slate-300"
+                  >
+                    Não recebeu? Enviar novamente
+                  </button>
+                </form>
+              )}
+
               {etapa === 3 && (
-                <form onSubmit={handleCriarSenha} className="space-y-4">
+                <form onSubmit={handleCriarNovaSenha} className="space-y-4">
                   <div>
                     <Label className="text-slate-400">Nova Senha</Label>
                     <div className="relative">
