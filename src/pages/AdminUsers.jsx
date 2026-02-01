@@ -1134,6 +1134,47 @@ export default function AdminUsers() {
               </div>
             </div>
 
+            {/* Cliente Inicial (opcional) */}
+            <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+              <h3 className="font-semibold text-white flex items-center gap-2">
+                <User className="w-5 h-5 text-orange-400" />
+                Cliente Inicial (Opcional)
+              </h3>
+              <p className="text-xs text-slate-400">Cadastre um cliente para poder fazer pedidos neste estabelecimento</p>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <Label className="text-slate-400">Nome do Cliente</Label>
+                  <Input
+                    value={estabelecimentoForm.cliente_nome}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cliente_nome: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="Nome completo"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Email do Cliente</Label>
+                  <Input
+                    type="email"
+                    value={estabelecimentoForm.cliente_email}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cliente_email: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="cliente@email.com"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Telefone do Cliente</Label>
+                  <TelefoneInput
+                    value={estabelecimentoForm.cliente_telefone}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cliente_telefone: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+              </div>
+            </div>
+
             {cadastroSuccess && (
               <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
                 <p className="text-sm text-emerald-300 font-medium">
