@@ -71,7 +71,8 @@ export default function AdminUsers() {
     data_pagamento: '',
     valor_pagamento: '',
     forma_pagamento: 'pix',
-    role: 'user'
+    role: 'user',
+    foto_url: ''
   });
   const [cadastrando, setCadastrando] = useState(false);
   const [cadastroSuccess, setCadastroSuccess] = useState(false);
@@ -99,6 +100,7 @@ export default function AdminUsers() {
   const [showEditEstabelecimento, setShowEditEstabelecimento] = useState(false);
   const [editingEstabelecimento, setEditingEstabelecimento] = useState(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingFotoUsuario, setUploadingFotoUsuario] = useState(false);
   
   // Validação de e-mail
   const isValidEmail = (email) => {
@@ -213,7 +215,8 @@ export default function AdminUsers() {
           data_pagamento: '',
           valor_pagamento: '',
           forma_pagamento: 'pix',
-          role: 'user'
+          role: 'user',
+          foto_url: ''
         });
       }, 2000);
       refetch();
@@ -262,7 +265,8 @@ export default function AdminUsers() {
       data_pagamento: '',
       valor_pagamento: '',
       forma_pagamento: 'pix',
-      role: usuario.role || 'user'
+      role: usuario.role || 'user',
+      foto_url: usuario.foto_url || ''
     });
     setShowEditModal(true);
   };
@@ -275,7 +279,8 @@ export default function AdminUsers() {
       await base44.entities.User.update(editingUser.id, {
         full_name: cadastroForm.nome_completo,
         email: cadastroForm.email,
-        role: cadastroForm.role
+        role: cadastroForm.role,
+        foto_url: cadastroForm.foto_url
       });
       
       setCadastroSuccess(true);
@@ -432,6 +437,39 @@ export default function AdminUsers() {
       alert('Erro ao fazer upload da imagem. Tente novamente.');
     } finally {
       setUploadingLogo(false);
+    }
+  };
+
+  const handleFotoUsuarioUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecione apenas arquivos de imagem');
+      return;
+    }
+
+    // Validar tamanho (máx 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A imagem deve ter no máximo 5MB');
+      return;
+    }
+
+    setUploadingFotoUsuario(true);
+    try {
+      const { data } = await base44.functions.invoke('uploadLogoEstabelecimento', { file });
+      
+      if (data.file_url) {
+        setCadastroForm({ ...cadastroForm, foto_url: data.file_url });
+      } else {
+        alert('Erro ao fazer upload da imagem');
+      }
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      alert('Erro ao fazer upload da imagem. Tente novamente.');
+    } finally {
+      setUploadingFotoUsuario(false);
     }
   };
 
@@ -1637,6 +1675,60 @@ export default function AdminUsers() {
                 <User className="w-5 h-5 text-orange-400" />
                 Dados {cadastroForm.tipo_pessoa === 'fisica' ? 'Pessoais' : 'da Empresa'}
               </h3>
+
+              {/* Upload de Foto */}
+              <div className="col-span-2">
+                <Label className="text-slate-400 mb-3 block">Foto de Perfil</Label>
+                <div className="flex items-center gap-4">
+                  {cadastroForm.foto_url ? (
+                    <div className="relative">
+                      <img 
+                        src={cadastroForm.foto_url} 
+                        alt="Foto" 
+                        className="w-24 h-24 rounded-full object-cover border-2 border-slate-700"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setCadastroForm({ ...cadastroForm, foto_url: '' })}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white hover:bg-red-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-slate-800 border-2 border-dashed border-slate-600 flex items-center justify-center">
+                      <User className="w-8 h-8 text-slate-600" />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      id="foto-usuario-upload"
+                      accept="image/*"
+                      onChange={handleFotoUsuarioUpload}
+                      className="hidden"
+                      disabled={uploadingFotoUsuario}
+                    />
+                    <label htmlFor="foto-usuario-upload">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="border-slate-600 text-slate-300 cursor-pointer"
+                        disabled={uploadingFotoUsuario}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          document.getElementById('foto-usuario-upload').click();
+                        }}
+                      >
+                        {uploadingFotoUsuario ? 'Enviando...' : cadastroForm.foto_url ? 'Alterar Foto' : 'Fazer Upload da Foto'}
+                      </Button>
+                    </label>
+                    <p className="text-xs text-slate-500 mt-2">
+                      PNG, JPG ou JPEG (máx. 5MB)
+                    </p>
+                  </div>
+                </div>
+              </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
@@ -1829,6 +1921,58 @@ export default function AdminUsers() {
           </DialogHeader>
 
           <div className="space-y-4 mt-4">
+            {/* Upload de Foto */}
+            <div>
+              <Label className="text-slate-400 mb-3 block">Foto de Perfil</Label>
+              <div className="flex items-center gap-4">
+                {cadastroForm.foto_url ? (
+                  <div className="relative">
+                    <img 
+                      src={cadastroForm.foto_url} 
+                      alt="Foto" 
+                      className="w-20 h-20 rounded-full object-cover border-2 border-slate-700"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setCadastroForm({ ...cadastroForm, foto_url: '' })}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white hover:bg-red-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-slate-800 border-2 border-dashed border-slate-600 flex items-center justify-center">
+                    <User className="w-8 h-8 text-slate-600" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    id="foto-usuario-edit-upload"
+                    accept="image/*"
+                    onChange={handleFotoUsuarioUpload}
+                    className="hidden"
+                    disabled={uploadingFotoUsuario}
+                  />
+                  <label htmlFor="foto-usuario-edit-upload">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="border-slate-600 text-slate-300 cursor-pointer"
+                      disabled={uploadingFotoUsuario}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        document.getElementById('foto-usuario-edit-upload').click();
+                      }}
+                    >
+                      {uploadingFotoUsuario ? 'Enviando...' : cadastroForm.foto_url ? 'Alterar Foto' : 'Upload Foto'}
+                    </Button>
+                  </label>
+                </div>
+              </div>
+            </div>
+
             <div>
               <Label className="text-slate-400">Nome Completo</Label>
               <Input
