@@ -73,6 +73,26 @@ export default function AdminUsers() {
   });
   const [cadastrando, setCadastrando] = useState(false);
   const [cadastroSuccess, setCadastroSuccess] = useState(false);
+  const [activeTab, setActiveTab] = useState('usuarios'); // 'usuarios' ou 'estabelecimentos'
+  const [showCadastroEstabelecimento, setShowCadastroEstabelecimento] = useState(false);
+  const [estabelecimentoForm, setEstabelecimentoForm] = useState({
+    nome: '',
+    cnpj: '',
+    telefone: '',
+    email: '',
+    endereco: '',
+    cidade: '',
+    estado: '',
+    cep: '',
+    nome_exibicao_cliente: '',
+    horario_abertura: '18:00',
+    horario_fechamento: '23:00',
+    taxa_entrega_base: 5,
+    raio_entrega_km: 5,
+    status: 'ativa',
+    plano: 'basico'
+  });
+  const [cadastrandoEstabelecimento, setCadastrandoEstabelecimento] = useState(false);
 
   useEffect(() => {
     loadCurrentUser();
@@ -90,6 +110,11 @@ export default function AdminUsers() {
   const { data: usuarios = [], refetch } = useQuery({
     queryKey: ['usuarios'],
     queryFn: () => base44.entities.User.list('-created_date', 500),
+  });
+
+  const { data: estabelecimentos = [], refetch: refetchEstabelecimentos } = useQuery({
+    queryKey: ['estabelecimentos'],
+    queryFn: () => base44.entities.Pizzaria.list('-created_date', 500),
   });
 
   // Verificar se usuário atual é admin
@@ -241,6 +266,61 @@ export default function AdminUsers() {
     }
   };
 
+  const handleCadastroEstabelecimento = async () => {
+    if (!estabelecimentoForm.nome || !estabelecimentoForm.telefone || !estabelecimentoForm.endereco) {
+      alert('Preencha os campos obrigatórios: Nome, Telefone e Endereço');
+      return;
+    }
+
+    setCadastrandoEstabelecimento(true);
+    try {
+      await base44.entities.Pizzaria.create(estabelecimentoForm);
+      
+      setCadastroSuccess(true);
+      setTimeout(() => {
+        setCadastroSuccess(false);
+        setShowCadastroEstabelecimento(false);
+        setEstabelecimentoForm({
+          nome: '',
+          cnpj: '',
+          telefone: '',
+          email: '',
+          endereco: '',
+          cidade: '',
+          estado: '',
+          cep: '',
+          nome_exibicao_cliente: '',
+          horario_abertura: '18:00',
+          horario_fechamento: '23:00',
+          taxa_entrega_base: 5,
+          raio_entrega_km: 5,
+          status: 'ativa',
+          plano: 'basico'
+        });
+      }, 2000);
+      refetchEstabelecimentos();
+    } catch (error) {
+      console.error('Erro ao cadastrar estabelecimento:', error);
+      alert('Erro ao cadastrar estabelecimento. Tente novamente.');
+    } finally {
+      setCadastrandoEstabelecimento(false);
+    }
+  };
+
+  const handleDeleteEstabelecimento = async (estabelecimento) => {
+    if (!confirm(`Tem certeza que deseja excluir o estabelecimento ${estabelecimento.nome}?`)) {
+      return;
+    }
+
+    try {
+      await base44.entities.Pizzaria.delete(estabelecimento.id);
+      refetchEstabelecimentos();
+    } catch (error) {
+      console.error('Erro ao excluir estabelecimento:', error);
+      alert('Erro ao excluir estabelecimento. Tente novamente.');
+    }
+  };
+
   const admins = usuarios.filter(u => u.role === 'admin').length;
   const regularUsers = usuarios.filter(u => u.role === 'user').length;
 
@@ -288,23 +368,45 @@ export default function AdminUsers() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-3xl font-bold text-white">Usuários do Sistema</h2>
-              <p className="text-slate-400 mt-1">{usuarios.length} usuários cadastrados</p>
-            </div>
-            <Button 
-              onClick={() => setShowCadastroModal(true)}
-              className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+          {/* Tabs */}
+          <div className="flex gap-2 border-b border-white/10 pb-4">
+            <Button
+              variant={activeTab === 'usuarios' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('usuarios')}
+              className={activeTab === 'usuarios' ? 'bg-gradient-to-r from-orange-500 to-red-600' : 'text-slate-400'}
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Cadastrar Usuário
+              <Users className="w-4 h-4 mr-2" />
+              Usuários ({usuarios.length})
+            </Button>
+            <Button
+              variant={activeTab === 'estabelecimentos' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('estabelecimentos')}
+              className={activeTab === 'estabelecimentos' ? 'bg-gradient-to-r from-orange-500 to-red-600' : 'text-slate-400'}
+            >
+              <Building2 className="w-4 h-4 mr-2" />
+              Estabelecimentos ({estabelecimentos.length})
             </Button>
           </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {activeTab === 'usuarios' && (
+            <>
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-3xl font-bold text-white">Usuários do Sistema</h2>
+                  <p className="text-slate-400 mt-1">{usuarios.length} usuários cadastrados</p>
+                </div>
+                <Button 
+                  onClick={() => setShowCadastroModal(true)}
+                  className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Cadastrar Usuário
+                </Button>
+              </div>
+
+              {/* Stats */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="bg-white/5 border-white/10 p-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
@@ -340,8 +442,8 @@ export default function AdminUsers() {
         </Card>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
+              {/* Filters */}
+              <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input
@@ -364,8 +466,8 @@ export default function AdminUsers() {
         </Select>
       </div>
 
-      {/* Users List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {/* Users List */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         <AnimatePresence>
           {filteredUsuarios.length === 0 ? (
             <motion.div
@@ -468,9 +570,345 @@ export default function AdminUsers() {
                 )}
               </motion.div>
             ))
+              )}
+            </AnimatePresence>
+              </div>
+            </>
           )}
-        </AnimatePresence>
-      </div>
+
+          {activeTab === 'estabelecimentos' && (
+            <>
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-3xl font-bold text-white">Estabelecimentos Cadastrados</h2>
+                  <p className="text-slate-400 mt-1">{estabelecimentos.length} estabelecimentos no sistema</p>
+                </div>
+                <Button 
+                  onClick={() => setShowCadastroEstabelecimento(true)}
+                  className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Cadastrar Estabelecimento
+                </Button>
+              </div>
+
+              {/* Lista de Estabelecimentos */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <AnimatePresence>
+                  {estabelecimentos.length === 0 ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="col-span-full rounded-2xl bg-white/5 border border-white/10 p-12 text-center"
+                    >
+                      <Building2 className="w-16 h-16 mx-auto text-slate-600 mb-4" />
+                      <p className="text-slate-400">Nenhum estabelecimento cadastrado</p>
+                    </motion.div>
+                  ) : (
+                    estabelecimentos.map((estab, index) => (
+                      <motion.div
+                        key={estab.id}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 p-6 hover:bg-white/8 transition-all"
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-4">
+                            {estab.logo_url ? (
+                              <img src={estab.logo_url} alt={estab.nome} className="w-16 h-16 rounded-xl object-cover" />
+                            ) : (
+                              <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                                <Building2 className="w-8 h-8 text-white" />
+                              </div>
+                            )}
+                            <div>
+                              <h3 className="font-semibold text-white text-lg">{estab.nome}</h3>
+                              <Badge className={
+                                estab.status === 'ativa' 
+                                  ? 'bg-emerald-500/20 text-emerald-400 text-xs' 
+                                  : 'bg-red-500/20 text-red-400 text-xs'
+                              }>
+                                {estab.status === 'ativa' ? 'Ativo' : 'Inativo'}
+                              </Badge>
+                            </div>
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-slate-400">
+                                <MoreVertical className="w-5 h-5" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-slate-900 border-slate-700">
+                              <DropdownMenuItem 
+                                onClick={() => handleDeleteEstabelecimento(estab)}
+                                className="cursor-pointer text-red-400 focus:text-red-300"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Excluir
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-3 text-sm text-slate-400">
+                            <Phone className="w-4 h-4" />
+                            <span>{estab.telefone || 'Sem telefone'}</span>
+                          </div>
+                          <div className="flex items-center gap-3 text-sm text-slate-400">
+                            <Mail className="w-4 h-4" />
+                            <span className="truncate">{estab.email || 'Sem email'}</span>
+                          </div>
+                          <div className="flex items-center gap-3 text-sm text-slate-400">
+                            <Building2 className="w-4 h-4" />
+                            <span className="truncate">{estab.cidade || 'Sem cidade'} - {estab.estado || 'UF'}</span>
+                          </div>
+                          <div className="flex items-center gap-3 text-sm text-slate-400">
+                            <Shield className="w-4 h-4" />
+                            <span>Plano: {estab.plano || 'Básico'}</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))
+                  )}
+                </AnimatePresence>
+              </div>
+            </>
+          )}
+        </div>
+
+      {/* Modal Cadastrar Estabelecimento */}
+      <Dialog open={showCadastroEstabelecimento} onOpenChange={setShowCadastroEstabelecimento}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Building2 className="w-6 h-6 text-orange-500" />
+              Cadastrar Novo Estabelecimento
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6 mt-4">
+            {/* Dados Básicos */}
+            <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+              <h3 className="font-semibold text-white flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-orange-400" />
+                Dados do Estabelecimento
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <Label className="text-slate-400">Nome do Estabelecimento *</Label>
+                  <Input
+                    value={estabelecimentoForm.nome}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, nome: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="Pizzaria do João"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <Label className="text-slate-400">Nome de Exibição para o Cliente</Label>
+                  <Input
+                    value={estabelecimentoForm.nome_exibicao_cliente}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, nome_exibicao_cliente: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="Nome que aparece no cardápio"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">CNPJ</Label>
+                  <Input
+                    value={estabelecimentoForm.cnpj}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cnpj: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="00.000.000/0000-00"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Telefone *</Label>
+                  <Input
+                    value={estabelecimentoForm.telefone}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, telefone: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="(00) 00000-0000"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <Label className="text-slate-400">Email</Label>
+                  <Input
+                    type="email"
+                    value={estabelecimentoForm.email}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, email: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="contato@estabelecimento.com"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Endereço */}
+            <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+              <h3 className="font-semibold text-white">Endereço</h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <Label className="text-slate-400">Endereço Completo *</Label>
+                  <Input
+                    value={estabelecimentoForm.endereco}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, endereco: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="Rua, número, bairro"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Cidade</Label>
+                  <Input
+                    value={estabelecimentoForm.cidade}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cidade: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="São Paulo"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Estado</Label>
+                  <Input
+                    value={estabelecimentoForm.estado}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, estado: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="SP"
+                    maxLength={2}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">CEP</Label>
+                  <Input
+                    value={estabelecimentoForm.cep}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cep: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="00000-000"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Configurações */}
+            <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+              <h3 className="font-semibold text-white">Configurações</h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-400">Horário de Abertura</Label>
+                  <Input
+                    type="time"
+                    value={estabelecimentoForm.horario_abertura}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, horario_abertura: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Horário de Fechamento</Label>
+                  <Input
+                    type="time"
+                    value={estabelecimentoForm.horario_fechamento}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, horario_fechamento: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Taxa de Entrega Base (R$)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={estabelecimentoForm.taxa_entrega_base}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, taxa_entrega_base: parseFloat(e.target.value) })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Raio de Entrega (km)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={estabelecimentoForm.raio_entrega_km}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, raio_entrega_km: parseFloat(e.target.value) })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Plano</Label>
+                  <Select 
+                    value={estabelecimentoForm.plano} 
+                    onValueChange={(v) => setEstabelecimentoForm({ ...estabelecimentoForm, plano: v })}
+                  >
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      <SelectItem value="basico">Básico</SelectItem>
+                      <SelectItem value="profissional">Profissional</SelectItem>
+                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Status</Label>
+                  <Select 
+                    value={estabelecimentoForm.status} 
+                    onValueChange={(v) => setEstabelecimentoForm({ ...estabelecimentoForm, status: v })}
+                  >
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      <SelectItem value="ativa">Ativo</SelectItem>
+                      <SelectItem value="inativa">Inativo</SelectItem>
+                      <SelectItem value="suspensa">Suspenso</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {cadastroSuccess && (
+              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                <p className="text-sm text-emerald-300 font-medium">
+                  ✅ Estabelecimento cadastrado com sucesso!
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCadastroEstabelecimento(false)}
+                className="border-slate-600 text-slate-300"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleCadastroEstabelecimento}
+                disabled={!estabelecimentoForm.nome || !estabelecimentoForm.telefone || !estabelecimentoForm.endereco || cadastrandoEstabelecimento || cadastroSuccess}
+                className="bg-gradient-to-r from-orange-500 to-red-600"
+              >
+                {cadastrandoEstabelecimento ? 'Cadastrando...' : cadastroSuccess ? 'Cadastrado!' : 'Cadastrar Estabelecimento'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal Cadastrar Usuário */}
       <Dialog open={showCadastroModal} onOpenChange={setShowCadastroModal}>
