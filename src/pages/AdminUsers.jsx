@@ -773,8 +773,217 @@ export default function AdminUsers() {
           </DialogHeader>
 
           <div className="space-y-6 mt-4">
-            {/* ... conteúdo do modal ... */}
-            {/* (mantém o conteúdo existente) */}
+            {/* Dados Básicos */}
+            <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+              <h3 className="font-semibold text-white flex items-center gap-2">
+                <Building2 className="w-5 h-5 text-orange-400" />
+                Dados do Estabelecimento
+              </h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <Label className="text-slate-400">Nome do Estabelecimento *</Label>
+                  <Input
+                    value={estabelecimentoForm.nome}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, nome: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="Pizzaria do João"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <Label className="text-slate-400">Nome de Exibição para o Cliente</Label>
+                  <Input
+                    value={estabelecimentoForm.nome_exibicao_cliente}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, nome_exibicao_cliente: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="Nome que aparece no cardápio"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">CNPJ</Label>
+                  <CnpjInput
+                    value={estabelecimentoForm.cnpj}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cnpj: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Telefone *</Label>
+                  <TelefoneInput
+                    value={estabelecimentoForm.telefone}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, telefone: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <Label className="text-slate-400">Email</Label>
+                  <Input
+                    type="email"
+                    value={estabelecimentoForm.email}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, email: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="contato@estabelecimento.com"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Endereço */}
+            <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+              <h3 className="font-semibold text-white">Endereço</h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <Label className="text-slate-400">Endereço Completo *</Label>
+                  <Input
+                    value={estabelecimentoForm.endereco}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, endereco: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="Rua, número, bairro"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Cidade</Label>
+                  <Input
+                    value={estabelecimentoForm.cidade}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cidade: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="São Paulo"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Estado</Label>
+                  <Input
+                    value={estabelecimentoForm.estado}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, estado: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                    placeholder="SP"
+                    maxLength={2}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">CEP</Label>
+                  <CepInput
+                    value={estabelecimentoForm.cep}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cep: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Configurações */}
+            <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+              <h3 className="font-semibold text-white">Configurações</h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-400">Horário de Abertura</Label>
+                  <Input
+                    type="time"
+                    value={estabelecimentoForm.horario_abertura}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, horario_abertura: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Horário de Fechamento</Label>
+                  <Input
+                    type="time"
+                    value={estabelecimentoForm.horario_fechamento}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, horario_fechamento: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Taxa de Entrega Base (R$)</Label>
+                  <CurrencyInput
+                    value={estabelecimentoForm.taxa_entrega_base}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, taxa_entrega_base: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Raio de Entrega (km)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={estabelecimentoForm.raio_entrega_km}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, raio_entrega_km: parseFloat(e.target.value) })}
+                    className="bg-slate-800 border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Plano</Label>
+                  <Select 
+                    value={estabelecimentoForm.plano} 
+                    onValueChange={(v) => setEstabelecimentoForm({ ...estabelecimentoForm, plano: v })}
+                  >
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      <SelectItem value="basico">Básico</SelectItem>
+                      <SelectItem value="profissional">Profissional</SelectItem>
+                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Status</Label>
+                  <Select 
+                    value={estabelecimentoForm.status} 
+                    onValueChange={(v) => setEstabelecimentoForm({ ...estabelecimentoForm, status: v })}
+                  >
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      <SelectItem value="ativa">Ativo</SelectItem>
+                      <SelectItem value="inativa">Inativo</SelectItem>
+                      <SelectItem value="suspensa">Suspenso</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {cadastroSuccess && (
+              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                <p className="text-sm text-emerald-300 font-medium">
+                  ✅ Estabelecimento cadastrado com sucesso!
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCadastroEstabelecimento(false)}
+                className="border-slate-600 text-slate-300"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleCadastroEstabelecimento}
+                disabled={!estabelecimentoForm.nome || !estabelecimentoForm.telefone || !estabelecimentoForm.endereco || cadastrandoEstabelecimento || cadastroSuccess}
+                className="bg-gradient-to-r from-orange-500 to-red-600"
+              >
+                {cadastrandoEstabelecimento ? 'Cadastrando...' : cadastroSuccess ? 'Cadastrado!' : 'Cadastrar Estabelecimento'}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
