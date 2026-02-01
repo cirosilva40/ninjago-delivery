@@ -43,95 +43,7 @@ const mapOptions = {
   streetViewControl: false,
   rotateControl: false,
   fullscreenControl: true,
-  styles: [
-    {
-      "elementType": "geometry",
-      "stylers": [{ "color": "#242f3e" }]
-    },
-    {
-      "elementType": "labels.text.stroke",
-      "stylers": [{ "color": "#242f3e" }]
-    },
-    {
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#746855" }]
-    },
-    {
-      "featureType": "administrative.locality",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#d59563" }]
-    },
-    {
-      "featureType": "poi",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#d59563" }]
-    },
-    {
-      "featureType": "poi.park",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#263c3f" }]
-    },
-    {
-      "featureType": "poi.park",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#6b9a76" }]
-    },
-    {
-      "featureType": "road",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#38414e" }]
-    },
-    {
-      "featureType": "road",
-      "elementType": "geometry.stroke",
-      "stylers": [{ "color": "#212a37" }]
-    },
-    {
-      "featureType": "road",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#9ca5b3" }]
-    },
-    {
-      "featureType": "road.highway",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#746855" }]
-    },
-    {
-      "featureType": "road.highway",
-      "elementType": "geometry.stroke",
-      "stylers": [{ "color": "#1f2835" }]
-    },
-    {
-      "featureType": "road.highway",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#f3d19c" }]
-    },
-    {
-      "featureType": "transit",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#2f3948" }]
-    },
-    {
-      "featureType": "transit.station",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#d59563" }]
-    },
-    {
-      "featureType": "water",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#17263c" }]
-    },
-    {
-      "featureType": "water",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#515c6d" }]
-    },
-    {
-      "featureType": "water",
-      "elementType": "labels.text.stroke",
-      "stylers": [{ "color": "#17263c" }]
-    }
-  ]
+  styles: [], // Use Google Maps default style
 };
 
 const statusConfig = {
@@ -145,7 +57,7 @@ export default function MapaTempoReal() {
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: apiKey || '',
+    googleMapsApiKey: apiKey,
   });
   
   const [viewMode, setViewMode] = useState('map');
@@ -546,23 +458,12 @@ Retorne a rota otimizada com as seguintes informações.
                   <Marker
                     position={{ lat: pizzaria.latitude, lng: pizzaria.longitude }}
                     icon={{
-                      url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                        <svg width="44" height="44" xmlns="http://www.w3.org/2000/svg">
-                          <defs>
-                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                              <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
-                              <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
-                            </linearGradient>
-                          </defs>
-                          <rect width="44" height="44" rx="12" fill="url(#grad1)" stroke="white" stroke-width="3"/>
-                          <circle cx="14" cy="22" r="2" fill="white"/>
-                          <circle cx="22" cy="14" r="2" fill="white"/>
-                          <circle cx="30" cy="22" r="2" fill="white"/>
-                          <circle cx="22" cy="30" r="2" fill="white"/>
-                        </svg>
-                      `),
-                      scaledSize: new window.google.maps.Size(44, 44),
-                      anchor: new window.google.maps.Point(22, 22),
+                      path: window.google.maps.SymbolPath.CIRCLE,
+                      fillColor: '#8b5cf6',
+                      fillOpacity: 1,
+                      strokeColor: '#ffffff',
+                      strokeWeight: 2,
+                      scale: 12,
                     }}
                     onClick={() => setSelectedPizzaria(true)}
                   />
@@ -591,22 +492,12 @@ Retorne a rota otimizada com as seguintes informações.
                       <Marker
                         position={{ lat: entregador.latitude, lng: entregador.longitude }}
                         icon={{
-                          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                            <svg width="${isSelected ? '50' : '40'}" height="${isSelected ? '50' : '40'}" xmlns="http://www.w3.org/2000/svg">
-                              <defs>
-                                <linearGradient id="grad-bike-${entregador.id}" x1="0%" y1="0%" x2="100%" y2="100%">
-                                  <stop offset="0%" style="stop-color:${isSelected ? '#f97316' : '#10b981'};stop-opacity:1" />
-                                  <stop offset="100%" style="stop-color:${isSelected ? '#ef4444' : '#059669'};stop-opacity:1" />
-                                </linearGradient>
-                              </defs>
-                              <circle cx="${isSelected ? '25' : '20'}" cy="${isSelected ? '25' : '20'}" r="${isSelected ? '22' : '17'}" fill="url(#grad-bike-${entregador.id})" stroke="white" stroke-width="${isSelected ? '4' : '3'}"/>
-                              <path d="M${isSelected ? '13' : '10'} ${isSelected ? '30' : '25'} Q${isSelected ? '25' : '20'} ${isSelected ? '20' : '17'} ${isSelected ? '37' : '30'} ${isSelected ? '30' : '25'}" stroke="white" stroke-width="2.5" fill="none"/>
-                              <circle cx="${isSelected ? '37' : '30'}" cy="${isSelected ? '30' : '25'}" r="3.5" stroke="white" stroke-width="2" fill="none"/>
-                              <circle cx="${isSelected ? '13' : '10'}" cy="${isSelected ? '30' : '25'}" r="3.5" stroke="white" stroke-width="2" fill="none"/>
-                            </svg>
-                          `),
-                          scaledSize: new window.google.maps.Size(isSelected ? 50 : 40, isSelected ? 50 : 40),
-                          anchor: new window.google.maps.Point(isSelected ? 25 : 20, isSelected ? 25 : 20),
+                          path: window.google.maps.SymbolPath.CIRCLE,
+                          fillColor: isSelected ? '#f97316' : '#10b981',
+                          fillOpacity: 1,
+                          strokeColor: '#ffffff',
+                          strokeWeight: isSelected ? 3 : 2,
+                          scale: isSelected ? 14 : 10,
                         }}
                         onClick={() => setSelectedEntregador(entregador)}
                       />
@@ -641,20 +532,13 @@ Retorne a rota otimizada com as seguintes informações.
                     <Marker
                       position={{ lat: entrega.latitude_destino, lng: entrega.longitude_destino }}
                       icon={{
-                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                          <svg width="36" height="46" xmlns="http://www.w3.org/2000/svg">
-                            <defs>
-                              <linearGradient id="grad-dest" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#f97316;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#ef4444;stop-opacity:1" />
-                              </linearGradient>
-                            </defs>
-                            <path d="M18 2c-7 0-13 5.5-13 12.5 0 8 13 29.5 13 29.5s13-21.5 13-29.5c0-7-6-12.5-13-12.5z" fill="url(#grad-dest)" stroke="white" stroke-width="3"/>
-                            <circle cx="18" cy="14" r="4" fill="white"/>
-                          </svg>
-                        `),
-                        scaledSize: new window.google.maps.Size(36, 46),
-                        anchor: new window.google.maps.Point(18, 46),
+                        path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+                        fillColor: '#f97316',
+                        fillOpacity: 1,
+                        strokeColor: '#ffffff',
+                        strokeWeight: 2,
+                        scale: 1.8,
+                        anchor: new window.google.maps.Point(12, 24),
                       }}
                       onClick={() => setSelectedEntrega(entrega)}
                     />
