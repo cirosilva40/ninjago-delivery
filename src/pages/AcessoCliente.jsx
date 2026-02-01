@@ -67,7 +67,7 @@ export default function AcessoCliente() {
     }
   };
 
-  // Primeiro Acesso - Etapa 1: Enviar código
+  // Primeiro Acesso - Login com senha temporária
   const handlePrimeiroAcessoEmail = async (e) => {
     e.preventDefault();
     setError('');
@@ -77,168 +77,24 @@ export default function AcessoCliente() {
       const clientes = await base44.entities.Cliente.filter({ email });
       
       if (clientes.length === 0) {
-        // Criar novo cliente automaticamente no primeiro acesso
-        try {
-          const novoCliente = await base44.entities.Cliente.create({
-            email,
-            nome: email.split('@')[0], // Usar parte do email como nome temporário
-            telefone: '', // Será preenchido posteriormente
-            senha: 'temp_' + Math.random().toString(36).substring(7) // Senha temporária que será alterada
-          });
-          
-          // Gerar código de 6 dígitos
-          const codigoVerificacao = Math.floor(100000 + Math.random() * 900000).toString();
-          setCodigoGerado(codigoVerificacao);
-          setClienteId(novoCliente.id);
-
-          // Enviar código por email
-          await base44.integrations.Core.SendEmail({
-            to: email,
-            subject: 'Código de Verificação - Primeiro Acesso',
-            body: `
-              <h2>Bem-vindo!</h2>
-              <p>Seu código de verificação para primeiro acesso é:</p>
-              <h1 style="color: #f97316; font-size: 32px; letter-spacing: 8px;">${codigoVerificacao}</h1>
-              <p>Este código expira em 10 minutos.</p>
-            `
-          });
-
-          setSuccess('Código enviado para seu email!');
-          setEtapa(2);
-          setLoading(false);
-          return;
-        } catch (createError) {
-          console.error('Erro detalhado:', createError);
-          setError('Erro ao criar conta. Tente novamente.');
-          setLoading(false);
-          return;
-        }
-      }
-
-      const cliente = clientes[0];
-
-      if (cliente.senha) {
-        setError('Você já possui senha cadastrada. Use o login normal.');
-        setLoading(false);
-        return;
-      }
-
-      // Gerar código de 6 dígitos
-      const codigoVerificacao = Math.floor(100000 + Math.random() * 900000).toString();
-      setCodigoGerado(codigoVerificacao);
-      setClienteId(cliente.id);
-
-      // Enviar código por email
-      await base44.integrations.Core.SendEmail({
-        to: email,
-        subject: 'Código de Verificação - Primeiro Acesso',
-        body: `
-          <h2>Bem-vindo!</h2>
-          <p>Seu código de verificação para primeiro acesso é:</p>
-          <h1 style="color: #f97316; font-size: 32px; letter-spacing: 8px;">${codigoVerificacao}</h1>
-          <p>Este código expira em 10 minutos.</p>
-        `
-      });
-
-      setSuccess('Código enviado para seu email!');
-      setEtapa(2);
-    } catch (error) {
-      setError('Erro ao enviar código. Tente novamente.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Primeiro Acesso - Etapa 2: Verificar código
-  const handleVerificarCodigo = (e) => {
-    e.preventDefault();
-    setError('');
-
-    if (codigo !== codigoGerado) {
-      setError('Código incorreto. Verifique seu email.');
-      return;
-    }
-
-    setSuccess('Código verificado! Agora crie sua senha.');
-    setEtapa(3);
-  };
-
-  // Primeiro Acesso - Etapa 3: Criar senha
-  const handleCriarSenha = async (e) => {
-    e.preventDefault();
-    setError('');
-
-    if (novaSenha.length < 6) {
-      setError('A senha deve ter pelo menos 6 caracteres.');
-      return;
-    }
-
-    if (novaSenha !== confirmarSenha) {
-      setError('As senhas não coincidem.');
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      await base44.entities.Cliente.update(clienteId, { senha: novaSenha });
-      
-      setSuccess('Senha criada com sucesso! Fazendo login...');
-      
-      setTimeout(async () => {
-        const clientes = await base44.entities.Cliente.filter({ id: clienteId });
-        const cliente = clientes[0];
-        // Salvar com pizzaria_id atual se disponível
-        const pizzariaId = localStorage.getItem('pizzaria_id_atual') || 'default';
-        const clienteComPizzaria = { ...cliente, pizzaria_id_atual: pizzariaId };
-        localStorage.setItem('cliente_logado', JSON.stringify(clienteComPizzaria));
-        navigate(createPageUrl('PerfilCliente'));
-      }, 1500);
-    } catch (error) {
-      setError('Erro ao criar senha. Tente novamente.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Recuperar Senha - Mesmo fluxo do primeiro acesso
-  const handleRecuperarSenhaEmail = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      const clientes = await base44.entities.Cliente.filter({ email });
-      
-      if (clientes.length === 0) {
-        setError('Email não encontrado.');
+        setError('Email não encontrado. Verifique se você já foi cadastrado.');
         setLoading(false);
         return;
       }
 
       const cliente = clientes[0];
-      setClienteId(cliente.id);
 
-      // Gerar código de 6 dígitos
-      const codigoVerificacao = Math.floor(100000 + Math.random() * 900000).toString();
-      setCodigoGerado(codigoVerificacao);
+      if (!cliente.senha) {
+        setError('Sua conta ainda não tem senha. Entre em contato com o administrador.');
+        setLoading(false);
+        return;
+      }
 
-      // Enviar código por email
-      await base44.integrations.Core.SendEmail({
-        to: email,
-        subject: 'Código de Recuperação de Senha',
-        body: `
-          <h2>Recuperação de Senha</h2>
-          <p>Seu código de verificação é:</p>
-          <h1 style="color: #f97316; font-size: 32px; letter-spacing: 8px;">${codigoVerificacao}</h1>
-          <p>Este código expira em 10 minutos.</p>
-        `
-      });
-
-      setSuccess('Código enviado para seu email!');
-      setEtapa(2);
+      // Login bem-sucedido
+      localStorage.setItem('cliente_logado', JSON.stringify(cliente));
+      navigate(createPageUrl('PerfilCliente'));
     } catch (error) {
-      setError('Erro ao enviar código. Tente novamente.');
+      setError('Erro ao fazer login. Tente novamente.');
     } finally {
       setLoading(false);
     }
