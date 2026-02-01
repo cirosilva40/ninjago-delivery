@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { GoogleMap, LoadScript, Marker, InfoWindow, Polyline } from '@react-google-maps/api';
+import { GoogleMap, useLoadScript, Marker, InfoWindow, Polyline } from '@react-google-maps/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   MapPin,
@@ -142,6 +142,12 @@ const statusConfig = {
 };
 
 export default function MapaTempoReal() {
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: apiKey || '',
+  });
+  
   const [viewMode, setViewMode] = useState('map');
   const [selectedEntrega, setSelectedEntrega] = useState(null);
   const [selectedEntregador, setSelectedEntregador] = useState(null);
@@ -357,7 +363,25 @@ Retorne a rota otimizada com as seguintes informações.
     window.open(url, '_blank');
   };
 
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  if (loadError) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Card className="p-6 bg-red-500/10 border-red-500/30">
+          <p className="text-red-400">Erro ao carregar Google Maps: {loadError.message}</p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Card className="p-6 bg-white/5 border-white/10">
+          <p className="text-slate-400">Carregando mapa...</p>
+        </Card>
+      </div>
+    );
+  }
 
   if (!apiKey) {
     return (
@@ -510,7 +534,6 @@ Retorne a rota otimizada com as seguintes informações.
         {/* Google Map */}
         <div className={`${viewMode === 'map' ? 'lg:col-span-2' : 'hidden lg:block lg:col-span-2'}`}>
           <Card className="overflow-hidden rounded-2xl bg-white/5 border-white/10 h-[600px]">
-            <LoadScript googleMapsApiKey={apiKey}>
               <GoogleMap
                 mapContainerStyle={mapContainerStyle}
                 center={defaultCenter}
@@ -667,7 +690,6 @@ Retorne a rota otimizada com as seguintes informações.
                   </React.Fragment>
                 ))}
               </GoogleMap>
-            </LoadScript>
           </Card>
         </div>
 
