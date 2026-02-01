@@ -42,14 +42,39 @@ export const TelefoneInput = React.forwardRef(({ className, ...props }, ref) => 
 
 TelefoneInput.displayName = 'TelefoneInput';
 
-export const CnpjInput = React.forwardRef(({ className, ...props }, ref) => {
+export const CnpjInput = React.forwardRef(({ className, value, onChange, ...props }, ref) => {
+  // CNPJ Alfanumérico: aceita letras e números (novo formato 2026)
+  const handleChange = (e) => {
+    let val = e.target.value.toUpperCase();
+    // Remove tudo exceto letras e números
+    val = val.replace(/[^A-Z0-9]/g, '');
+    
+    // Aplica formatação: XX.XXX.XXX/XXXX-XX
+    if (val.length > 14) val = val.substring(0, 14);
+    
+    let formatted = '';
+    if (val.length > 0) {
+      formatted = val.substring(0, 2);
+      if (val.length > 2) formatted += '.' + val.substring(2, 5);
+      if (val.length > 5) formatted += '.' + val.substring(5, 8);
+      if (val.length > 8) formatted += '/' + val.substring(8, 12);
+      if (val.length > 12) formatted += '-' + val.substring(12, 14);
+    }
+    
+    if (onChange) {
+      onChange({ target: { value: formatted } });
+    }
+  };
+  
   return (
-    <MaskedInput
-      mask="99.999.999/9999-99"
-      placeholder="00.000.000/0000-00"
+    <Input
       {...props}
       ref={ref}
+      value={value || ''}
+      onChange={handleChange}
       className={className}
+      placeholder="00.000.000/0000-00"
+      maxLength={18}
     />
   );
 });

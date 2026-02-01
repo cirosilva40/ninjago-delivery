@@ -29,6 +29,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import { CepInput, TelefoneInput, CnpjInput, CpfInput, CurrencyInput } from '@/components/ui/masked-input';
 import {
   Select,
   SelectContent,
@@ -732,21 +733,19 @@ export default function AdminUsers() {
 
                 <div>
                   <Label className="text-slate-400">CNPJ</Label>
-                  <Input
+                  <CnpjInput
                     value={estabelecimentoForm.cnpj}
                     onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cnpj: e.target.value })}
                     className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="00.000.000/0000-00"
                   />
                 </div>
 
                 <div>
                   <Label className="text-slate-400">Telefone *</Label>
-                  <Input
+                  <TelefoneInput
                     value={estabelecimentoForm.telefone}
                     onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, telefone: e.target.value })}
                     className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="(00) 00000-0000"
                   />
                 </div>
 
@@ -801,11 +800,10 @@ export default function AdminUsers() {
 
                 <div>
                   <Label className="text-slate-400">CEP</Label>
-                  <Input
+                  <CepInput
                     value={estabelecimentoForm.cep}
                     onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cep: e.target.value })}
                     className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="00000-000"
                   />
                 </div>
               </div>
@@ -838,11 +836,9 @@ export default function AdminUsers() {
 
                 <div>
                   <Label className="text-slate-400">Taxa de Entrega Base (R$)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
+                  <CurrencyInput
                     value={estabelecimentoForm.taxa_entrega_base}
-                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, taxa_entrega_base: parseFloat(e.target.value) })}
+                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, taxa_entrega_base: e.target.value })}
                     className="bg-slate-800 border-slate-700 text-white"
                   />
                 </div>
@@ -988,24 +984,27 @@ export default function AdminUsers() {
                   <Label className="text-slate-400">
                     {cadastroForm.tipo_pessoa === 'fisica' ? 'CPF' : 'CNPJ'}
                   </Label>
-                  <Input
-                    value={cadastroForm.tipo_pessoa === 'fisica' ? cadastroForm.cpf : cadastroForm.cnpj}
-                    onChange={(e) => setCadastroForm({ 
-                      ...cadastroForm, 
-                      [cadastroForm.tipo_pessoa === 'fisica' ? 'cpf' : 'cnpj']: e.target.value 
-                    })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                    placeholder={cadastroForm.tipo_pessoa === 'fisica' ? '000.000.000-00' : '00.000.000/0000-00'}
-                  />
+                  {cadastroForm.tipo_pessoa === 'fisica' ? (
+                    <CpfInput
+                      value={cadastroForm.cpf}
+                      onChange={(e) => setCadastroForm({ ...cadastroForm, cpf: e.target.value })}
+                      className="bg-slate-800 border-slate-700 text-white"
+                    />
+                  ) : (
+                    <CnpjInput
+                      value={cadastroForm.cnpj}
+                      onChange={(e) => setCadastroForm({ ...cadastroForm, cnpj: e.target.value })}
+                      className="bg-slate-800 border-slate-700 text-white"
+                    />
+                  )}
                 </div>
 
                 <div>
                   <Label className="text-slate-400">Telefone</Label>
-                  <Input
+                  <TelefoneInput
                     value={cadastroForm.telefone}
                     onChange={(e) => setCadastroForm({ ...cadastroForm, telefone: e.target.value })}
                     className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="(00) 00000-0000"
                   />
                 </div>
 
@@ -1061,13 +1060,10 @@ export default function AdminUsers() {
 
                 <div>
                   <Label className="text-slate-400">Valor (R$)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
+                  <CurrencyInput
                     value={cadastroForm.valor_pagamento}
                     onChange={(e) => setCadastroForm({ ...cadastroForm, valor_pagamento: e.target.value })}
                     className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="0,00"
                   />
                 </div>
 
