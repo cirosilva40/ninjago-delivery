@@ -33,6 +33,7 @@ export default function AcessoUsuario() {
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [codigoGerado, setCodigoGerado] = useState('');
   const [userId, setUserId] = useState(null);
+  const [senhaTemporaria, setSenhaTemporaria] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
