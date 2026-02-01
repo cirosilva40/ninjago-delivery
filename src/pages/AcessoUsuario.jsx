@@ -79,75 +79,7 @@ export default function AcessoUsuario() {
     }
   };
 
-  const handlePrimeiroAcessoEmail = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
 
-    try {
-      // Buscar estabelecimento pelo email
-      const estabelecimentos = await base44.entities.Pizzaria.filter({ email });
-      
-      if (estabelecimentos.length === 0) {
-        setError('Email não encontrado. Entre em contato com o administrador.');
-        setLoading(false);
-        return;
-      }
-
-      const estab = estabelecimentos[0];
-
-      if (estab.senha) {
-        setError('Você já possui senha cadastrada. Use o login normal.');
-        setLoading(false);
-        return;
-      }
-
-      // Gerar senha temporária
-      const senhaTemp = Math.random().toString(36).substring(2, 10).toUpperCase();
-      setSenhaTemporaria(senhaTemp);
-      setUserId(estab.id);
-
-      setSuccess('Senha temporária gerada! Você pode fazer login com ela agora.');
-      setEtapa(2);
-    } catch (error) {
-      setError('Erro ao gerar senha temporária. Tente novamente.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerificarSenhaTemporaria = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      if (codigo !== senhaTemporaria) {
-        setError('Senha temporária incorreta.');
-        setLoading(false);
-        return;
-      }
-
-      // Salvar senha temporária no estabelecimento
-      await base44.asServiceRole.entities.Pizzaria.update(userId, { senha: senhaTemporaria });
-      
-      // Buscar o estabelecimento atualizado
-      const estabs = await base44.entities.Pizzaria.filter({ id: userId });
-      if (estabs.length > 0) {
-        localStorage.setItem('estabelecimento_logado', JSON.stringify(estabs[0]));
-      }
-
-      setSuccess('Senha verificada! Fazendo login...');
-      
-      setTimeout(() => {
-        navigate(createPageUrl('Dashboard'));
-      }, 1500);
-    } catch (error) {
-      setError('Erro ao fazer login. Tente novamente.');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCriarNovaSenha = async (e) => {
     e.preventDefault();
