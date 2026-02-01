@@ -1686,6 +1686,36 @@ export default function AdminUsers() {
               </div>
             </div>
 
+            {/* Gerenciar Senha do Cliente */}
+            {editingEstabelecimento && (
+              <div className="space-y-4 p-4 rounded-xl bg-blue-900/30 border border-blue-700">
+                <h3 className="font-semibold text-white flex items-center gap-2">
+                  <Key className="w-5 h-5 text-blue-400" />
+                  Gerenciar Acesso do Cliente
+                </h3>
+                <p className="text-xs text-slate-400">Gere uma nova senha temporária para o cliente</p>
+                
+                <Button
+                  type="button"
+                  onClick={() => handleGenerarSenhaTemporaria(editingEstabelecimento.id)}
+                  disabled={generatingPassword}
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                >
+                  {generatingPassword ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Gerando...
+                    </>
+                  ) : (
+                    <>
+                      <Key className="w-4 h-4 mr-2" />
+                      Gerar Nova Senha Temporária
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+
             {/* Configurações */}
             <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
               <h3 className="font-semibold text-white">Configurações</h3>
