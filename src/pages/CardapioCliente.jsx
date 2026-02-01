@@ -50,7 +50,18 @@ import { useMercadoPago, criarTokenCartao } from '../components/cliente/MercadoP
 export default function CardapioCliente() {
   const { mp, isLoaded: mpLoaded } = useMercadoPago();
   const navigate = useNavigate();
-  const [pizzariaId, setPizzariaId] = useState('default'); // Pode ser obtido via URL ou seleção
+  
+  // Inicializar pizzariaId da URL imediatamente
+  const getInitialPizzariaId = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pizzariaParam = urlParams.get('pizzaria_id');
+    if (pizzariaParam) return pizzariaParam;
+    
+    const savedPizzariaId = localStorage.getItem('pizzaria_id_atual');
+    return savedPizzariaId || null;
+  };
+  
+  const [pizzariaId, setPizzariaId] = useState(getInitialPizzariaId);
   const [carrinho, setCarrinho] = useState([]);
   const [categoriaFiltro, setCategoriaFiltro] = useState('todos');
   const [busca, setBusca] = useState('');
