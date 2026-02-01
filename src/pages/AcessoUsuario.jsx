@@ -80,41 +80,32 @@ export default function AcessoUsuario() {
     setLoading(true);
 
     try {
-      const usuarios = await base44.entities.User.filter({ email });
+      // Buscar estabelecimento pelo email
+      const estabelecimentos = await base44.entities.Pizzaria.filter({ email });
       
-      if (usuarios.length === 0) {
+      if (estabelecimentos.length === 0) {
         setError('Email não encontrado. Entre em contato com o administrador.');
         setLoading(false);
         return;
       }
 
-      const usuario = usuarios[0];
+      const estab = estabelecimentos[0];
 
-      if (usuario.senha) {
+      if (estab.senha) {
         setError('Você já possui senha cadastrada. Use o login normal.');
         setLoading(false);
         return;
       }
 
-      const codigoVerificacao = Math.floor(100000 + Math.random() * 900000).toString();
-      setCodigoGerado(codigoVerificacao);
-      setUserId(usuario.id);
+      // Gerar senha temporária
+      const senhaTemp = Math.random().toString(36).substring(2, 10).toUpperCase();
+      setSenhaTemporaria(senhaTemp);
+      setUserId(estab.id);
 
-      await base44.integrations.Core.SendEmail({
-        to: email,
-        subject: 'Código de Verificação - Primeiro Acesso',
-        body: `
-          <h2>Bem-vindo ao NinjaGO Delivery!</h2>
-          <p>Seu código de verificação para primeiro acesso é:</p>
-          <h1 style="color: #f97316; font-size: 32px; letter-spacing: 8px;">${codigoVerificacao}</h1>
-          <p>Este código expira em 10 minutos.</p>
-        `
-      });
-
-      setSuccess('Código enviado para seu email!');
+      setSuccess('Senha temporária gerada! Você pode fazer login com ela agora.');
       setEtapa(2);
     } catch (error) {
-      setError('Erro ao enviar código. Tente novamente.');
+      setError('Erro ao gerar senha temporária. Tente novamente.');
     } finally {
       setLoading(false);
     }
