@@ -123,13 +123,11 @@ export default function AcessoCliente() {
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">
               {modo === 'login' && 'Área do Cliente'}
-              {modo === 'primeiro-acesso' && 'Primeiro Acesso'}
-              {modo === 'recuperar-senha' && 'Recuperar Senha'}
+              {modo === 'primeiro-acesso' && 'Login - Primeira Vez'}
             </h1>
             <p className="text-slate-400">
               {modo === 'login' && 'Faça login para acessar seu perfil'}
-              {modo === 'primeiro-acesso' && 'Configure sua senha de acesso'}
-              {modo === 'recuperar-senha' && 'Redefina sua senha'}
+              {modo === 'primeiro-acesso' && 'Use sua senha temporária enviada pelo restaurante'}
             </p>
           </div>
 
