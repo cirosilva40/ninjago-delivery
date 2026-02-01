@@ -43,15 +43,23 @@ export const TelefoneInput = React.forwardRef(({ className, ...props }, ref) => 
 TelefoneInput.displayName = 'TelefoneInput';
 
 export const CnpjInput = React.forwardRef(({ className, value, onChange, ...props }, ref) => {
-  // CNPJ Alfanumérico: aceita letras e números (novo formato 2026)
+  // CNPJ Alfanumérico: aceita letras e números, mas os 2 últimos dígitos são obrigatoriamente números
   const handleChange = (e) => {
     let val = e.target.value.toUpperCase();
     // Remove tudo exceto letras e números
     val = val.replace(/[^A-Z0-9]/g, '');
     
-    // Aplica formatação: XX.XXX.XXX/XXXX-XX
+    // Limita a 14 caracteres
     if (val.length > 14) val = val.substring(0, 14);
     
+    // Garante que os 2 últimos dígitos sejam apenas números
+    if (val.length >= 13) {
+      const ultimos2 = val.substring(12, 14);
+      const primeiros12 = val.substring(0, 12);
+      val = primeiros12 + ultimos2.replace(/[^0-9]/g, '');
+    }
+    
+    // Aplica formatação: XX.XXX.XXX/XXXX-XX
     let formatted = '';
     if (val.length > 0) {
       formatted = val.substring(0, 2);
