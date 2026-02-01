@@ -41,30 +41,32 @@ export default function AcessoUsuario() {
     setLoading(true);
 
     try {
-      const usuarios = await base44.entities.User.filter({ email });
+      // Buscar estabelecimento pelo email
+      const estabelecimentos = await base44.entities.Pizzaria.filter({ email });
       
-      if (usuarios.length === 0) {
+      if (estabelecimentos.length === 0) {
         setError('Email não encontrado. Verifique com o administrador.');
         setLoading(false);
         return;
       }
 
-      const usuario = usuarios[0];
+      const estab = estabelecimentos[0];
 
-      if (!usuario.senha) {
+      if (!estab.senha) {
         setError('Você ainda não criou sua senha. Use a opção "Primeiro Acesso".');
         setLoading(false);
         return;
       }
 
-      if (usuario.senha !== senha) {
+      if (estab.senha !== senha) {
         setError('Senha incorreta.');
         setLoading(false);
         return;
       }
 
-      await base44.auth.login(email, senha);
-      navigate(createPageUrl('Pedidos'));
+      // Salvar dados do estabelecimento no localStorage
+      localStorage.setItem('estabelecimento_logado', JSON.stringify(estab));
+      navigate(createPageUrl('Dashboard'));
     } catch (error) {
       setError('Erro ao fazer login. Verifique suas credenciais.');
     } finally {
