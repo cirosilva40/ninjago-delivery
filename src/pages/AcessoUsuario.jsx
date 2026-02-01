@@ -416,9 +416,17 @@ export default function AcessoUsuario() {
 
                   <Button
                     type="submit"
+                    disabled={loading}
                     className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-semibold"
                   >
-                    Verificar Código
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Verificando...
+                      </>
+                    ) : (
+                      'Verificar Senha'
+                    )}
                   </Button>
 
                   <button
@@ -426,7 +434,7 @@ export default function AcessoUsuario() {
                     onClick={() => setEtapa(1)}
                     className="w-full text-center text-sm text-slate-400 hover:text-slate-300"
                   >
-                    Não recebeu? Enviar novamente
+                    Voltar
                   </button>
                 </form>
               )}
