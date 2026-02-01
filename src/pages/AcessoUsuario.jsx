@@ -393,24 +393,28 @@ export default function AcessoUsuario() {
                 </form>
               )}
 
-              {etapa === 2 && (
-                <form onSubmit={handleVerificarCodigo} className="space-y-4">
+              {etapa === 2 && modo === 'primeiro-acesso' && (
+                <form onSubmit={handleVerificarSenhaTemporaria} className="space-y-4">
+                  <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                    <p className="text-sm text-blue-300">
+                      Sua senha temporária é: <strong className="font-mono text-lg text-blue-100">{senhaTemporaria}</strong>
+                    </p>
+                  </div>
                   <div>
-                    <Label className="text-slate-400">Código de Verificação</Label>
+                    <Label className="text-slate-400">Digite a Senha Temporária</Label>
                     <div className="relative">
-                      <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <Input
-                        type="text"
+                        type="password"
                         value={codigo}
-                        onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                        className="pl-10 bg-slate-800 border-slate-700 text-white text-center text-2xl tracking-widest"
-                        placeholder="000000"
-                        maxLength={6}
+                        onChange={(e) => setCodigo(e.target.value)}
+                        className="pl-10 bg-slate-800 border-slate-700 text-white"
+                        placeholder="••••••••"
                         required
                       />
                     </div>
                     <p className="text-xs text-slate-500 mt-1">
-                      Digite o código de 6 dígitos enviado para {email}
+                      Digite a senha exibida acima para fazer login
                     </p>
                   </div>
 
