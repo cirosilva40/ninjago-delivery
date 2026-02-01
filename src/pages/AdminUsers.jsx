@@ -152,6 +152,16 @@ export default function AdminUsers() {
       return;
     }
     
+    // Validar CPF/CNPJ conforme tipo
+    if (cadastroForm.tipo_pessoa === 'fisica' && !cadastroForm.cpf) {
+      alert('CPF é obrigatório para pessoa física');
+      return;
+    }
+    if (cadastroForm.tipo_pessoa === 'juridica' && !cadastroForm.cnpj) {
+      alert('CNPJ é obrigatório para pessoa jurídica');
+      return;
+    }
+    
     setCadastrando(true);
     try {
       // Convidar usuário através do sistema base44
@@ -181,7 +191,16 @@ export default function AdminUsers() {
       refetch();
     } catch (error) {
       console.error('Erro ao cadastrar usuário:', error);
-      alert('Erro ao cadastrar usuário. Tente novamente.');
+      
+      // Mensagem amigável para erros comuns
+      const errorMsg = error.message || '';
+      if (errorMsg.includes('invalid') || errorMsg.includes('CPF') || errorMsg.includes('CNPJ') || errorMsg.includes('document')) {
+        alert('❌ O CPF/CNPJ informado parece estar inválido. Por favor, verifique o número e tente novamente.');
+      } else if (errorMsg.includes('already exists') || errorMsg.includes('duplicate') || errorMsg.includes('email')) {
+        alert('❌ Este email já está cadastrado no sistema.');
+      } else {
+        alert('❌ Erro ao cadastrar usuário. Tente novamente.');
+      }
     } finally {
       setCadastrando(false);
     }
