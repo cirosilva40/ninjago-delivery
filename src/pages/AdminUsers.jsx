@@ -641,11 +641,19 @@ export default function AdminUsers() {
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-                      <span className="text-white text-2xl font-bold">
-                        {usuario.full_name?.charAt(0) || usuario.email?.charAt(0) || 'U'}
-                      </span>
-                    </div>
+                    {usuario.foto_url ? (
+                      <img 
+                        src={usuario.foto_url} 
+                        alt={usuario.full_name} 
+                        className="w-16 h-16 rounded-xl object-cover border-2 border-slate-700"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                        <span className="text-white text-2xl font-bold">
+                          {usuario.full_name?.charAt(0) || usuario.email?.charAt(0) || 'U'}
+                        </span>
+                      </div>
+                    )}
                     <div>
                       <h3 className="font-semibold text-white text-lg">
                         {usuario.full_name || 'Sem nome'}
