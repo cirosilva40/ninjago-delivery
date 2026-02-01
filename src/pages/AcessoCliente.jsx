@@ -83,9 +83,40 @@ export default function AcessoCliente() {
       const clientes = await base44.entities.Cliente.filter({ email });
       
       if (clientes.length === 0) {
-        setError('Email não encontrado. Entre em contato com o restaurante.');
-        setLoading(false);
-        return;
+        // Criar novo cliente automaticamente no primeiro acesso
+        try {
+          const novoCliente = await base44.entities.Cliente.create({
+            email,
+            nome: email.split('@')[0], // Usar parte do email como nome temporário
+            telefone: '', // Será preenchido posteriormente
+          });
+          
+          // Gerar código de 6 dígitos
+          const codigoVerificacao = Math.floor(100000 + Math.random() * 900000).toString();
+          setCodigoGerado(codigoVerificacao);
+          setClienteId(novoCliente.id);
+
+          // Enviar código por email
+          await base44.integrations.Core.SendEmail({
+            to: email,
+            subject: 'Código de Verificação - Primeiro Acesso',
+            body: `
+              <h2>Bem-vindo!</h2>
+              <p>Seu código de verificação para primeiro acesso é:</p>
+              <h1 style="color: #f97316; font-size: 32px; letter-spacing: 8px;">${codigoVerificacao}</h1>
+              <p>Este código expira em 10 minutos.</p>
+            `
+          });
+
+          setSuccess('Código enviado para seu email!');
+          setEtapa(2);
+          setLoading(false);
+          return;
+        } catch (createError) {
+          setError('Erro ao criar conta. Tente novamente.');
+          setLoading(false);
+          return;
+        }
       }
 
       const cliente = clientes[0];
