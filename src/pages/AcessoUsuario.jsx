@@ -111,17 +111,37 @@ export default function AcessoUsuario() {
     }
   };
 
-  const handleVerificarCodigo = (e) => {
+  const handleVerificarSenhaTemporaria = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    if (codigo !== codigoGerado) {
-      setError('Código incorreto. Verifique seu email.');
-      return;
+    try {
+      if (codigo !== senhaTemporaria) {
+        setError('Senha temporária incorreta.');
+        setLoading(false);
+        return;
+      }
+
+      // Salvar senha temporária no estabelecimento
+      await base44.asServiceRole.entities.Pizzaria.update(userId, { senha: senhaTemporaria });
+      
+      // Buscar o estabelecimento atualizado
+      const estabs = await base44.entities.Pizzaria.filter({ id: userId });
+      if (estabs.length > 0) {
+        localStorage.setItem('estabelecimento_logado', JSON.stringify(estabs[0]));
+      }
+
+      setSuccess('Senha verificada! Fazendo login...');
+      
+      setTimeout(() => {
+        navigate(createPageUrl('Dashboard'));
+      }, 1500);
+    } catch (error) {
+      setError('Erro ao fazer login. Tente novamente.');
+    } finally {
+      setLoading(false);
     }
-
-    setSuccess('Código verificado! Agora crie sua senha.');
-    setEtapa(3);
   };
 
   const handleCriarSenha = async (e) => {
