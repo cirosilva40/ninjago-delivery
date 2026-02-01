@@ -52,6 +52,7 @@ import AcessoUsuario from './pages/AcessoUsuario';
 import AcompanharPedido from './pages/AcompanharPedido';
 import AdminUsers from './pages/AdminUsers';
 import AppEntregador from './pages/AppEntregador';
+import CardapioCliente from './pages/CardapioCliente';
 import Configuracoes from './pages/Configuracoes';
 import ConfiguracoesFinanceiras from './pages/ConfiguracoesFinanceiras';
 import ControleComandas from './pages/ControleComandas';
@@ -72,7 +73,6 @@ import PerfilCliente from './pages/PerfilCliente';
 import Produtos from './pages/Produtos';
 import ProgramaFidelidade from './pages/ProgramaFidelidade';
 import Relatorios from './pages/Relatorios';
-import CardapioCliente from './pages/CardapioCliente';
 import __Layout from './Layout.jsx';
 
 
@@ -82,6 +82,7 @@ export const PAGES = {
     "AcompanharPedido": AcompanharPedido,
     "AdminUsers": AdminUsers,
     "AppEntregador": AppEntregador,
+    "CardapioCliente": CardapioCliente,
     "Configuracoes": Configuracoes,
     "ConfiguracoesFinanceiras": ConfiguracoesFinanceiras,
     "ControleComandas": ControleComandas,
@@ -102,7 +103,6 @@ export const PAGES = {
     "Produtos": Produtos,
     "ProgramaFidelidade": ProgramaFidelidade,
     "Relatorios": Relatorios,
-    "CardapioCliente": CardapioCliente,
 }
 
 export const pagesConfig = {
