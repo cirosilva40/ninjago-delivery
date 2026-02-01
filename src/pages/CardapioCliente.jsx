@@ -95,6 +95,12 @@ export default function CardapioCliente() {
   const [pixData, setPixData] = useState(null);
   const [aguardandoPix, setAguardandoPix] = useState(false);
 
+  // Log para debug
+  useEffect(() => {
+    console.log('pizzariaId:', pizzariaId);
+    console.log('produtos:', produtos);
+  }, [pizzariaId, produtos]);
+
   // Obter pizzaria_id da URL se fornecido
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -186,6 +192,23 @@ export default function CardapioCliente() {
       p.descricao?.toLowerCase().includes(busca.toLowerCase());
     return matchCategoria && matchBusca;
   });
+
+  // Se não há pizzariaId, mostrar mensagem
+  if (!pizzariaId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-white mb-4">⚠️ Configuração Necessária</h1>
+          <p className="text-slate-400 mb-4">
+            É necessário informar o ID da pizzaria na URL.
+          </p>
+          <p className="text-slate-500 text-sm">
+            Adicione <code className="bg-slate-800 px-2 py-1 rounded">?pizzaria_id=SEU_ID</code> na URL
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const produtosDestaque = produtos.filter(p => p.destaque);
   const categorias = [...new Set(produtos.map(p => p.categoria))];
