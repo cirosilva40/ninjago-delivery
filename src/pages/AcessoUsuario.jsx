@@ -144,7 +144,7 @@ export default function AcessoUsuario() {
     }
   };
 
-  const handleCriarSenha = async (e) => {
+  const handleCriarNovaSenha = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -161,13 +161,12 @@ export default function AcessoUsuario() {
     setLoading(true);
 
     try {
-      await base44.entities.User.update(userId, { senha: novaSenha });
+      await base44.asServiceRole.entities.Pizzaria.update(userId, { senha: novaSenha });
       
       setSuccess('Senha criada com sucesso! Fazendo login...');
       
-      setTimeout(async () => {
-        await base44.auth.login(email, novaSenha);
-        navigate(createPageUrl('Pedidos'));
+      setTimeout(() => {
+        navigate(createPageUrl('Dashboard'));
       }, 1500);
     } catch (error) {
       setError('Erro ao criar senha. Tente novamente.');
