@@ -204,22 +204,13 @@ export default function AcessoCliente() {
                 )}
               </Button>
 
-              <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => setModo('primeiro-acesso')}
-                  className="w-full text-center text-sm text-orange-400 hover:text-orange-300 underline"
-                >
-                  Primeiro Acesso? Crie sua senha
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setModo('recuperar-senha')}
-                  className="w-full text-center text-sm text-slate-400 hover:text-slate-300 underline"
-                >
-                  Esqueci minha senha
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setModo('primeiro-acesso')}
+                className="w-full text-center text-sm text-orange-400 hover:text-orange-300 underline"
+              >
+                Primeira vez? Clique aqui
+              </button>
             </form>
           )}
 
