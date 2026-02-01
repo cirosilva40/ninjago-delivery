@@ -517,6 +517,30 @@ export default function AdminUsers() {
     base44.auth.logout();
   };
 
+  const handleGenerarSenhaTemporaria = async (clienteId) => {
+    setGeneratingPassword(true);
+    try {
+      const { data } = await base44.functions.invoke('gerarNovaSenha', { clienteId });
+      alert(`✅ Nova senha temporária gerada: ${data.senhaTemporaria}`);
+      refetchEstabelecimentos();
+    } catch (error) {
+      console.error('Erro ao gerar senha:', error);
+      alert('Erro ao gerar nova senha. Tente novamente.');
+    } finally {
+      setGeneratingPassword(false);
+    }
+  };
+
+  const getClienteInfo = async (clienteEmail) => {
+    try {
+      const clientes = await base44.entities.Cliente.filter({ email: clienteEmail });
+      return clientes.length > 0 ? clientes[0] : null;
+    } catch (error) {
+      console.error('Erro ao buscar cliente:', error);
+      return null;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
       {/* Header/Navbar */}
