@@ -1168,7 +1168,7 @@ export default function AdminUsers() {
                 Cliente Inicial (Opcional)
               </h3>
               <p className="text-xs text-slate-400">Cadastre um cliente para poder fazer pedidos neste estabelecimento</p>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <Label className="text-slate-400">Nome do Cliente</Label>
@@ -1198,6 +1198,10 @@ export default function AdminUsers() {
                     onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cliente_telefone: e.target.value })}
                     className="bg-slate-800 border-slate-700 text-white"
                   />
+                </div>
+
+                <div className="col-span-2 p-3 rounded-lg bg-slate-700/30 border border-slate-700 text-xs text-slate-300">
+                  <p>💡 A senha temporária será gerada automaticamente. Você poderá visualizá-la e gerar uma nova na edição do estabelecimento.</p>
                 </div>
               </div>
             </div>
