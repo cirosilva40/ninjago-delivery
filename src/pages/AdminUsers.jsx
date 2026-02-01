@@ -351,13 +351,13 @@ export default function AdminUsers() {
         const novoEstabelecimento = await base44.entities.Pizzaria.create(estabelecimentoData);
         
         // Criar cliente inicial se fornecido
-        if (estabelecimentoForm.cliente_email || estabelecimentoForm.cliente_nome) {
+        if (estabelecimentoForm.cliente_email && estabelecimentoForm.cliente_nome) {
           try {
             await base44.entities.Cliente.create({
-              nome: estabelecimentoForm.cliente_nome || 'Cliente',
-              email: estabelecimentoForm.cliente_email || '',
+              nome: estabelecimentoForm.cliente_nome,
+              email: estabelecimentoForm.cliente_email,
               telefone: estabelecimentoForm.cliente_telefone || '',
-              // Não definir senha - cliente criará no primeiro acesso
+              senha: 'temp_' + Math.random().toString(36).substring(7) // Senha temporária que será alterada no primeiro acesso
             });
           } catch (clienteError) {
             console.log('Aviso: Não foi possível criar cliente inicial:', clienteError);
