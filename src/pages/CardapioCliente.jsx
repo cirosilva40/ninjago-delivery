@@ -56,11 +56,12 @@ export default function CardapioCliente() {
     const urlParams = new URLSearchParams(window.location.search);
     const pizzariaParam = urlParams.get('pizzaria_id');
     if (pizzariaParam) return pizzariaParam;
-    
+
     const savedPizzariaId = localStorage.getItem('pizzaria_id_atual');
-    return savedPizzariaId || null;
+    // ID padrão para desenvolvimento
+    return savedPizzariaId || '697ea8faa6ffe9fc35c32a91';
   };
-  
+
   const [pizzariaId, setPizzariaId] = useState(getInitialPizzariaId);
   const [carrinho, setCarrinho] = useState([]);
   const [categoriaFiltro, setCategoriaFiltro] = useState('todos');
