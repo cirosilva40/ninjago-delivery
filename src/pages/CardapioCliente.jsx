@@ -59,6 +59,31 @@ export default function CardapioCliente() {
     );
   }
 
+  // Modo desenvolvimento: exibir cardápio padrão se não houver restauranteId
+  if (!restauranteId) {
+    return (
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
+        <div className="max-w-4xl mx-auto py-8">
+          <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 shadow-lg">
+            <CardHeader className="flex flex-col items-center text-center p-6 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 rounded-t-lg">
+              <Store className="w-24 h-24 text-orange-500 mb-4" />
+              <CardTitle className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600 mb-2">
+                Cardápio Digital
+              </CardTitle>
+              <p className="text-lg text-gray-600 dark:text-gray-300">
+                Modo de desenvolvimento - Adicione ?restauranteId=SEU_ID na URL para visualizar um cardápio específico
+              </p>
+            </CardHeader>
+            <CardContent className="p-6">
+              <h3 className="text-2xl font-bold mb-4 border-b pb-2 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white">Produtos</h3>
+              <p className="text-gray-700 dark:text-gray-300">Em modo de desenvolvimento. Configure um restauranteId para ver os produtos.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   if (!estabelecimento) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
