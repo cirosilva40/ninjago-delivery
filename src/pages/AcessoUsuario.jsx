@@ -178,12 +178,10 @@ export default function AcessoUsuario() {
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">
               {modo === 'login' && 'Painel do Estabelecimento'}
-              {modo === 'primeiro-acesso' && 'Primeiro Acesso'}
               {modo === 'recuperar-senha' && 'Recuperar Senha'}
             </h1>
             <p className="text-slate-400">
               {modo === 'login' && 'Acesse seu painel de controle'}
-              {modo === 'primeiro-acesso' && 'Use sua senha temporária para acessar'}
               {modo === 'recuperar-senha' && 'Redefina sua senha'}
             </p>
           </div>
