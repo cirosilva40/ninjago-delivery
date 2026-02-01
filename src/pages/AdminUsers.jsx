@@ -147,15 +147,8 @@ export default function AdminUsers() {
   });
 
   const handleCadastro = async () => {
-    if (!cadastroForm.email || !cadastroForm.nome_completo) return;
-    
-    // Validar CPF/CNPJ conforme tipo
-    if (cadastroForm.tipo_pessoa === 'fisica' && !cadastroForm.cpf) {
-      alert('CPF é obrigatório para pessoa física');
-      return;
-    }
-    if (cadastroForm.tipo_pessoa === 'juridica' && !cadastroForm.cnpj) {
-      alert('CNPJ é obrigatório para pessoa jurídica');
+    if (!cadastroForm.email || !cadastroForm.nome_completo) {
+      alert('Preencha o email e o nome completo');
       return;
     }
     
