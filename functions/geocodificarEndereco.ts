@@ -13,70 +13,42 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    const apiKey = Deno.env.get('VITE_GOOGLE_MAPS_API_KEY');
-    
-    if (!apiKey) {
-      return Response.json({ 
-        error: 'Chave da API do Google Maps não configurada' 
-      }, { status: 500 });
-    }
-
-    // Chamar a API de Geocoding do Google Maps
+    // Usar API pública OpenStreetMap Nominatim para geocodificação reversa
     const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${apiKey}&language=pt-BR`
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=pt-BR&addressdetails=1`,
+      {
+        headers: {
+          'User-Agent': 'NinjaGO-Delivery-App'
+        }
+      }
     );
 
     if (!response.ok) {
       return Response.json({ 
-        error: 'Erro ao consultar API do Google Maps' 
+        error: 'Erro ao consultar serviço de geocodificação' 
       }, { status: response.status });
     }
 
     const data = await response.json();
 
-    console.log('Google Maps API Response:', JSON.stringify(data, null, 2));
-
-    if (data.status !== 'OK' || !data.results || data.results.length === 0) {
+    if (!data || data.error) {
       return Response.json({ 
-        error: 'Não foi possível obter o endereço para esta localização',
-        googleStatus: data.status,
-        googleError: data.error_message || 'Sem detalhes'
+        error: 'Não foi possível obter o endereço para esta localização'
       }, { status: 404 });
     }
 
-    // Processar o resultado para extrair os componentes do endereço
-    const result = data.results[0];
-    const addressComponents = result.address_components;
+    const address = data.address || {};
 
     let endereco = {
-      cep: '',
-      logradouro: '',
-      numero: '',
-      bairro: '',
-      cidade: '',
-      estado: '',
+      cep: address.postcode || '',
+      logradouro: address.road || address.street || '',
+      numero: address.house_number || '',
+      bairro: address.suburb || address.neighbourhood || address.district || '',
+      cidade: address.city || address.town || address.municipality || '',
+      estado: address.state || '',
       latitude,
       longitude
     };
-
-    // Extrair informações dos componentes
-    for (const component of addressComponents) {
-      const types = component.types;
-      
-      if (types.includes('postal_code')) {
-        endereco.cep = component.long_name;
-      } else if (types.includes('route')) {
-        endereco.logradouro = component.long_name;
-      } else if (types.includes('street_number')) {
-        endereco.numero = component.long_name;
-      } else if (types.includes('sublocality') || types.includes('sublocality_level_1')) {
-        endereco.bairro = component.long_name;
-      } else if (types.includes('administrative_area_level_2')) {
-        endereco.cidade = component.long_name;
-      } else if (types.includes('administrative_area_level_1')) {
-        endereco.estado = component.short_name;
-      }
-    }
 
     return Response.json({
       success: true,
