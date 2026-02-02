@@ -73,6 +73,7 @@ import PerfilCliente from './pages/PerfilCliente';
 import Produtos from './pages/Produtos';
 import ProgramaFidelidade from './pages/ProgramaFidelidade';
 import Relatorios from './pages/Relatorios';
+import CriarNovaSenha from './pages/CriarNovaSenha';
 import __Layout from './Layout.jsx';
 
 
@@ -103,6 +104,7 @@ export const PAGES = {
     "Produtos": Produtos,
     "ProgramaFidelidade": ProgramaFidelidade,
     "Relatorios": Relatorios,
+    "CriarNovaSenha": CriarNovaSenha,
 }
 
 export const pagesConfig = {
