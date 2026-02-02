@@ -8,9 +8,16 @@ export const useMercadoPago = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    const publicKey = import.meta.env.VITE_MERCADO_PAGO_PUBLIC_KEY;
+    
+    // Se não tiver chave pública, não tentar carregar
+    if (!publicKey) {
+      console.warn('Chave pública do Mercado Pago não configurada');
+      return;
+    }
+
     // Verificar se já foi carregado
     if (window.MercadoPago) {
-      const publicKey = import.meta.env.VITE_MERCADO_PAGO_PUBLIC_KEY;
       const mpInstance = new window.MercadoPago(publicKey);
       setMp(mpInstance);
       setIsLoaded(true);
@@ -23,8 +30,7 @@ export const useMercadoPago = () => {
     script.async = true;
     
     script.onload = () => {
-      const publicKey = import.meta.env.VITE_MERCADO_PAGO_PUBLIC_KEY;
-      if (publicKey && window.MercadoPago) {
+      if (window.MercadoPago) {
         const mpInstance = new window.MercadoPago(publicKey);
         setMp(mpInstance);
         setIsLoaded(true);
