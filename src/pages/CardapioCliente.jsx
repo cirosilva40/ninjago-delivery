@@ -58,7 +58,7 @@ export default function CardapioCliente() {
     if (pizzariaParam) return pizzariaParam;
     
     const savedPizzariaId = localStorage.getItem('pizzaria_id_atual');
-    return savedPizzariaId || null;
+    return savedPizzariaId || '697ea8faa6ffe9fc35c32a91'; // Lanchonete 91 como padrão
   };
   
   const [pizzariaId, setPizzariaId] = useState(getInitialPizzariaId);
