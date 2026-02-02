@@ -64,39 +64,12 @@ Deno.serve(async (req) => {
 
     // Processar pagamento via PIX
     if (metodoPagamento === 'pix') {
-      const preference = new Preference(client);
-      
-      const preferenceData = await preference.create({
-        body: {
-          items: items,
-          payer: {
-            email: clienteEmail
-          },
-          external_reference: pedidoId,
-          payment_methods: {
-            excluded_payment_types: [
-              { id: 'credit_card' },
-              { id: 'debit_card' },
-              { id: 'ticket' }
-            ],
-            installments: 1
-          },
-          back_urls: {
-            success: `${req.headers.get('origin')}/acompanhar-pedido?id=${pedidoId}`,
-            failure: `${req.headers.get('origin')}/cardapio`,
-            pending: `${req.headers.get('origin')}/acompanhar-pedido?id=${pedidoId}`
-          },
-          auto_return: 'approved',
-          statement_descriptor: pizzaria.nome
-        }
-      });
-
-      // Criar pagamento PIX
       const payment = new Payment(client);
       const paymentData = await payment.create({
         body: {
           transaction_amount: valorTotal,
           description: `Pedido #${pedido.numero_pedido} - ${pizzaria.nome}`,
+          external_reference: pedidoId,
           payment_method_id: 'pix',
           payer: {
             email: clienteEmail
@@ -116,7 +89,6 @@ Deno.serve(async (req) => {
         qr_code: paymentData.point_of_interaction?.transaction_data?.qr_code,
         qr_code_base64: paymentData.point_of_interaction?.transaction_data?.qr_code_base64,
         payment_id: paymentData.id,
-        preference_id: preferenceData.id,
         status: paymentData.status
       });
     }
@@ -173,9 +145,13 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Erro ao processar pagamento:', error);
+    console.error('Detalhes do erro:', error.cause);
+    console.error('Stack:', error.stack);
+    
     return Response.json({ 
-      error: 'Erro interno ao processar pagamento',
-      details: error.message 
+      error: 'Erro ao processar pagamento com Mercado Pago',
+      details: error.message,
+      cause: error.cause ? JSON.stringify(error.cause) : null
     }, { status: 500 });
   }
 });
