@@ -1385,6 +1385,8 @@ export default function CardapioCliente() {
                             onValueChange={(v) => {
                               if (v === 'nao') {
                                 setFormCliente({ ...formCliente, troco_para: 0 });
+                              } else {
+                                setFormCliente({ ...formCliente, troco_para: 0.01 });
                               }
                             }}
                           >
@@ -1435,6 +1437,8 @@ export default function CardapioCliente() {
                                 onValueChange={(v) => {
                                   if (v === 'nao') {
                                     setFormCliente({ ...formCliente, troco_para: 0 });
+                                  } else {
+                                    setFormCliente({ ...formCliente, troco_para: 0.01 });
                                   }
                                 }}
                               >
