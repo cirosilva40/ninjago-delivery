@@ -529,6 +529,7 @@ export default function CardapioCliente() {
           }
 
           const novoCliente = await base44.entities.Cliente.create({
+            pizzaria_id: pizzariaId,
             nome: formCliente.nome,
             telefone: formCliente.telefone,
             senha: cadastroSenha,
@@ -1732,6 +1733,7 @@ export default function CardapioCliente() {
                                              return;
                                            }
                                            const novoCliente = await base44.entities.Cliente.create({
+                                             pizzaria_id: pizzariaId,
                                              nome: formCliente.nome,
                                              telefone: formCliente.telefone,
                                              senha: cadastroSenha,
@@ -2010,6 +2012,7 @@ export default function CardapioCliente() {
                                          return;
                                        }
                                        const novoCliente = await base44.entities.Cliente.create({
+                                         pizzaria_id: pizzariaId,
                                          nome: formCliente.nome,
                                          telefone: formCliente.telefone,
                                          senha: cadastroSenha,
