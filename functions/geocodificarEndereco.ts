@@ -34,9 +34,13 @@ Deno.serve(async (req) => {
 
     const data = await response.json();
 
+    console.log('Google Maps API Response:', JSON.stringify(data, null, 2));
+
     if (data.status !== 'OK' || !data.results || data.results.length === 0) {
       return Response.json({ 
-        error: 'Não foi possível obter o endereço para esta localização' 
+        error: 'Não foi possível obter o endereço para esta localização',
+        googleStatus: data.status,
+        googleError: data.error_message || 'Sem detalhes'
       }, { status: 404 });
     }
 
