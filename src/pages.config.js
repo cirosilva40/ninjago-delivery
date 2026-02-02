@@ -57,6 +57,7 @@ import Configuracoes from './pages/Configuracoes';
 import ConfiguracoesFinanceiras from './pages/ConfiguracoesFinanceiras';
 import ControleComandas from './pages/ControleComandas';
 import Cozinha from './pages/Cozinha';
+import CriarNovaSenha from './pages/CriarNovaSenha';
 import Dashboard from './pages/Dashboard';
 import EntregadorDetalhe from './pages/EntregadorDetalhe';
 import Entregadores from './pages/Entregadores';
@@ -73,7 +74,6 @@ import PerfilCliente from './pages/PerfilCliente';
 import Produtos from './pages/Produtos';
 import ProgramaFidelidade from './pages/ProgramaFidelidade';
 import Relatorios from './pages/Relatorios';
-import CriarNovaSenha from './pages/CriarNovaSenha';
 import __Layout from './Layout.jsx';
 
 
@@ -88,6 +88,7 @@ export const PAGES = {
     "ConfiguracoesFinanceiras": ConfiguracoesFinanceiras,
     "ControleComandas": ControleComandas,
     "Cozinha": Cozinha,
+    "CriarNovaSenha": CriarNovaSenha,
     "Dashboard": Dashboard,
     "EntregadorDetalhe": EntregadorDetalhe,
     "Entregadores": Entregadores,
@@ -104,7 +105,6 @@ export const PAGES = {
     "Produtos": Produtos,
     "ProgramaFidelidade": ProgramaFidelidade,
     "Relatorios": Relatorios,
-    "CriarNovaSenha": CriarNovaSenha,
 }
 
 export const pagesConfig = {

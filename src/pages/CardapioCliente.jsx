@@ -54,7 +54,7 @@ export default function CardapioCliente() {
   // Inicializar pizzariaId da URL imediatamente
   const getInitialPizzariaId = () => {
     const urlParams = new URLSearchParams(window.location.search);
-    const pizzariaParam = urlParams.get('pizzaria_id');
+    const pizzariaParam = urlParams.get('pizzariaId');
     if (pizzariaParam) return pizzariaParam;
     
     const savedPizzariaId = localStorage.getItem('pizzaria_id_atual');
@@ -98,7 +98,7 @@ export default function CardapioCliente() {
   // Obter pizzaria_id da URL se fornecido
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const pizzariaParam = urlParams.get('pizzaria_id');
+    const pizzariaParam = urlParams.get('pizzariaId');
     if (pizzariaParam) {
       setPizzariaId(pizzariaParam);
       localStorage.setItem('pizzaria_id_atual', pizzariaParam);
