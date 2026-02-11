@@ -357,17 +357,7 @@ Retorne a rota otimizada com as seguintes informações.
     window.open(url, '_blank');
   };
 
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-  if (!apiKey) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Card className="p-6 bg-red-500/10 border-red-500/30">
-          <p className="text-red-400">Configure a chave da API do Google Maps nas variáveis de ambiente</p>
-        </Card>
-      </div>
-    );
-  }
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
   return (
     <div className="space-y-6">
