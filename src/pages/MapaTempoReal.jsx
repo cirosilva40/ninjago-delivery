@@ -194,7 +194,7 @@ export default function MapaTempoReal() {
 
   // Auto-fit bounds quando houver mudanças
   useEffect(() => {
-    if (map && entregadores.length > 0) {
+    if (map && entregadores.length > 0 && window.google?.maps) {
       const bounds = new window.google.maps.LatLngBounds();
       
       // Add pizzaria
@@ -509,7 +509,7 @@ Retorne a rota otimizada com as seguintes informações.
                 onLoad={setMap}
               >
                 {/* Pizzaria Marker */}
-                {pizzaria?.latitude && pizzaria?.longitude && (
+                {pizzaria?.latitude && pizzaria?.longitude && window.google?.maps && (
                   <Marker
                     position={{ lat: pizzaria.latitude, lng: pizzaria.longitude }}
                     icon={{
@@ -551,7 +551,7 @@ Retorne a rota otimizada com as seguintes informações.
                 )}
 
                 {/* Entregadores Markers */}
-                {entregadores.filter(e => e.latitude && e.longitude).map((entregador) => {
+                {window.google?.maps && entregadores.filter(e => e.latitude && e.longitude).map((entregador) => {
                   const isSelected = selectedEntregadorId === entregador.id;
                   return (
                     <React.Fragment key={entregador.id}>
@@ -603,7 +603,7 @@ Retorne a rota otimizada com as seguintes informações.
                 })}
 
                 {/* Entregas Markers */}
-                {entregas.filter(e => e.latitude_destino && e.longitude_destino).map((entrega) => (
+                {window.google?.maps && entregas.filter(e => e.latitude_destino && e.longitude_destino).map((entrega) => (
                   <React.Fragment key={entrega.id}>
                     <Marker
                       position={{ lat: entrega.latitude_destino, lng: entrega.longitude_destino }}
