@@ -28,11 +28,12 @@ export default function AcessoUsuario() {
   
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [senhaTemporaria, setSenhaTemporaria] = useState('');
   const [codigo, setCodigo] = useState('');
   const [novaSenha, setNovaSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [codigoGerado, setCodigoGerado] = useState('');
-  const [userId, setUserId] = useState(null);
+  const [estabelecimentoId, setEstabelecimentoId] = useState(null);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -80,6 +81,47 @@ export default function AcessoUsuario() {
 
 
 
+  const handlePrimeiroAcesso = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const estabelecimentos = await base44.entities.Pizzaria.filter({ email });
+      
+      if (estabelecimentos.length === 0) {
+        setError('Email não encontrado. Verifique com o administrador.');
+        setLoading(false);
+        return;
+      }
+
+      const estab = estabelecimentos[0];
+
+      if (!estab.senha || !estab.eh_senha_temporaria) {
+        setError('Você não possui uma senha temporária. Use o login normal ou contate o administrador.');
+        setLoading(false);
+        return;
+      }
+
+      if (estab.senha !== senhaTemporaria) {
+        setError('Senha temporária incorreta.');
+        setLoading(false);
+        return;
+      }
+
+      // Salvar dados do estabelecimento temporariamente
+      setEstabelecimentoId(estab.id);
+      localStorage.setItem('estabelecimento_logado', JSON.stringify(estab));
+      
+      setSuccess('Senha temporária validada! Crie sua nova senha.');
+      setEtapa(3);
+    } catch (error) {
+      setError('Erro ao validar senha temporária.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCriarNovaSenha = async (e) => {
     e.preventDefault();
     setError('');
@@ -97,7 +139,10 @@ export default function AcessoUsuario() {
     setLoading(true);
 
     try {
-      await base44.asServiceRole.entities.Pizzaria.update(userId, { senha: novaSenha });
+      await base44.asServiceRole.entities.Pizzaria.update(estabelecimentoId, { 
+        senha: novaSenha,
+        eh_senha_temporaria: false
+      });
       
       setSuccess('Senha criada com sucesso! Fazendo login...');
       
@@ -111,22 +156,35 @@ export default function AcessoUsuario() {
     }
   };
 
+  const handleVerificarCodigo = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (codigo !== codigoGerado) {
+      setError('Código inválido. Tente novamente.');
+      return;
+    }
+
+    setSuccess('Código verificado! Crie sua nova senha.');
+    setEtapa(3);
+  };
+
   const handleRecuperarSenhaEmail = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      const usuarios = await base44.entities.User.filter({ email });
+      const estabelecimentos = await base44.entities.Pizzaria.filter({ email });
       
-      if (usuarios.length === 0) {
+      if (estabelecimentos.length === 0) {
         setError('Email não encontrado.');
         setLoading(false);
         return;
       }
 
-      const usuario = usuarios[0];
-      setUserId(usuario.id);
+      const estab = estabelecimentos[0];
+      setEstabelecimentoId(estab.id);
 
       const codigoVerificacao = Math.floor(100000 + Math.random() * 900000).toString();
       setCodigoGerado(codigoVerificacao);
@@ -158,6 +216,7 @@ export default function AcessoUsuario() {
     setSuccess('');
     setEmail('');
     setSenha('');
+    setSenhaTemporaria('');
     setCodigo('');
     setNovaSenha('');
     setConfirmarSenha('');
@@ -177,10 +236,12 @@ export default function AcessoUsuario() {
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">
               {modo === 'login' && 'Painel do Estabelecimento'}
+              {modo === 'primeiro-acesso' && 'Primeiro Acesso'}
               {modo === 'recuperar-senha' && 'Recuperar Senha'}
             </h1>
             <p className="text-slate-400">
               {modo === 'login' && 'Acesse seu painel de controle'}
+              {modo === 'primeiro-acesso' && 'Ative sua conta com a senha temporária'}
               {modo === 'recuperar-senha' && 'Redefina sua senha'}
             </p>
           </div>
@@ -256,12 +317,84 @@ export default function AcessoUsuario() {
                 )}
               </Button>
 
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setModo('primeiro-acesso')}
+                  className="w-full text-center text-sm text-orange-400 hover:text-orange-300 underline font-medium"
+                >
+                  Primeiro acesso? Clique aqui
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModo('recuperar-senha')}
+                  className="w-full text-center text-sm text-slate-400 hover:text-slate-300 underline"
+                >
+                  Esqueci minha senha
+                </button>
+              </div>
+            </form>
+          )}
+
+          {modo === 'primeiro-acesso' && etapa === 1 && (
+            <form onSubmit={handlePrimeiroAcesso} className="space-y-4">
+              <div>
+                <Label className="text-slate-400">Email Cadastrado</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 bg-slate-800 border-slate-700 text-white"
+                    placeholder="seu@email.com"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <Label className="text-slate-400">Senha Temporária</Label>
+                <div className="relative">
+                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    type="password"
+                    value={senhaTemporaria}
+                    onChange={(e) => setSenhaTemporaria(e.target.value)}
+                    className="pl-10 bg-slate-800 border-slate-700 text-white"
+                    placeholder="Senha recebida do administrador"
+                    required
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Use a senha temporária enviada pelo administrador
+                </p>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-semibold"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Validando...
+                  </>
+                ) : (
+                  <>
+                    <KeyRound className="w-5 h-5 mr-2" />
+                    Continuar
+                  </>
+                )}
+              </Button>
+
               <button
                 type="button"
-                onClick={() => setModo('recuperar-senha')}
-                className="w-full text-center text-sm text-slate-400 hover:text-slate-300 underline"
+                onClick={voltarParaLogin}
+                className="w-full text-center text-sm text-slate-400 hover:text-slate-300 flex items-center justify-center gap-2"
               >
-                Esqueci minha senha
+                <ArrowLeft className="w-4 h-4" />
+                Voltar para login
               </button>
             </form>
           )}
@@ -355,7 +488,7 @@ export default function AcessoUsuario() {
                 </form>
               )}
 
-              {etapa === 3 && (
+              {etapa === 3 && modo === 'recuperar-senha' && (
                 <form onSubmit={handleCriarNovaSenha} className="space-y-4">
                   <div>
                     <Label className="text-slate-400">Nova Senha</Label>
@@ -410,6 +543,61 @@ export default function AcessoUsuario() {
                 </form>
               )}
             </>
+          )}
+
+          {modo === 'primeiro-acesso' && etapa === 3 && (
+            <form onSubmit={handleCriarNovaSenha} className="space-y-4">
+              <div>
+                <Label className="text-slate-400">Nova Senha</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    type="password"
+                    value={novaSenha}
+                    onChange={(e) => setNovaSenha(e.target.value)}
+                    className="pl-10 bg-slate-800 border-slate-700 text-white"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Mínimo de 6 caracteres
+                </p>
+              </div>
+
+              <div>
+                <Label className="text-slate-400">Confirmar Senha</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    type="password"
+                    value={confirmarSenha}
+                    onChange={(e) => setConfirmarSenha(e.target.value)}
+                    className="pl-10 bg-slate-800 border-slate-700 text-white"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-semibold"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 mr-2" />
+                    Criar Senha e Entrar
+                  </>
+                )}
+              </Button>
+            </form>
           )}
         </Card>
       </motion.div>
