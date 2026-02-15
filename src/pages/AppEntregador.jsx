@@ -551,14 +551,14 @@ export default function AppEntregador() {
 
               <div className="flex gap-2">
                 <Button 
-                  className="flex-1 h-12 bg-blue-500 hover:bg-blue-600"
+                  className="flex-1 h-12 bg-white hover:bg-gray-100 text-gray-900"
                   onClick={(e) => { e.stopPropagation(); openMaps(entregaAtiva); }}
                 >
                   <Navigation className="w-5 h-5 mr-2" />
-                  Maps
+                  Google Maps
                 </Button>
                 <Button 
-                  className="flex-1 h-12 bg-cyan-500 hover:bg-cyan-600"
+                  className="flex-1 h-12 bg-white hover:bg-gray-100 text-gray-900"
                   onClick={(e) => { e.stopPropagation(); openWaze(entregaAtiva); }}
                 >
                   <ExternalLink className="w-5 h-5 mr-2" />
@@ -1102,14 +1102,14 @@ export default function AppEntregador() {
                 {/* Botões de Navegação */}
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   <Button 
-                    className="h-14 bg-blue-500 hover:bg-blue-600 text-lg"
+                    className="h-14 bg-white hover:bg-gray-100 text-gray-900 text-lg"
                     onClick={() => openMaps(selectedEntrega)}
                   >
                     <Navigation className="w-5 h-5 mr-2" />
                     Google Maps
                   </Button>
                   <Button 
-                    className="h-14 bg-cyan-500 hover:bg-cyan-600 text-lg"
+                    className="h-14 bg-white hover:bg-gray-100 text-gray-900 text-lg"
                     onClick={() => openWaze(selectedEntrega)}
                   >
                     <ExternalLink className="w-5 h-5 mr-2" />
