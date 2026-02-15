@@ -116,11 +116,7 @@ export default function ProdutoCard({ produto, onAddCart, onClick, tema = 'dark'
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                if (produto.opcoes_personalizacao && produto.opcoes_personalizacao.length > 0) {
-                  onClick?.(produto);
-                } else {
-                  onAddCart?.(produto);
-                }
+                onClick?.(produto);
               }}
               className="flex-1 text-white"
               style={{ backgroundColor: corPrimaria }}
