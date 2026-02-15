@@ -64,8 +64,8 @@ export default function CriarNovaSenha() {
       };
       localStorage.setItem('estabelecimento_logado', JSON.stringify(estabelecimentoAtualizado));
 
-      // Redirecionar para o dashboard
-      navigate(createPageUrl('Dashboard'));
+      // Redirecionar para novo pedido
+      navigate(createPageUrl('NovoPedido'));
     } catch (error) {
       console.error('Erro ao atualizar senha:', error);
       setError('Erro ao atualizar senha. Tente novamente.');
