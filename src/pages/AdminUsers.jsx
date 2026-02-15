@@ -929,6 +929,9 @@ export default function AdminUsers() {
                             <Shield className="w-4 h-4" />
                             <span>Plano: {estab.plano || 'Básico'}</span>
                           </div>
+                          <div className="flex items-center gap-3 text-xs text-slate-500 mt-2 pt-2 border-t border-slate-700">
+                            <span className="font-mono">ID: {estab.id}</span>
+                          </div>
                         </div>
                       </motion.div>
                     ))
