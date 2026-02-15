@@ -22,36 +22,56 @@ import moment from 'moment';
 export default function Financeiro() {
   const [theme] = useState(() => localStorage.getItem('theme') || 'dark');
   const isLight = theme === 'light';
+  const [pizzariaId, setPizzariaId] = useState(null);
+
+  useEffect(() => {
+    const estabelecimentoLogado = localStorage.getItem('estabelecimento_logado');
+    if (estabelecimentoLogado) {
+      const estab = JSON.parse(estabelecimentoLogado);
+      setPizzariaId(estab.id);
+    }
+  }, []);
 
   // Buscar pedidos entregues aguardando conferência
   const { data: pedidosAguardando = [] } = useQuery({
-    queryKey: ['pedidos-aguardando-conferencia'],
-    queryFn: () => base44.entities.Pedido.filter({ status: 'entregue' }),
+    queryKey: ['pedidos-aguardando-conferencia', pizzariaId],
+    queryFn: () => {
+      if (!pizzariaId) return [];
+      return base44.entities.Pedido.filter({ 
+        pizzaria_id: pizzariaId,
+        status: 'entregue' 
+      });
+    },
+    enabled: !!pizzariaId,
     refetchInterval: 30000,
   });
 
   // Buscar pedidos finalizados do mês
   const { data: pedidosFinalizados = [] } = useQuery({
-    queryKey: ['pedidos-finalizados-mes'],
+    queryKey: ['pedidos-finalizados-mes', pizzariaId],
     queryFn: async () => {
+      if (!pizzariaId) return [];
       const inicioMes = moment().startOf('month').toISOString();
-      const pedidos = await base44.entities.Pedido.list('-created_date', 1000);
+      const pedidos = await base44.entities.Pedido.filter({ pizzaria_id: pizzariaId }, '-created_date', 1000);
       return pedidos.filter(p => 
         p.status === 'finalizada' && 
         moment(p.created_date).isAfter(inicioMes)
       );
     },
+    enabled: !!pizzariaId,
     refetchInterval: 60000,
   });
 
   // Buscar custos do mês
   const { data: custosDoMes = [] } = useQuery({
-    queryKey: ['custos-mes'],
+    queryKey: ['custos-mes', pizzariaId],
     queryFn: async () => {
+      if (!pizzariaId) return [];
       const inicioMes = moment().startOf('month').format('YYYY-MM-DD');
-      const custos = await base44.entities.Custo.list('-data', 1000);
+      const custos = await base44.entities.Custo.filter({ pizzaria_id: pizzariaId }, '-data', 1000);
       return custos.filter(c => moment(c.data).isSameOrAfter(inicioMes));
     },
+    enabled: !!pizzariaId,
     refetchInterval: 60000,
   });
 
