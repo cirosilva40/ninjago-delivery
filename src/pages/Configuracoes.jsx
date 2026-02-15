@@ -87,6 +87,16 @@ export default function Configuracoes() {
 
   React.useEffect(() => {
     const loadUser = async () => {
+      // Verificar se é estabelecimento logado via localStorage
+      const estabelecimentoLogado = localStorage.getItem('estabelecimento_logado');
+      if (estabelecimentoLogado) {
+        const estab = JSON.parse(estabelecimentoLogado);
+        setPizzariaId(estab.id);
+        setUser({ role: 'estabelecimento' });
+        return;
+      }
+
+      // Se não, verificar autenticação normal
       const userData = await base44.auth.me();
       setUser(userData);
       setPizzariaId(userData.pizzaria_id || 'default');
