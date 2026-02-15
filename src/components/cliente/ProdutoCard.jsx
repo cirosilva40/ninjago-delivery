@@ -106,8 +106,8 @@ export default function ProdutoCard({ produto, onAddCart, onClick, tema = 'dark'
               variant="outline"
               className={`flex-1 ${
                 isLight 
-                  ? 'border-gray-300 text-gray-700 hover:bg-gray-50' 
-                  : 'border-slate-600 text-white hover:bg-slate-800'
+                  ? 'border-gray-300 text-emerald-700 hover:bg-gray-50 hover:text-emerald-800' 
+                  : 'border-slate-600 text-emerald-400 hover:bg-slate-800 hover:text-emerald-300'
               }`}
             >
               Ver detalhes
