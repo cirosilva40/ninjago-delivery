@@ -109,8 +109,7 @@ export default function EntregaCard({ entrega, entregador, onClick, compact = fa
         <div className="px-5 py-3 bg-white/5 border-t border-white/10">
           <Button 
             onClick={onClick}
-            className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 font-bold shadow-lg"
-            style={{ color: '#1a1a1a' }}
+            className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white"
           >
             Ver Detalhes
           </Button>

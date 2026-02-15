@@ -687,7 +687,7 @@ Retorne a rota otimizada com as seguintes informações.
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1 border-slate-600 text-white hover:bg-slate-700 font-semibold"
+                            className="flex-1 border-slate-700 text-slate-300"
                             onClick={() => openGoogleMaps(
                               entrega.latitude_destino || -23.5505,
                               entrega.longitude_destino || -46.6333
@@ -699,7 +699,7 @@ Retorne a rota otimizada com as seguintes informações.
                           <Button
                             size="sm"
                             variant="outline"
-                            className="flex-1 border-slate-600 text-white hover:bg-slate-700 font-semibold"
+                            className="flex-1 border-slate-700 text-slate-300"
                             onClick={() => openWaze(
                               entrega.latitude_destino || -23.5505,
                               entrega.longitude_destino || -46.6333
