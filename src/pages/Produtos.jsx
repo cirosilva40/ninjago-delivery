@@ -99,7 +99,15 @@ export default function Produtos() {
     const loadUser = async () => {
       const userData = await base44.auth.me();
       setUser(userData);
-      setPizzariaId(userData.pizzaria_id || 'default');
+      
+      // Obter pizzaria_id do localStorage se disponível
+      const estabelecimentoLogado = localStorage.getItem('estabelecimento_logado');
+      if (estabelecimentoLogado) {
+        const estab = JSON.parse(estabelecimentoLogado);
+        setPizzariaId(estab.id);
+      } else {
+        setPizzariaId(userData.pizzaria_id || 'default');
+      }
     };
     loadUser();
   }, []);
@@ -136,9 +144,6 @@ export default function Produtos() {
     queryKey: ['produtos', pizzariaId],
     queryFn: async () => {
       if (!pizzariaId) return [];
-      if (user?.role === 'admin') {
-        return base44.entities.Produto.list('-created_date', 500);
-      }
       return base44.entities.Produto.filter({ restaurante_id: pizzariaId }, '-created_date', 500);
     },
     enabled: !!pizzariaId,

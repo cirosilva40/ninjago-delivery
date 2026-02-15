@@ -74,7 +74,15 @@ export default function Entregadores() {
     const loadUser = async () => {
       const userData = await base44.auth.me();
       setUser(userData);
-      setPizzariaId(userData.pizzaria_id || 'default');
+      
+      // Obter pizzaria_id do localStorage se disponível
+      const estabelecimentoLogado = localStorage.getItem('estabelecimento_logado');
+      if (estabelecimentoLogado) {
+        const estab = JSON.parse(estabelecimentoLogado);
+        setPizzariaId(estab.id);
+      } else {
+        setPizzariaId(userData.pizzaria_id || 'default');
+      }
     };
     loadUser();
   }, []);
@@ -83,9 +91,6 @@ export default function Entregadores() {
     queryKey: ['entregadores', pizzariaId],
     queryFn: async () => {
       if (!pizzariaId) return [];
-      if (user?.role === 'admin') {
-        return base44.entities.Entregador.list('-created_date', 100);
-      }
       return base44.entities.Entregador.filter({ pizzaria_id: pizzariaId }, '-created_date', 100);
     },
     enabled: !!pizzariaId,
