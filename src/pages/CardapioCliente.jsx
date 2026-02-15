@@ -148,12 +148,16 @@ export default function CardapioCliente() {
     }
   }, []);
 
-  const { data: produtos = [] } = useQuery({
+  const { data: produtos = [], isLoading: loadingProdutos } = useQuery({
     queryKey: ['produtos-cardapio', pizzariaId],
-    queryFn: () => base44.entities.Produto.filter({ 
-      disponivel: true, 
-      restaurante_id: pizzariaId 
-    }, '-created_date', 100),
+    queryFn: async () => {
+      const result = await base44.entities.Produto.filter({ 
+        disponivel: true, 
+        restaurante_id: pizzariaId 
+      }, '-created_date', 100);
+      console.log('Produtos encontrados:', result.length, 'para pizzariaId:', pizzariaId);
+      return result;
+    },
     enabled: !!pizzariaId,
   });
 
@@ -166,13 +170,22 @@ export default function CardapioCliente() {
     enabled: !!pizzariaId,
   });
 
-  const { data: pizzarias = [] } = useQuery({
+  const { data: pizzarias = [], isLoading: loadingPizzaria } = useQuery({
     queryKey: ['pizzaria-config', pizzariaId],
-    queryFn: () => base44.entities.Pizzaria.filter({ id: pizzariaId }),
+    queryFn: async () => {
+      const result = await base44.entities.Pizzaria.filter({ id: pizzariaId });
+      console.log('Pizzaria encontrada:', result.length > 0, 'ID:', pizzariaId);
+      return result;
+    },
     enabled: !!pizzariaId,
   });
 
   const pizzariaConfig = pizzarias[0] || {};
+  
+  // Debug: mostrar erro se pizzaria não encontrada
+  if (!loadingPizzaria && pizzarias.length === 0 && pizzariaId) {
+    console.error('❌ Pizzaria não encontrada com ID:', pizzariaId);
+  }
   const tema = pizzariaConfig.tema_cliente || 'dark';
   const isLight = tema === 'light';
   const corPrimaria = pizzariaConfig.cor_primaria_cliente || '#f97316';
@@ -701,6 +714,38 @@ export default function CardapioCliente() {
       </header>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-6">
+        {/* Mensagem de erro se pizzaria não encontrada */}
+        {!loadingPizzaria && pizzarias.length === 0 && pizzariaId && (
+          <div className="text-center py-12 px-4">
+            <div className="text-6xl mb-4">😕</div>
+            <h2 className={`text-2xl font-bold mb-2 ${isLight ? 'text-gray-900' : 'text-white'}`}>
+              Estabelecimento não encontrado
+            </h2>
+            <p className={`text-lg ${isLight ? 'text-gray-600' : 'text-slate-400'}`}>
+              O link que você acessou pode estar incorreto ou o estabelecimento não está mais ativo.
+            </p>
+            <p className={`text-sm mt-4 ${isLight ? 'text-gray-500' : 'text-slate-500'}`}>
+              ID buscado: {pizzariaId}
+            </p>
+          </div>
+        )}
+
+        {/* Mensagem se não há produtos */}
+        {!loadingProdutos && produtos.length === 0 && pizzarias.length > 0 && !busca && (
+          <div className="text-center py-12 px-4">
+            <div className="text-6xl mb-4">📦</div>
+            <h2 className={`text-2xl font-bold mb-2 ${isLight ? 'text-gray-900' : 'text-white'}`}>
+              Cardápio em breve
+            </h2>
+            <p className={`text-lg ${isLight ? 'text-gray-600' : 'text-slate-400'}`}>
+              Este estabelecimento ainda não cadastrou produtos no cardápio.
+            </p>
+          </div>
+        )}
+
+        {/* Conteúdo normal (apenas se tiver pizzaria e produtos) */}
+        {pizzarias.length > 0 && (produtos.length > 0 || busca) && (
+          <>
         {/* Busca Otimizada Mobile */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -949,6 +994,8 @@ export default function CardapioCliente() {
               ))}
             </div>
           </div>
+        )}
+        </>
         )}
       </main>
 
