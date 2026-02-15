@@ -994,12 +994,15 @@ export default function AdminUsers() {
                   </div>
                   <p className="text-sm text-slate-400 mb-1">Mais Popular</p>
                   <p className="text-3xl font-bold text-white capitalize">
-                    {estabelecimentos.length > 0 
-                      ? estabelecimentos.reduce((acc, e) => {
-                          acc[e.plano] = (acc[e.plano] || 0) + 1;
-                          return acc;
-                        }, {})
-                      : { basico: 0 }}
+                    {(() => {
+                      const basicoCount = estabelecimentos.filter(e => e.plano === 'basico').length;
+                      const profissionalCount = estabelecimentos.filter(e => e.plano === 'profissional').length;
+                      const enterpriseCount = estabelecimentos.filter(e => e.plano === 'enterprise').length;
+                      
+                      if (basicoCount >= profissionalCount && basicoCount >= enterpriseCount) return 'Básico';
+                      if (profissionalCount >= enterpriseCount) return 'Profissional';
+                      return 'Enterprise';
+                    })()}
                   </p>
                   <p className="text-xs text-slate-500 mt-2">
                     {Math.max(
