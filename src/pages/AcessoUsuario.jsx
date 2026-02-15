@@ -141,10 +141,16 @@ export default function AcessoUsuario() {
     setLoading(true);
 
     try {
-      await base44.asServiceRole.entities.Pizzaria.update(estabelecimentoId, { 
-        senha: novaSenha,
-        eh_senha_temporaria: false
+      const response = await base44.functions.invoke('atualizarSenhaEstabelecimento', {
+        estabelecimento_id: estabelecimentoId,
+        nova_senha: novaSenha
       });
+
+      if (response.data.error) {
+        setError(response.data.error);
+        setLoading(false);
+        return;
+      }
       
       setSuccess('Senha criada com sucesso! Fazendo login...');
       
