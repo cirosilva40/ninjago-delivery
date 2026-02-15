@@ -65,6 +65,7 @@ import EntregasHoje from './pages/EntregasHoje';
 import Financeiro from './pages/Financeiro';
 import FluxoDeCaixa from './pages/FluxoDeCaixa';
 import Home from './pages/Home';
+import MapaTempoReal from './pages/MapaTempoReal';
 import NotificacoesCliente from './pages/NotificacoesCliente';
 import NovoPedido from './pages/NovoPedido';
 import Pagamentos from './pages/Pagamentos';
@@ -73,7 +74,6 @@ import PerfilCliente from './pages/PerfilCliente';
 import Produtos from './pages/Produtos';
 import ProgramaFidelidade from './pages/ProgramaFidelidade';
 import Relatorios from './pages/Relatorios';
-import MapaTempoReal from './pages/MapaTempoReal';
 import __Layout from './Layout.jsx';
 
 
@@ -96,6 +96,7 @@ export const PAGES = {
     "Financeiro": Financeiro,
     "FluxoDeCaixa": FluxoDeCaixa,
     "Home": Home,
+    "MapaTempoReal": MapaTempoReal,
     "NotificacoesCliente": NotificacoesCliente,
     "NovoPedido": NovoPedido,
     "Pagamentos": Pagamentos,
@@ -104,7 +105,6 @@ export const PAGES = {
     "Produtos": Produtos,
     "ProgramaFidelidade": ProgramaFidelidade,
     "Relatorios": Relatorios,
-    "MapaTempoReal": MapaTempoReal,
 }
 
 export const pagesConfig = {

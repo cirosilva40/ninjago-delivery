@@ -21,6 +21,7 @@ import {
   Plus,
   Trash2,
   Edit,
+  ExternalLink,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,6 +45,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import MapaRaioEntrega from '@/components/configuracoes/MapaRaioEntrega';
+import { createPageUrl } from '@/utils';
 
 export default function Configuracoes() {
   const [user, setUser] = useState(null);
@@ -449,6 +451,44 @@ export default function Configuracoes() {
 
         {/* Tab Personalizar Minha Loja */}
         <TabsContent value="loja" className="space-y-6">
+          {/* Link do Cardápio */}
+          <Card className="bg-gradient-to-r from-emerald-500/10 to-green-500/10 border-emerald-500/30">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <ExternalLink className="w-5 h-5 text-emerald-400" />
+                Link da Sua Loja
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                Compartilhe este link com seus clientes para eles acessarem seu cardápio
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-slate-400">URL do Cardápio</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={`${window.location.origin}${createPageUrl('CardapioCliente')}?pizzariaId=${pizzarias[0]?.id || ''}`}
+                    readOnly
+                    className="bg-slate-800 border-slate-700 text-white font-mono text-sm"
+                  />
+                  <Button
+                    onClick={() => {
+                      const link = `${window.location.origin}${createPageUrl('CardapioCliente')}?pizzariaId=${pizzarias[0]?.id || ''}`;
+                      navigator.clipboard.writeText(link);
+                      alert('✅ Link copiado! Compartilhe com seus clientes.');
+                    }}
+                    className="bg-emerald-500 hover:bg-emerald-600"
+                  >
+                    Copiar
+                  </Button>
+                </div>
+                <p className="text-xs text-emerald-400 mt-2">
+                  💡 Compartilhe este link no WhatsApp, Instagram ou redes sociais
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="bg-white/5 border-white/10">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
