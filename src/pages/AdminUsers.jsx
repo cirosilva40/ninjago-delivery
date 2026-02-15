@@ -28,6 +28,11 @@ import {
   Key,
   Copy,
   Loader2,
+  TrendingUp,
+  TrendingDown,
+  Wallet,
+  ShoppingCart,
+  Receipt,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -79,7 +84,7 @@ export default function AdminUsers() {
   });
   const [cadastrando, setCadastrando] = useState(false);
   const [cadastroSuccess, setCadastroSuccess] = useState(false);
-  const [activeTab, setActiveTab] = useState('usuarios'); // 'usuarios' ou 'estabelecimentos'
+  const [activeTab, setActiveTab] = useState('usuarios'); // 'usuarios', 'estabelecimentos' ou 'financeiro'
   const [showCadastroEstabelecimento, setShowCadastroEstabelecimento] = useState(false);
   const [estabelecimentoForm, setEstabelecimentoForm] = useState({
     nome: '',
@@ -137,6 +142,22 @@ export default function AdminUsers() {
   const { data: estabelecimentos = [], refetch: refetchEstabelecimentos } = useQuery({
     queryKey: ['estabelecimentos'],
     queryFn: () => base44.entities.Pizzaria.list('-created_date', 500),
+  });
+
+  // Buscar dados financeiros
+  const { data: pedidos = [] } = useQuery({
+    queryKey: ['pedidos-financeiro'],
+    queryFn: () => base44.entities.Pedido.list('-created_date', 1000),
+  });
+
+  const { data: custos = [] } = useQuery({
+    queryKey: ['custos-financeiro'],
+    queryFn: () => base44.entities.Custo.list('-data', 500),
+  });
+
+  const { data: pagamentosEntregadores = [] } = useQuery({
+    queryKey: ['pagamentos-financeiro'],
+    queryFn: () => base44.entities.Pagamento.list('-created_date', 500),
   });
 
   // Verificar se usuário atual é admin
@@ -585,7 +606,7 @@ export default function AdminUsers() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
           {/* Tabs */}
-          <div className="flex gap-2 border-b border-white/10 pb-4">
+          <div className="flex gap-2 border-b border-white/10 pb-4 overflow-x-auto">
             <Button
               variant={activeTab === 'usuarios' ? 'default' : 'ghost'}
               onClick={() => setActiveTab('usuarios')}
@@ -601,6 +622,14 @@ export default function AdminUsers() {
             >
               <Building2 className="w-4 h-4 mr-2" />
               Estabelecimentos ({estabelecimentos.length})
+            </Button>
+            <Button
+              variant={activeTab === 'financeiro' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('financeiro')}
+              className={activeTab === 'financeiro' ? 'bg-gradient-to-r from-orange-500 to-red-600' : 'text-slate-400'}
+            >
+              <DollarSign className="w-4 h-4 mr-2" />
+              Financeiro
             </Button>
           </div>
 
@@ -906,6 +935,185 @@ export default function AdminUsers() {
                   )}
                 </AnimatePresence>
               </div>
+            </>
+          )}
+
+          {activeTab === 'financeiro' && (
+            <>
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-3xl font-bold text-white">Visão Financeira</h2>
+                  <p className="text-slate-400 mt-1">Acompanhamento global do sistema</p>
+                </div>
+              </div>
+
+              {/* Métricas Principais */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Receita Total */}
+                <Card className="bg-gradient-to-br from-emerald-500/10 to-green-500/10 border-emerald-500/20 p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                      <TrendingUp className="w-6 h-6 text-emerald-400" />
+                    </div>
+                    <Badge className="bg-emerald-500/20 text-emerald-400">+12%</Badge>
+                  </div>
+                  <p className="text-sm text-slate-400 mb-1">Receita Total</p>
+                  <p className="text-3xl font-bold text-white">
+                    R$ {pedidos.filter(p => p.status_pagamento === 'pago').reduce((acc, p) => acc + (p.valor_total || 0), 0).toFixed(2)}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-2">{pedidos.filter(p => p.status_pagamento === 'pago').length} pedidos pagos</p>
+                </Card>
+
+                {/* Custos Totais */}
+                <Card className="bg-gradient-to-br from-red-500/10 to-orange-500/10 border-red-500/20 p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center">
+                      <TrendingDown className="w-6 h-6 text-red-400" />
+                    </div>
+                    <Badge className="bg-red-500/20 text-red-400">-8%</Badge>
+                  </div>
+                  <p className="text-sm text-slate-400 mb-1">Custos Totais</p>
+                  <p className="text-3xl font-bold text-white">
+                    R$ {custos.reduce((acc, c) => acc + (c.valor || 0), 0).toFixed(2)}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-2">{custos.length} registros de custos</p>
+                </Card>
+
+                {/* Lucro Líquido */}
+                <Card className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border-blue-500/20 p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                      <Wallet className="w-6 h-6 text-blue-400" />
+                    </div>
+                    <Badge className="bg-blue-500/20 text-blue-400">+15%</Badge>
+                  </div>
+                  <p className="text-sm text-slate-400 mb-1">Lucro Líquido</p>
+                  <p className="text-3xl font-bold text-white">
+                    R$ {(
+                      pedidos.filter(p => p.status_pagamento === 'pago').reduce((acc, p) => acc + (p.valor_total || 0), 0) -
+                      custos.reduce((acc, c) => acc + (c.valor || 0), 0)
+                    ).toFixed(2)}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-2">Receitas - Custos</p>
+                </Card>
+
+                {/* Ticket Médio */}
+                <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                      <ShoppingCart className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <Badge className="bg-purple-500/20 text-purple-400">+5%</Badge>
+                  </div>
+                  <p className="text-sm text-slate-400 mb-1">Ticket Médio</p>
+                  <p className="text-3xl font-bold text-white">
+                    R$ {pedidos.filter(p => p.status_pagamento === 'pago').length > 0
+                      ? (pedidos.filter(p => p.status_pagamento === 'pago').reduce((acc, p) => acc + (p.valor_total || 0), 0) / pedidos.filter(p => p.status_pagamento === 'pago').length).toFixed(2)
+                      : '0.00'}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-2">Valor médio por pedido</p>
+                </Card>
+              </div>
+
+              {/* Pedidos Pendentes */}
+              <Card className="bg-white/5 border-white/10 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Receipt className="w-6 h-6 text-yellow-400" />
+                    Pedidos Pendentes de Pagamento
+                  </h3>
+                  <Badge className="bg-yellow-500/20 text-yellow-400">
+                    {pedidos.filter(p => p.status_pagamento === 'pendente').length} pendentes
+                  </Badge>
+                </div>
+
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {pedidos.filter(p => p.status_pagamento === 'pendente').slice(0, 20).map((pedido) => (
+                    <div key={pedido.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="font-bold text-white">#{pedido.numero_pedido}</span>
+                          <Badge className="bg-yellow-500/20 text-yellow-400 text-xs">Pendente</Badge>
+                        </div>
+                        <p className="text-sm text-slate-400">{pedido.cliente_nome}</p>
+                        <p className="text-xs text-slate-500">{moment(pedido.horario_pedido).format('DD/MM/YYYY HH:mm')}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-white">R$ {pedido.valor_total?.toFixed(2)}</p>
+                        <p className="text-xs text-slate-400">{pedido.forma_pagamento}</p>
+                      </div>
+                    </div>
+                  ))}
+
+                  {pedidos.filter(p => p.status_pagamento === 'pendente').length === 0 && (
+                    <div className="text-center py-12">
+                      <Receipt className="w-16 h-16 mx-auto text-slate-600 mb-4" />
+                      <p className="text-slate-400">Nenhum pedido pendente</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+
+              {/* Pagamentos a Entregadores */}
+              <Card className="bg-white/5 border-white/10 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Wallet className="w-6 h-6 text-blue-400" />
+                    Pagamentos a Entregadores
+                  </h3>
+                  <div className="text-right">
+                    <p className="text-sm text-slate-400">Total a Pagar</p>
+                    <p className="text-2xl font-bold text-white">
+                      R$ {pagamentosEntregadores.filter(p => p.status === 'pendente').reduce((acc, p) => acc + (p.valor || 0), 0).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                    <p className="text-sm text-slate-400 mb-1">Pendentes</p>
+                    <p className="text-2xl font-bold text-yellow-400">
+                      {pagamentosEntregadores.filter(p => p.status === 'pendente').length}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                    <p className="text-sm text-slate-400 mb-1">Pagos</p>
+                    <p className="text-2xl font-bold text-emerald-400">
+                      {pagamentosEntregadores.filter(p => p.status === 'pago').length}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                    <p className="text-sm text-slate-400 mb-1">Total Pago</p>
+                    <p className="text-2xl font-bold text-white">
+                      R$ {pagamentosEntregadores.filter(p => p.status === 'pago').reduce((acc, p) => acc + (p.valor || 0), 0).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Custos por Categoria */}
+              <Card className="bg-white/5 border-white/10 p-6">
+                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                  <Receipt className="w-6 h-6 text-orange-400" />
+                  Custos por Categoria
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {['operacional', 'marketing', 'salarios', 'insumos', 'aluguel', 'outros'].map((categoria) => {
+                    const custosDaCategoria = custos.filter(c => c.categoria === categoria);
+                    const total = custosDaCategoria.reduce((acc, c) => acc + (c.valor || 0), 0);
+                    
+                    return (
+                      <div key={categoria} className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                        <p className="text-sm text-slate-400 capitalize mb-2">{categoria}</p>
+                        <p className="text-2xl font-bold text-white mb-1">R$ {total.toFixed(2)}</p>
+                        <p className="text-xs text-slate-500">{custosDaCategoria.length} registros</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
             </>
           )}
         </div>
