@@ -84,6 +84,7 @@ export default function AcessoUsuario() {
   const handlePrimeiroAcesso = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
@@ -125,6 +126,7 @@ export default function AcessoUsuario() {
   const handleCriarNovaSenha = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
     if (novaSenha.length < 6) {
       setError('A senha deve ter pelo menos 6 caracteres.');
@@ -159,6 +161,7 @@ export default function AcessoUsuario() {
   const handleVerificarCodigo = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
     if (codigo !== codigoGerado) {
       setError('Código inválido. Tente novamente.');
