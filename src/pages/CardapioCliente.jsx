@@ -937,7 +937,7 @@ export default function CardapioCliente() {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 {produtosFiltrados.map((produto) => (
                   <ProdutoCardWrapper key={produto.id} produto={produto} />
                 ))}
@@ -966,10 +966,10 @@ export default function CardapioCliente() {
                     </h2>
                     <div className={`h-1 flex-1 rounded-full ${isLight ? 'bg-gray-200' : 'bg-white/10'}`} />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {produtosCat.map((produto) => (
-                      <ProdutoCardWrapper key={produto.id} produto={produto} />
-                    ))}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                  {produtosCat.map((produto) => (
+                   <ProdutoCardWrapper key={produto.id} produto={produto} />
+                  ))}
                   </div>
                 </motion.section>
               );
@@ -988,7 +988,7 @@ export default function CardapioCliente() {
                 {categoriaLabels[categoriaAtiva]?.nome || categoriaAtiva}
               </h2>
             </motion.div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {produtosFiltrados.map((produto) => (
                 <ProdutoCardWrapper key={produto.id} produto={produto} />
               ))}

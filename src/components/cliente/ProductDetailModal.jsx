@@ -131,24 +131,42 @@ export default function ProductDetailModal({ produto, open, onClose, onAddToCart
             </Badge>
           </div>
 
-          {/* Descrição */}
+          {/* Ingredientes */}
           {produto.descricao && (
             <div>
-              <h4 className={`font-semibold mb-2 text-sm sm:text-base ${isLight ? 'text-gray-700' : 'text-slate-300'}`}>
-                Descrição
+              <h4 className={`font-semibold mb-3 text-base sm:text-lg flex items-center gap-2 ${isLight ? 'text-gray-700' : 'text-slate-300'}`}>
+                🧾 Ingredientes
               </h4>
-              <p className={`${isLight ? 'text-gray-600' : 'text-slate-400'} leading-relaxed text-sm sm:text-base`}>
-                {produto.descricao}
-              </p>
+              <div className="flex flex-wrap gap-2">
+                {produto.descricao.split(',').map((ing, idx) => {
+                  const ingrediente = ing.trim();
+                  if (!ingrediente) return null;
+                  return (
+                    <div 
+                      key={idx}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                        isLight 
+                          ? 'bg-gray-100 text-gray-800 border border-gray-200' 
+                          : 'bg-slate-800 text-slate-200 border border-slate-700'
+                      }`}
+                    >
+                      {ingrediente}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
           {/* Opções de Personalização */}
           {temOpcoes && (
             <div className="space-y-3 sm:space-y-4">
-              <h4 className={`font-semibold text-sm sm:text-base ${isLight ? 'text-gray-700' : 'text-slate-300'}`}>
-                Personalize seu produto
+              <h4 className={`font-semibold text-base sm:text-lg flex items-center gap-2 ${isLight ? 'text-gray-700' : 'text-slate-300'}`}>
+                ✨ Personalize seu produto
               </h4>
+              <p className={`text-xs sm:text-sm ${isLight ? 'text-gray-600' : 'text-slate-400'}`}>
+                Adicione ou remova ingredientes conforme sua preferência
+              </p>
               
               {produto.opcoes_personalizacao.map((grupo, grupoIndex) => {
                 const grupoKey = `grupo_${grupoIndex}`;
