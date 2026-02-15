@@ -943,175 +943,198 @@ export default function AdminUsers() {
               {/* Header */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-3xl font-bold text-white">Visão Financeira</h2>
-                  <p className="text-slate-400 mt-1">Acompanhamento global do sistema</p>
+                  <h2 className="text-3xl font-bold text-white">Financeiro da Plataforma</h2>
+                  <p className="text-slate-400 mt-1">Acompanhamento de pagamentos dos estabelecimentos</p>
                 </div>
               </div>
 
               {/* Métricas Principais */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Receita Total */}
+                {/* Estabelecimentos Ativos */}
                 <Card className="bg-gradient-to-br from-emerald-500/10 to-green-500/10 border-emerald-500/20 p-6">
                   <div className="flex items-center justify-between mb-3">
                     <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                      <TrendingUp className="w-6 h-6 text-emerald-400" />
+                      <Building2 className="w-6 h-6 text-emerald-400" />
                     </div>
-                    <Badge className="bg-emerald-500/20 text-emerald-400">+12%</Badge>
+                    <Badge className="bg-emerald-500/20 text-emerald-400">Ativos</Badge>
                   </div>
-                  <p className="text-sm text-slate-400 mb-1">Receita Total</p>
+                  <p className="text-sm text-slate-400 mb-1">Estabelecimentos</p>
                   <p className="text-3xl font-bold text-white">
-                    R$ {pedidos.filter(p => p.status_pagamento === 'pago').reduce((acc, p) => acc + (p.valor_total || 0), 0).toFixed(2)}
+                    {estabelecimentos.filter(e => e.status === 'ativa').length}
                   </p>
-                  <p className="text-xs text-slate-500 mt-2">{pedidos.filter(p => p.status_pagamento === 'pago').length} pedidos pagos</p>
+                  <p className="text-xs text-slate-500 mt-2">de {estabelecimentos.length} total</p>
                 </Card>
 
-                {/* Custos Totais */}
-                <Card className="bg-gradient-to-br from-red-500/10 to-orange-500/10 border-red-500/20 p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center">
-                      <TrendingDown className="w-6 h-6 text-red-400" />
-                    </div>
-                    <Badge className="bg-red-500/20 text-red-400">-8%</Badge>
-                  </div>
-                  <p className="text-sm text-slate-400 mb-1">Custos Totais</p>
-                  <p className="text-3xl font-bold text-white">
-                    R$ {custos.reduce((acc, c) => acc + (c.valor || 0), 0).toFixed(2)}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-2">{custos.length} registros de custos</p>
-                </Card>
-
-                {/* Lucro Líquido */}
+                {/* MRR - Receita Mensal */}
                 <Card className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border-blue-500/20 p-6">
                   <div className="flex items-center justify-between mb-3">
                     <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                      <Wallet className="w-6 h-6 text-blue-400" />
+                      <TrendingUp className="w-6 h-6 text-blue-400" />
                     </div>
-                    <Badge className="bg-blue-500/20 text-blue-400">+15%</Badge>
+                    <Badge className="bg-blue-500/20 text-blue-400">MRR</Badge>
                   </div>
-                  <p className="text-sm text-slate-400 mb-1">Lucro Líquido</p>
+                  <p className="text-sm text-slate-400 mb-1">Receita Mensal</p>
                   <p className="text-3xl font-bold text-white">
-                    R$ {(
-                      pedidos.filter(p => p.status_pagamento === 'pago').reduce((acc, p) => acc + (p.valor_total || 0), 0) -
-                      custos.reduce((acc, c) => acc + (c.valor || 0), 0)
-                    ).toFixed(2)}
+                    R$ {(estabelecimentos.filter(e => e.status === 'ativa').length * 
+                      (estabelecimentos.filter(e => e.plano === 'profissional').length * 99 + 
+                       estabelecimentos.filter(e => e.plano === 'basico').length * 49 +
+                       estabelecimentos.filter(e => e.plano === 'enterprise').length * 199) / 
+                      (estabelecimentos.length || 1)).toFixed(2)}
                   </p>
-                  <p className="text-xs text-slate-500 mt-2">Receitas - Custos</p>
+                  <p className="text-xs text-slate-500 mt-2">Receita recorrente</p>
                 </Card>
 
-                {/* Ticket Médio */}
+                {/* Planos Distribuição */}
                 <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20 p-6">
                   <div className="flex items-center justify-between mb-3">
                     <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                      <ShoppingCart className="w-6 h-6 text-purple-400" />
+                      <Shield className="w-6 h-6 text-purple-400" />
                     </div>
-                    <Badge className="bg-purple-500/20 text-purple-400">+5%</Badge>
+                    <Badge className="bg-purple-500/20 text-purple-400">Planos</Badge>
                   </div>
-                  <p className="text-sm text-slate-400 mb-1">Ticket Médio</p>
-                  <p className="text-3xl font-bold text-white">
-                    R$ {pedidos.filter(p => p.status_pagamento === 'pago').length > 0
-                      ? (pedidos.filter(p => p.status_pagamento === 'pago').reduce((acc, p) => acc + (p.valor_total || 0), 0) / pedidos.filter(p => p.status_pagamento === 'pago').length).toFixed(2)
-                      : '0.00'}
+                  <p className="text-sm text-slate-400 mb-1">Mais Popular</p>
+                  <p className="text-3xl font-bold text-white capitalize">
+                    {estabelecimentos.length > 0 
+                      ? estabelecimentos.reduce((acc, e) => {
+                          acc[e.plano] = (acc[e.plano] || 0) + 1;
+                          return acc;
+                        }, {})
+                      : { basico: 0 }}
                   </p>
-                  <p className="text-xs text-slate-500 mt-2">Valor médio por pedido</p>
+                  <p className="text-xs text-slate-500 mt-2">
+                    {Math.max(
+                      estabelecimentos.filter(e => e.plano === 'basico').length,
+                      estabelecimentos.filter(e => e.plano === 'profissional').length,
+                      estabelecimentos.filter(e => e.plano === 'enterprise').length
+                    )} clientes
+                  </p>
+                </Card>
+
+                {/* Taxa de Conversão */}
+                <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border-orange-500/20 p-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-12 h-12 rounded-xl bg-orange-500/20 flex items-center justify-center">
+                      <Wallet className="w-6 h-6 text-orange-400" />
+                    </div>
+                    <Badge className="bg-orange-500/20 text-orange-400">
+                      {estabelecimentos.length > 0 
+                        ? ((estabelecimentos.filter(e => e.status === 'ativa').length / estabelecimentos.length) * 100).toFixed(0)
+                        : 0}%
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-slate-400 mb-1">Taxa Ativação</p>
+                  <p className="text-3xl font-bold text-white">
+                    {estabelecimentos.length > 0 
+                      ? ((estabelecimentos.filter(e => e.status === 'ativa').length / estabelecimentos.length) * 100).toFixed(1)
+                      : 0}%
+                  </p>
+                  <p className="text-xs text-slate-500 mt-2">Estabelecimentos ativos</p>
                 </Card>
               </div>
 
-              {/* Pedidos Pendentes */}
+              {/* Distribuição por Plano */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="bg-white/5 border-white/10 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-semibold text-white">Plano Básico</h4>
+                    <Badge className="bg-blue-500/20 text-blue-400">R$ 49/mês</Badge>
+                  </div>
+                  <p className="text-4xl font-bold text-white mb-2">
+                    {estabelecimentos.filter(e => e.plano === 'basico').length}
+                  </p>
+                  <p className="text-sm text-slate-400">
+                    R$ {(estabelecimentos.filter(e => e.plano === 'basico' && e.status === 'ativa').length * 49).toFixed(2)}/mês
+                  </p>
+                </Card>
+
+                <Card className="bg-white/5 border-white/10 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-semibold text-white">Plano Profissional</h4>
+                    <Badge className="bg-purple-500/20 text-purple-400">R$ 99/mês</Badge>
+                  </div>
+                  <p className="text-4xl font-bold text-white mb-2">
+                    {estabelecimentos.filter(e => e.plano === 'profissional').length}
+                  </p>
+                  <p className="text-sm text-slate-400">
+                    R$ {(estabelecimentos.filter(e => e.plano === 'profissional' && e.status === 'ativa').length * 99).toFixed(2)}/mês
+                  </p>
+                </Card>
+
+                <Card className="bg-white/5 border-white/10 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="font-semibold text-white">Plano Enterprise</h4>
+                    <Badge className="bg-orange-500/20 text-orange-400">R$ 199/mês</Badge>
+                  </div>
+                  <p className="text-4xl font-bold text-white mb-2">
+                    {estabelecimentos.filter(e => e.plano === 'enterprise').length}
+                  </p>
+                  <p className="text-sm text-slate-400">
+                    R$ {(estabelecimentos.filter(e => e.plano === 'enterprise' && e.status === 'ativa').length * 199).toFixed(2)}/mês
+                  </p>
+                </Card>
+              </div>
+
+              {/* Lista de Estabelecimentos */}
               <Card className="bg-white/5 border-white/10 p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Receipt className="w-6 h-6 text-yellow-400" />
-                    Pedidos Pendentes de Pagamento
+                    <Building2 className="w-6 h-6 text-orange-400" />
+                    Todos os Estabelecimentos
                   </h3>
-                  <Badge className="bg-yellow-500/20 text-yellow-400">
-                    {pedidos.filter(p => p.status_pagamento === 'pendente').length} pendentes
-                  </Badge>
                 </div>
 
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {pedidos.filter(p => p.status_pagamento === 'pendente').slice(0, 20).map((pedido) => (
-                    <div key={pedido.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-800/50 border border-slate-700">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="font-bold text-white">#{pedido.numero_pedido}</span>
-                          <Badge className="bg-yellow-500/20 text-yellow-400 text-xs">Pendente</Badge>
+                <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                  {estabelecimentos.map((estab) => (
+                    <div key={estab.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-800/50 border border-slate-700 hover:bg-slate-800 transition-colors">
+                      <div className="flex items-center gap-4 flex-1">
+                        {estab.logo_url ? (
+                          <img src={estab.logo_url} alt={estab.nome} className="w-12 h-12 rounded-lg object-cover" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                            <Building2 className="w-6 h-6 text-white" />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-1">
+                            <h4 className="font-semibold text-white">{estab.nome}</h4>
+                            <Badge className={
+                              estab.status === 'ativa' 
+                                ? 'bg-emerald-500/20 text-emerald-400 text-xs' 
+                                : 'bg-red-500/20 text-red-400 text-xs'
+                            }>
+                              {estab.status === 'ativa' ? 'Ativo' : 'Inativo'}
+                            </Badge>
+                            <Badge className="bg-slate-700 text-slate-300 text-xs capitalize">
+                              {estab.plano || 'Básico'}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-4 text-xs text-slate-400">
+                            <span className="flex items-center gap-1">
+                              <Phone className="w-3 h-3" />
+                              {estab.telefone}
+                            </span>
+                            <span>{estab.cidade} - {estab.estado}</span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              Desde {moment(estab.created_date).format('MMM/YYYY')}
+                            </span>
+                          </div>
                         </div>
-                        <p className="text-sm text-slate-400">{pedido.cliente_nome}</p>
-                        <p className="text-xs text-slate-500">{moment(pedido.horario_pedido).format('DD/MM/YYYY HH:mm')}</p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-xl font-bold text-white">R$ {pedido.valor_total?.toFixed(2)}</p>
-                        <p className="text-xs text-slate-400">{pedido.forma_pagamento}</p>
+                      <div className="text-right ml-4">
+                        <p className="text-lg font-bold text-white">
+                          R$ {estab.plano === 'enterprise' ? '199' : estab.plano === 'profissional' ? '99' : '49'}/mês
+                        </p>
                       </div>
                     </div>
                   ))}
 
-                  {pedidos.filter(p => p.status_pagamento === 'pendente').length === 0 && (
+                  {estabelecimentos.length === 0 && (
                     <div className="text-center py-12">
-                      <Receipt className="w-16 h-16 mx-auto text-slate-600 mb-4" />
-                      <p className="text-slate-400">Nenhum pedido pendente</p>
+                      <Building2 className="w-16 h-16 mx-auto text-slate-600 mb-4" />
+                      <p className="text-slate-400">Nenhum estabelecimento cadastrado</p>
                     </div>
                   )}
-                </div>
-              </Card>
-
-              {/* Pagamentos a Entregadores */}
-              <Card className="bg-white/5 border-white/10 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Wallet className="w-6 h-6 text-blue-400" />
-                    Pagamentos a Entregadores
-                  </h3>
-                  <div className="text-right">
-                    <p className="text-sm text-slate-400">Total a Pagar</p>
-                    <p className="text-2xl font-bold text-white">
-                      R$ {pagamentosEntregadores.filter(p => p.status === 'pendente').reduce((acc, p) => acc + (p.valor || 0), 0).toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
-                    <p className="text-sm text-slate-400 mb-1">Pendentes</p>
-                    <p className="text-2xl font-bold text-yellow-400">
-                      {pagamentosEntregadores.filter(p => p.status === 'pendente').length}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
-                    <p className="text-sm text-slate-400 mb-1">Pagos</p>
-                    <p className="text-2xl font-bold text-emerald-400">
-                      {pagamentosEntregadores.filter(p => p.status === 'pago').length}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
-                    <p className="text-sm text-slate-400 mb-1">Total Pago</p>
-                    <p className="text-2xl font-bold text-white">
-                      R$ {pagamentosEntregadores.filter(p => p.status === 'pago').reduce((acc, p) => acc + (p.valor || 0), 0).toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Custos por Categoria */}
-              <Card className="bg-white/5 border-white/10 p-6">
-                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                  <Receipt className="w-6 h-6 text-orange-400" />
-                  Custos por Categoria
-                </h3>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {['operacional', 'marketing', 'salarios', 'insumos', 'aluguel', 'outros'].map((categoria) => {
-                    const custosDaCategoria = custos.filter(c => c.categoria === categoria);
-                    const total = custosDaCategoria.reduce((acc, c) => acc + (c.valor || 0), 0);
-                    
-                    return (
-                      <div key={categoria} className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
-                        <p className="text-sm text-slate-400 capitalize mb-2">{categoria}</p>
-                        <p className="text-2xl font-bold text-white mb-1">R$ {total.toFixed(2)}</p>
-                        <p className="text-xs text-slate-500">{custosDaCategoria.length} registros</p>
-                      </div>
-                    );
-                  })}
                 </div>
               </Card>
             </>
