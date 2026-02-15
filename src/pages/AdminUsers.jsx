@@ -584,7 +584,7 @@ export default function AdminUsers() {
             </div>
             <div className="flex items-center gap-3">
               <Link to={createPageUrl('Dashboard')}>
-                <Button variant="outline" className="border-slate-600 text-slate-300">
+                <Button variant="outline" className="border-slate-600 text-slate-900 dark:text-slate-100">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Voltar ao App
                 </Button>
@@ -1199,7 +1199,7 @@ export default function AdminUsers() {
                       <Button
                         type="button"
                         variant="outline"
-                        className="border-slate-600 text-slate-300 cursor-pointer"
+                        className="border-slate-600 text-slate-900 dark:text-slate-100 cursor-pointer"
                         disabled={uploadingLogo}
                         onClick={(e) => {
                           e.preventDefault();
@@ -2148,7 +2148,7 @@ export default function AdminUsers() {
                       <Button
                         type="button"
                         variant="outline"
-                        className="border-slate-600 text-slate-300 cursor-pointer"
+                        className="border-slate-600 text-slate-900 dark:text-slate-100 cursor-pointer"
                         disabled={uploadingFotoUsuario}
                         onClick={(e) => {
                           e.preventDefault();
@@ -2394,7 +2394,7 @@ export default function AdminUsers() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="border-slate-600 text-slate-300 cursor-pointer"
+                      className="border-slate-600 text-slate-900 dark:text-slate-100 cursor-pointer"
                       disabled={uploadingFotoUsuario}
                       onClick={(e) => {
                         e.preventDefault();
