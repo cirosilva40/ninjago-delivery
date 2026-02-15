@@ -70,7 +70,7 @@ export default function AcessoUsuario() {
       if (estab.eh_senha_temporaria) {
         navigate(createPageUrl('CriarNovaSenha'));
       } else {
-        navigate(createPageUrl('Dashboard'));
+        navigate(createPageUrl('NovoPedido'));
       }
     } catch (error) {
       setError('Erro ao fazer login. Verifique suas credenciais.');
@@ -155,7 +155,7 @@ export default function AcessoUsuario() {
       setSuccess('Senha criada com sucesso! Fazendo login...');
       
       setTimeout(() => {
-        navigate(createPageUrl('Dashboard'));
+        navigate(createPageUrl('NovoPedido'));
       }, 1500);
     } catch (error) {
       setError('Erro ao criar senha. Tente novamente.');
