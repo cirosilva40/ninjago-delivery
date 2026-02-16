@@ -192,7 +192,7 @@ export default function Layout({ children, currentPageName }) {
                       ? 'bg-gradient-to-r from-orange-500/20 to-red-500/10 text-orange-500 border border-orange-500/20' 
                       : isLight 
                         ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                        : 'text-slate-100 hover:text-white hover:bg-white/5'
                     }
                   `}
                 >
