@@ -48,7 +48,6 @@ import { Toaster } from 'sonner';
 import { useMercadoPago, criarTokenCartao } from '../components/cliente/MercadoPagoHelper';
 
 export default function CardapioCliente() {
-  const { mp, isLoaded: mpLoaded } = useMercadoPago(null); // será reatribuído abaixo
   const navigate = useNavigate();
   
   // Inicializar pizzariaId da URL imediatamente
