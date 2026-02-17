@@ -74,7 +74,13 @@ export default function NovoPedido() {
     const loadUser = async () => {
       const userData = await base44.auth.me();
       setUser(userData);
-      setPizzariaId(userData.pizzaria_id || 'default');
+      const estabelecimentoLogado = localStorage.getItem('estabelecimento_logado');
+      if (estabelecimentoLogado) {
+        const estab = JSON.parse(estabelecimentoLogado);
+        setPizzariaId(estab.id);
+      } else {
+        setPizzariaId(userData.pizzaria_id || null);
+      }
     };
     loadUser();
   }, []);
