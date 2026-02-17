@@ -517,9 +517,56 @@ Retorne a rota otimizada com as seguintes informações.
           </Card>
         </div>
 
-        {/* Entregas List */}
+        {/* Painel lateral */}
         <div className={viewMode === 'list' ? 'lg:col-span-3' : ''}>
           <div className="space-y-4">
+            {/* Campo de busca de motoboy */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <Input
+                value={buscaMotoboy}
+                onChange={(e) => setBuscaMotoboy(e.target.value)}
+                placeholder="Buscar motoboy..."
+                className="pl-9 w-full bg-white/5 border-white/10 text-white placeholder:text-slate-500 text-sm"
+              />
+              {buscaMotoboy && (
+                <div className="absolute top-full mt-1 left-0 right-0 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden">
+                  {entregadores.filter(e =>
+                    e.nome?.toLowerCase().includes(buscaMotoboy.toLowerCase()) ||
+                    e.telefone?.includes(buscaMotoboy)
+                  ).length === 0 ? (
+                    <div className="p-3 text-sm text-slate-400 text-center">Nenhum motoboy encontrado</div>
+                  ) : (
+                    entregadores.filter(e =>
+                      e.nome?.toLowerCase().includes(buscaMotoboy.toLowerCase()) ||
+                      e.telefone?.includes(buscaMotoboy)
+                    ).map((motoboy) => (
+                      <button
+                        key={motoboy.id}
+                        onClick={() => {
+                          setSelectedEntregadorId(motoboy.id);
+                          setBuscaMotoboy('');
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors text-left border-b border-slate-700/50 last:border-0"
+                      >
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center flex-shrink-0">
+                          <span className="text-white font-bold text-sm">{motoboy.nome?.charAt(0)}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white text-sm font-medium truncate">{motoboy.nome}</p>
+                          <p className="text-slate-400 text-xs capitalize">{motoboy.status?.replace('_', ' ')}</p>
+                        </div>
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                          motoboy.status === 'disponivel' ? 'bg-emerald-400' :
+                          motoboy.status === 'em_entrega' ? 'bg-purple-400' : 'bg-slate-500'
+                        }`} />
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               <Package className="w-5 h-5 text-orange-500" />
               Entregas Ativas
