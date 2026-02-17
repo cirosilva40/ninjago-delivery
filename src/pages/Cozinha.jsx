@@ -28,25 +28,28 @@ const statusConfig = {
 
 export default function Cozinha() {
   const [pizzariaId, setPizzariaId] = useState(null);
+  const [pizzariaIdCarregado, setPizzariaIdCarregado] = useState(false);
 
   React.useEffect(() => {
     const estabelecimentoLogado = localStorage.getItem('estabelecimento_logado');
     if (estabelecimentoLogado) {
-      const estab = JSON.parse(estabelecimentoLogado);
-      setPizzariaId(estab.id);
+      try {
+        const estab = JSON.parse(estabelecimentoLogado);
+        setPizzariaId(estab.id);
+      } catch (e) {}
     }
+    setPizzariaIdCarregado(true);
   }, []);
 
   const { data: pedidos = [], refetch } = useQuery({
     queryKey: ['pedidos-cozinha', pizzariaId],
     queryFn: () => {
-      if (!pizzariaId) return [];
-      return base44.entities.Pedido.filter({
-        pizzaria_id: pizzariaId,
-        status: { $in: ['em_preparo', 'pronto'] }
-      }, '-created_date', 100);
+      const filtro = pizzariaId
+        ? { pizzaria_id: pizzariaId, status: { $in: ['em_preparo', 'pronto'] } }
+        : { status: { $in: ['em_preparo', 'pronto'] } };
+      return base44.entities.Pedido.filter(filtro, '-created_date', 100);
     },
-    enabled: !!pizzariaId,
+    enabled: pizzariaIdCarregado,
     refetchInterval: 5000,
   });
 
