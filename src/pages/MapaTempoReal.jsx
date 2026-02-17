@@ -666,6 +666,21 @@ Retorne a rota otimizada com as seguintes informações.
                           <Bike className="w-3.5 h-3.5 text-white" />
                         </div>
                         <p className="text-sm font-medium text-white flex-1 truncate">{entregador.nome}</p>
+                        <button
+                          title="Recalcular rota do entregador"
+                          onClick={async () => {
+                            toast.loading('Recalculando rota...');
+                            try {
+                              await base44.functions.invoke('otimizarRotaEntregador', { entregador_id: entregador.id });
+                              toast.success(`Rota de ${entregador.nome} recalculada!`);
+                            } catch(e) {
+                              toast.error('Erro ao recalcular rota');
+                            }
+                          }}
+                          className="p-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/40 text-blue-400"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                        </button>
                         <a href={`tel:${entregador.telefone}`} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20">
                           <Phone className="w-3.5 h-3.5 text-white" />
                         </a>
