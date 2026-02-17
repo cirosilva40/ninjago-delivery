@@ -90,9 +90,14 @@ export default function AppEntregador() {
   const [telefoneLogin, setTelefoneLogin] = useState('');
   const [loginError, setLoginError] = useState('');
   const queryClient = useQueryClient();
+  const entregasPendentesAnterioresRef = React.useRef([]);
 
   useEffect(() => {
     loadUser();
+    // Solicitar permissão de notificação ao carregar
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
   }, []);
 
   const loadUser = async () => {
