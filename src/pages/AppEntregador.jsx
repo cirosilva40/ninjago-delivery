@@ -103,12 +103,15 @@ export default function AppEntregador() {
   const loadUser = async () => {
     setCheckingAuth(true);
     try {
-      // Verificar se há entregador salvo localmente
       const entregadorSalvo = localStorage.getItem('entregador_logado');
       if (entregadorSalvo) {
-        const entregadorData = JSON.parse(entregadorSalvo);
-        setEntregador(entregadorData);
-        setUser({ email: entregadorData.email || entregadorData.telefone });
+        const entregadorLocal = JSON.parse(entregadorSalvo);
+        // Buscar dados atualizados do banco para garantir status correto
+        const entregadores = await base44.entities.Entregador.filter({ id: entregadorLocal.id });
+        const entregadorAtualizado = entregadores[0] || entregadorLocal;
+        localStorage.setItem('entregador_logado', JSON.stringify(entregadorAtualizado));
+        setEntregador(entregadorAtualizado);
+        setUser({ email: entregadorAtualizado.email || entregadorAtualizado.telefone });
       }
     } catch (e) {
       console.log('Erro ao carregar usuário');
