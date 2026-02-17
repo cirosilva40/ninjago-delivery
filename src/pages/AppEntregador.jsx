@@ -282,6 +282,7 @@ export default function AppEntregador() {
         updates.horario_aceite = new Date().toISOString();
         if (entregador?.id) {
           await base44.entities.Entregador.update(entregador.id, { status: 'em_entrega' });
+          setEntregador(prev => ({ ...prev, status: 'em_entrega' }));
         }
       } else if (newStatus === 'em_rota') {
         updates.horario_saida = new Date().toISOString();
