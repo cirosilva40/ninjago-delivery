@@ -422,10 +422,11 @@ Retorne a rota otimizada com as seguintes informações.
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Quando modo mapa: mapa (2 cols) + painel lateral (1 col) lado a lado */}
+      <div className={`grid gap-6 ${viewMode === 'map' ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
         {/* Mapa com OpenStreetMap */}
-        <div className={`${viewMode === 'map' ? 'lg:col-span-2' : 'hidden lg:block lg:col-span-2'}`}>
-          <Card className="overflow-hidden rounded-2xl bg-white/5 border-white/10 h-[600px] relative">
+        <div className={`${viewMode === 'map' ? 'lg:col-span-2' : 'hidden'}`}>
+          <Card className="overflow-hidden rounded-2xl bg-white/5 border-white/10 h-[600px]">
             <MapContainer
               center={[defaultCenter.lat, defaultCenter.lng]}
               zoom={13}
