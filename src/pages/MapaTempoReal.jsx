@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { GoogleMap, LoadScript, Marker, InfoWindow, Polyline } from '@react-google-maps/api';
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import { motion, AnimatePresence } from 'framer-motion';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import {
   MapPin,
   Bike,
@@ -30,109 +32,68 @@ import {
 import moment from 'moment';
 import { toast } from 'sonner';
 
-const mapContainerStyle = {
-  width: '100%',
-  height: '100%',
-};
+// Fix dos ícones do Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
-const mapOptions = {
-  disableDefaultUI: false,
-  zoomControl: true,
-  mapTypeControl: false,
-  scaleControl: true,
-  streetViewControl: false,
-  rotateControl: false,
-  fullscreenControl: true,
-  styles: [
-    {
-      "elementType": "geometry",
-      "stylers": [{ "color": "#242f3e" }]
-    },
-    {
-      "elementType": "labels.text.stroke",
-      "stylers": [{ "color": "#242f3e" }]
-    },
-    {
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#746855" }]
-    },
-    {
-      "featureType": "administrative.locality",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#d59563" }]
-    },
-    {
-      "featureType": "poi",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#d59563" }]
-    },
-    {
-      "featureType": "poi.park",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#263c3f" }]
-    },
-    {
-      "featureType": "poi.park",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#6b9a76" }]
-    },
-    {
-      "featureType": "road",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#38414e" }]
-    },
-    {
-      "featureType": "road",
-      "elementType": "geometry.stroke",
-      "stylers": [{ "color": "#212a37" }]
-    },
-    {
-      "featureType": "road",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#9ca5b3" }]
-    },
-    {
-      "featureType": "road.highway",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#746855" }]
-    },
-    {
-      "featureType": "road.highway",
-      "elementType": "geometry.stroke",
-      "stylers": [{ "color": "#1f2835" }]
-    },
-    {
-      "featureType": "road.highway",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#f3d19c" }]
-    },
-    {
-      "featureType": "transit",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#2f3948" }]
-    },
-    {
-      "featureType": "transit.station",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#d59563" }]
-    },
-    {
-      "featureType": "water",
-      "elementType": "geometry",
-      "stylers": [{ "color": "#17263c" }]
-    },
-    {
-      "featureType": "water",
-      "elementType": "labels.text.fill",
-      "stylers": [{ "color": "#515c6d" }]
-    },
-    {
-      "featureType": "water",
-      "elementType": "labels.text.stroke",
-      "stylers": [{ "color": "#17263c" }]
+// Ícones customizados
+const pizzariaIcon = L.divIcon({
+  className: 'custom-marker',
+  html: `<div style="background: linear-gradient(135deg, #f97316 0%, #ef4444 100%); width: 40px; height: 40px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><div style="transform: rotate(45deg); font-size: 20px;">🍕</div></div>`,
+  iconSize: [40, 40],
+  iconAnchor: [20, 40],
+});
+
+const entregadorIcon = L.divIcon({
+  className: 'custom-marker',
+  html: `<div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 36px; height: 36px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><div style="font-size: 18px;">🚴</div></div>`,
+  iconSize: [36, 36],
+  iconAnchor: [18, 36],
+});
+
+const entregaIcon = L.divIcon({
+  className: 'custom-marker',
+  html: `<div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><div style="font-size: 16px;">📦</div></div>`,
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+});
+
+// Componente para ajustar bounds do mapa
+function MapUpdater({ entregadores, entregas, pizzaria }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (map && (entregadores.length > 0 || entregas.length > 0)) {
+      const bounds = L.latLngBounds([]);
+      
+      if (pizzaria?.latitude && pizzaria?.longitude) {
+        bounds.extend([pizzaria.latitude, pizzaria.longitude]);
+      }
+      
+      entregadores.forEach(e => {
+        if (e.latitude && e.longitude) {
+          bounds.extend([e.latitude, e.longitude]);
+        }
+      });
+      
+      entregas.forEach(e => {
+        if (e.latitude_destino && e.longitude_destino) {
+          bounds.extend([e.latitude_destino, e.longitude_destino]);
+        }
+      });
+      
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
     }
-  ]
-};
+  }, [map, entregadores, entregas, pizzaria]);
+  
+  return null;
+}
 
 const statusConfig = {
   pendente: { label: 'Pendente', color: 'bg-yellow-500' },
@@ -151,7 +112,7 @@ export default function MapaTempoReal() {
   const [showAtribuirRotaModal, setShowAtribuirRotaModal] = useState(false);
   const [atribuindoRota, setAtribuindoRota] = useState(false);
   const [selectedEntregadorId, setSelectedEntregadorId] = useState(null);
-  const [map, setMap] = useState(null);
+
   const [horarioInicio, setHorarioInicio] = useState(() => {
     const now = moment();
     return now.format('HH:mm');
@@ -192,46 +153,7 @@ export default function MapaTempoReal() {
     refetchInterval: 10000,
   });
 
-  // Auto-fit bounds quando houver mudanças
-  useEffect(() => {
-    if (map && entregadores.length > 0 && window.google?.maps) {
-      const bounds = new window.google.maps.LatLngBounds();
-      
-      // Add pizzaria
-      if (pizzaria?.latitude && pizzaria?.longitude) {
-        bounds.extend({ lat: pizzaria.latitude, lng: pizzaria.longitude });
-      }
-      
-      // Add entregadores
-      entregadores.forEach(e => {
-        if (e.latitude && e.longitude) {
-          bounds.extend({ lat: e.latitude, lng: e.longitude });
-        }
-      });
-      
-      // Add entregas
-      entregas.forEach(e => {
-        if (e.latitude_destino && e.longitude_destino) {
-          bounds.extend({ lat: e.latitude_destino, lng: e.longitude_destino });
-        }
-      });
-      
-      if (!bounds.isEmpty() && !selectedEntregadorId) {
-        map.fitBounds(bounds, 50);
-      }
-    }
-  }, [map, entregadores, entregas, pizzaria, selectedEntregadorId]);
 
-  // Centralizar em entregador selecionado
-  useEffect(() => {
-    if (map && selectedEntregadorId) {
-      const entregador = entregadores.find(e => e.id === selectedEntregadorId);
-      if (entregador?.latitude && entregador?.longitude) {
-        map.panTo({ lat: entregador.latitude, lng: entregador.longitude });
-        map.setZoom(16);
-      }
-    }
-  }, [selectedEntregadorId, map, entregadores]);
 
   const openGoogleMaps = (lat, lng) => {
     const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
@@ -357,7 +279,7 @@ Retorne a rota otimizada com as seguintes informações.
     window.open(url, '_blank');
   };
 
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+
 
   return (
     <div className="space-y-6">
@@ -497,123 +419,97 @@ Retorne a rota otimizada com as seguintes informações.
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Google Map */}
+        {/* Mapa com OpenStreetMap */}
         <div className={`${viewMode === 'map' ? 'lg:col-span-2' : 'hidden lg:block lg:col-span-2'}`}>
           <Card className="overflow-hidden rounded-2xl bg-white/5 border-white/10 h-[600px]">
-            {apiKey ? (
-              <LoadScript googleMapsApiKey={apiKey}>
-                <GoogleMap
-                  mapContainerStyle={mapContainerStyle}
-                  center={defaultCenter}
-                  zoom={13}
-                  options={mapOptions}
-                  onLoad={setMap}
+            <MapContainer
+              center={[defaultCenter.lat, defaultCenter.lng]}
+              zoom={13}
+              className="w-full h-full"
+              zoomControl={true}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              
+              <MapUpdater entregadores={entregadores} entregas={entregas} pizzaria={pizzaria} />
+              
+              {/* Marcador da Pizzaria */}
+              {pizzaria?.latitude && pizzaria?.longitude && (
+                <Marker position={[pizzaria.latitude, pizzaria.longitude]} icon={pizzariaIcon}>
+                  <Popup>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-gray-900">🚀 {pizzaria?.nome || 'NinjaGO Delivery'}</div>
+                      <p className="text-sm text-gray-600">Ponto de origem</p>
+                      {pizzaria?.endereco && (
+                        <p className="text-xs text-gray-500 mt-1">{pizzaria.endereco}</p>
+                      )}
+                    </div>
+                  </Popup>
+                </Marker>
+              )}
+              
+              {/* Marcadores dos Entregadores */}
+              {entregadores.filter(e => e.latitude && e.longitude).map((entregador) => (
+                <Marker 
+                  key={entregador.id} 
+                  position={[entregador.latitude, entregador.longitude]} 
+                  icon={entregadorIcon}
                 >
-                  {/* Pizzaria Marker - Simples */}
-                  {pizzaria?.latitude && pizzaria?.longitude && (
-                    <Marker
-                      position={{ lat: pizzaria.latitude, lng: pizzaria.longitude }}
-                      title={pizzaria?.nome || 'NinjaGO Delivery'}
-                      onClick={() => setSelectedPizzaria(true)}
-                    />
-                  )}
-                  
-                  {selectedPizzaria && pizzaria?.latitude && pizzaria?.longitude && (
-                    <InfoWindow
-                      position={{ lat: pizzaria.latitude, lng: pizzaria.longitude }}
-                      onCloseClick={() => setSelectedPizzaria(false)}
-                    >
-                      <div className="p-2">
-                        <p className="font-bold">🚀 {pizzaria?.nome || 'NinjaGO Delivery'}</p>
-                        <p className="text-sm text-gray-600">Ponto de origem</p>
-                        {pizzaria?.endereco && (
-                          <p className="text-xs text-gray-500">{pizzaria.endereco}</p>
-                        )}
+                  <Popup>
+                    <div className="min-w-[200px]">
+                      <p className="font-bold text-lg text-gray-900">{entregador.nome}</p>
+                      <p className="text-sm text-gray-600 capitalize">{entregador.veiculo}</p>
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${statusConfig[entregador.status]?.color || 'bg-gray-400'}`} />
+                        <span className="text-sm capitalize">{entregador.status?.replace('_', ' ')}</span>
                       </div>
-                    </InfoWindow>
-                  )}
-
-                  {/* Entregadores Markers - Simples */}
-                  {entregadores.filter(e => e.latitude && e.longitude).map((entregador) => (
-                    <Marker
-                      key={entregador.id}
-                      position={{ lat: entregador.latitude, lng: entregador.longitude }}
-                      title={entregador.nome}
-                      onClick={() => setSelectedEntregador(entregador)}
-                    />
-                  ))}
-
-                  {selectedEntregador?.latitude && selectedEntregador?.longitude && (
-                    <InfoWindow
-                      position={{ lat: selectedEntregador.latitude, lng: selectedEntregador.longitude }}
-                      onCloseClick={() => setSelectedEntregador(null)}
-                    >
-                      <div className="p-2 min-w-[200px]">
-                        <p className="font-bold text-lg">{selectedEntregador.nome}</p>
-                        <p className="text-sm text-gray-600">{selectedEntregador.veiculo}</p>
-                        <div className="mt-2 flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${statusConfig[selectedEntregador.status]?.color || 'bg-gray-400'}`} />
-                          <span className="text-sm capitalize">{selectedEntregador.status?.replace('_', ' ')}</span>
-                        </div>
-                        <a 
-                          href={`tel:${selectedEntregador.telefone}`}
-                          className="mt-2 block text-blue-600 text-sm"
+                      <a 
+                        href={`tel:${entregador.telefone}`}
+                        className="mt-2 block text-blue-600 text-sm hover:underline"
+                      >
+                        📞 {entregador.telefone}
+                      </a>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+              
+              {/* Marcadores das Entregas */}
+              {entregas.filter(e => e.latitude_destino && e.longitude_destino).map((entrega) => (
+                <Marker 
+                  key={entrega.id} 
+                  position={[entrega.latitude_destino, entrega.longitude_destino]} 
+                  icon={entregaIcon}
+                >
+                  <Popup>
+                    <div className="min-w-[220px]">
+                      <p className="font-bold text-gray-900">Pedido #{entrega.numero_pedido}</p>
+                      <p className="text-sm text-gray-700">{entrega.cliente_nome}</p>
+                      <p className="text-sm text-gray-600">{entrega.endereco_completo}</p>
+                      <p className="text-lg font-bold text-green-600 mt-2">
+                        R$ {entrega.valor_pedido?.toFixed(2)}
+                      </p>
+                      <div className="mt-2 flex gap-2">
+                        <button 
+                          onClick={() => openGoogleMaps(entrega.latitude_destino, entrega.longitude_destino)}
+                          className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
                         >
-                          📞 {selectedEntregador.telefone}
-                        </a>
+                          Google Maps
+                        </button>
+                        <button 
+                          onClick={() => openWaze(entrega.latitude_destino, entrega.longitude_destino)}
+                          className="text-xs bg-cyan-500 text-white px-2 py-1 rounded hover:bg-cyan-600"
+                        >
+                          Waze
+                        </button>
                       </div>
-                    </InfoWindow>
-                  )}
-
-                  {/* Entregas Markers - Simples */}
-                  {entregas.filter(e => e.latitude_destino && e.longitude_destino).map((entrega) => (
-                    <Marker
-                      key={entrega.id}
-                      position={{ lat: entrega.latitude_destino, lng: entrega.longitude_destino }}
-                      title={`Pedido #${entrega.numero_pedido}`}
-                      onClick={() => setSelectedEntrega(entrega)}
-                    />
-                  ))}
-
-                  {selectedEntrega?.latitude_destino && selectedEntrega?.longitude_destino && (
-                    <InfoWindow
-                      position={{ lat: selectedEntrega.latitude_destino, lng: selectedEntrega.longitude_destino }}
-                      onCloseClick={() => setSelectedEntrega(null)}
-                    >
-                      <div className="p-2 min-w-[220px]">
-                        <p className="font-bold">Pedido #{selectedEntrega.numero_pedido}</p>
-                        <p className="text-sm">{selectedEntrega.cliente_nome}</p>
-                        <p className="text-sm text-gray-600">{selectedEntrega.endereco_completo}</p>
-                        <p className="text-lg font-bold text-green-600 mt-2">
-                          R$ {selectedEntrega.valor_pedido?.toFixed(2)}
-                        </p>
-                        <div className="mt-2 flex gap-2">
-                          <button 
-                            onClick={() => openGoogleMaps(selectedEntrega.latitude_destino, selectedEntrega.longitude_destino)}
-                            className="text-xs bg-blue-500 text-white px-2 py-1 rounded"
-                          >
-                            Google Maps
-                          </button>
-                          <button 
-                            onClick={() => openWaze(selectedEntrega.latitude_destino, selectedEntrega.longitude_destino)}
-                            className="text-xs bg-cyan-500 text-white px-2 py-1 rounded"
-                          >
-                            Waze
-                          </button>
-                        </div>
-                      </div>
-                    </InfoWindow>
-                  )}
-                </GoogleMap>
-              </LoadScript>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center p-6">
-                  <MapIcon className="w-16 h-16 mx-auto text-slate-600 mb-4" />
-                  <p className="text-slate-400">Configure a chave da API do Google Maps</p>
-                </div>
-              </div>
-            )}
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
           </Card>
         </div>
 
