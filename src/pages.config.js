@@ -74,6 +74,8 @@ import PerfilCliente from './pages/PerfilCliente';
 import Produtos from './pages/Produtos';
 import ProgramaFidelidade from './pages/ProgramaFidelidade';
 import Relatorios from './pages/Relatorios';
+import PagamentoSucesso from './pages/PagamentoSucesso';
+import PagamentoFalha from './pages/PagamentoFalha';
 import __Layout from './Layout.jsx';
 
 
@@ -105,6 +107,8 @@ export const PAGES = {
     "Produtos": Produtos,
     "ProgramaFidelidade": ProgramaFidelidade,
     "Relatorios": Relatorios,
+    "PagamentoSucesso": PagamentoSucesso,
+    "PagamentoFalha": PagamentoFalha,
 }
 
 export const pagesConfig = {

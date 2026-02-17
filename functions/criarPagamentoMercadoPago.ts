@@ -3,8 +3,6 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
-    // Valida se há um usuário autenticado ou cliente
     const payload = await req.json();
     const { 
       pedidoId,
@@ -13,7 +11,7 @@ Deno.serve(async (req) => {
       clienteNome,
       clienteTelefone,
       clienteEmail,
-      metodoPagamento // 'pix', 'credit_card', 'debit_card'
+      itens = []
     } = payload;
 
     if (!pedidoId || !valorTotal || !pizzariaId) {
@@ -23,68 +21,60 @@ Deno.serve(async (req) => {
     }
 
     const accessToken = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN');
-    
     if (!accessToken) {
-      return Response.json({ 
-        error: 'Token do Mercado Pago não configurado' 
-      }, { status: 500 });
+      return Response.json({ error: 'Token do Mercado Pago não configurado' }, { status: 500 });
     }
 
-    // Busca dados da pizzaria
     const pizzaria = await base44.asServiceRole.entities.Pizzaria.get(pizzariaId);
-    
     if (!pizzaria) {
       return Response.json({ error: 'Pizzaria não encontrada' }, { status: 404 });
     }
 
-    // Configurar métodos de pagamento aceitos
-    const paymentMethods = {};
-    if (metodoPagamento === 'pix') {
-      paymentMethods.excluded_payment_methods = [{ id: 'visa' }, { id: 'master' }];
-      paymentMethods.excluded_payment_types = [{ id: 'credit_card' }, { id: 'debit_card' }, { id: 'ticket' }];
-      paymentMethods.installments = 1;
-    } else if (metodoPagamento === 'credit_card') {
-      paymentMethods.excluded_payment_types = [{ id: 'ticket' }, { id: 'bank_transfer' }, { id: 'atm' }];
-      paymentMethods.installments = 12;
-    } else if (metodoPagamento === 'debit_card') {
-      paymentMethods.excluded_payment_types = [{ id: 'credit_card' }, { id: 'ticket' }, { id: 'bank_transfer' }];
-      paymentMethods.installments = 1;
-    }
-
-    // Cria a preferência de pagamento no Mercado Pago
-    const preference = {
-      items: [
-        {
-          title: `Pedido #${pedidoId} - ${pizzaria.nome}`,
-          quantity: 1,
-          unit_price: valorTotal,
+    // Montar itens da preferência
+    const preferenceItems = itens.length > 0
+      ? itens.map(item => ({
+          title: item.nome,
+          quantity: item.quantidade,
+          unit_price: parseFloat((item.preco_unitario || item.preco || 0).toFixed(2)),
           currency_id: 'BRL'
-        }
-      ],
+        }))
+      : [{
+          title: `Pedido - ${pizzaria.nome_exibicao_cliente || pizzaria.nome}`,
+          quantity: 1,
+          unit_price: parseFloat(valorTotal.toFixed(2)),
+          currency_id: 'BRL'
+        }];
+
+    // URL base do app
+    const origin = req.headers.get('origin') || 'https://app.base44.com';
+
+    // Preferência de pagamento - Checkout Pro
+    const preference = {
+      items: preferenceItems,
       payer: {
-        name: clienteNome,
-        phone: {
-          number: clienteTelefone
-        },
-        email: clienteEmail || `${clienteTelefone}@cliente.com`
+        name: clienteNome || 'Cliente',
+        email: clienteEmail || `${clienteTelefone}@cliente.com`,
+        phone: clienteTelefone ? { number: clienteTelefone } : undefined
       },
-      payment_methods: paymentMethods,
       back_urls: {
-        success: `${req.headers.get('origin')}/acompanhar-pedido?pedidoId=${pedidoId}&pizzariaId=${pizzariaId}&status=success`,
-        failure: `${req.headers.get('origin')}/cardapio-cliente?pizzariaId=${pizzariaId}&status=failure`,
-        pending: `${req.headers.get('origin')}/acompanhar-pedido?pedidoId=${pedidoId}&pizzariaId=${pizzariaId}&status=pending`
+        success: `${origin}${import.meta.url.includes('localhost') ? '' : ''}/PagamentoSucesso?pedidoId=${pedidoId}&pizzariaId=${pizzariaId}`,
+        failure: `${origin}/PagamentoFalha?pedidoId=${pedidoId}&pizzariaId=${pizzariaId}`,
+        pending: `${origin}/PagamentoSucesso?pedidoId=${pedidoId}&pizzariaId=${pizzariaId}&status=pending`
       },
       auto_return: 'approved',
       external_reference: pedidoId,
-      notification_url: `${req.headers.get('origin')}/webhook-mercadopago`,
-      statement_descriptor: pizzaria.nome_exibicao_cliente || pizzaria.nome
+      notification_url: `${origin}/webhookMercadoPago`,
+      statement_descriptor: (pizzaria.nome_exibicao_cliente || pizzaria.nome || 'Delivery').substring(0, 22),
+      expires: true,
+      expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString() // expira em 30min
     };
 
     const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'X-Idempotency-Key': pedidoId
       },
       body: JSON.stringify(preference)
     });
@@ -100,16 +90,20 @@ Deno.serve(async (req) => {
 
     const data = await response.json();
 
-    // Retorna o link de pagamento
+    // Salvar preference_id no pedido
+    await base44.asServiceRole.entities.Pedido.update(pedidoId, {
+      observacoes_financeiras: `MP Preference ID: ${data.id}`
+    });
+
     return Response.json({
       success: true,
-      init_point: data.init_point, // Link para desktop
-      sandbox_init_point: data.sandbox_init_point, // Link para sandbox (testes)
+      init_point: data.init_point,
+      sandbox_init_point: data.sandbox_init_point,
       preference_id: data.id
     });
 
   } catch (error) {
-    console.error('Erro ao processar pagamento:', error);
+    console.error('Erro ao criar preferência de pagamento:', error);
     return Response.json({ 
       error: 'Erro interno ao processar pagamento',
       details: error.message 
