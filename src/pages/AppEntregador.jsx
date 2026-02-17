@@ -199,6 +199,20 @@ export default function AppEntregador() {
   const entregasConcluidas = getEntregasFiltradas();
   const historicoCompleto = entregas.filter(e => e.status === 'entregue');
 
+  // Buscar última notificação de rota otimizada
+  const { data: notificacoesRota = [] } = useQuery({
+    queryKey: ['notificacoes-rota', entregador?.id],
+    queryFn: () => entregador?.id
+      ? base44.entities.Notificacao.filter({
+          destinatario_id: entregador.id,
+          tipo: 'mensagem',
+        }, '-created_date', 5)
+      : Promise.resolve([]),
+    enabled: !!entregador?.id,
+    refetchInterval: 8000,
+  });
+  const rotaNotificacao = notificacoesRota.find(n => n.titulo?.includes('Rota'));
+
   // Calcular estatísticas
   const calcularEstatisticas = () => {
     const hoje = moment().startOf('day');
