@@ -960,6 +960,60 @@ export default function Configuracoes() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Configuração de Pagamento Online */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-emerald-500" />
+                Recebimento de Pagamentos Online
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                Configure sua conta do Mercado Pago para receber pagamentos online dos clientes
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-start gap-3">
+                <span className="text-xl">💡</span>
+                <div className="text-sm text-blue-300">
+                  <p className="font-medium mb-1">Como funciona?</p>
+                  <p className="text-slate-400">Os clientes pagam online no cardápio e o dinheiro vai diretamente para sua conta do Mercado Pago. Acesse <a href="https://www.mercadopago.com.br/developers/pt/docs" target="_blank" rel="noreferrer" className="text-blue-400 underline">mercadopago.com.br/developers</a> para obter suas chaves.</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-slate-400">Chave Pública (Public Key)</Label>
+                  <Input
+                    value={pizzaria.configuracoes?.mp_public_key || ''}
+                    onChange={(e) => updateConfig('mp_public_key', e.target.value)}
+                    className="bg-slate-800 border-slate-700 text-white font-mono text-sm"
+                    placeholder="APP_USR-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Usada no frontend para inicializar o checkout</p>
+                </div>
+
+                <div>
+                  <Label className="text-slate-400">Access Token (Chave Privada)</Label>
+                  <Input
+                    type="password"
+                    value={pizzaria.configuracoes?.mp_access_token || ''}
+                    onChange={(e) => updateConfig('mp_access_token', e.target.value)}
+                    className="bg-slate-800 border-slate-700 text-white font-mono text-sm"
+                    placeholder="APP_USR-xxxxxxxxxxxx-xxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx-xxxxxxxxx"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Chave secreta para processar pagamentos no servidor</p>
+                </div>
+              </div>
+
+              {(pizzaria.configuracoes?.mp_public_key || pizzaria.configuracoes?.mp_access_token) && (
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2">
+                  <span className="text-emerald-400">✓</span>
+                  <p className="text-sm text-emerald-400">Chaves configuradas — pagamentos online habilitados</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Tab Notificações */}
