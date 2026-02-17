@@ -65,6 +65,13 @@ const entregaIcon = L.divIcon({
   iconAnchor: [16, 32],
 });
 
+const clienteIcon = L.divIcon({
+  className: 'custom-marker',
+  html: `<div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center;"><div style="font-size: 16px;">🏠</div></div>`,
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+});
+
 // Componente para ajustar bounds do mapa
 function MapUpdater({ entregadores, entregas, pizzaria }) {
   const map = useMap();
