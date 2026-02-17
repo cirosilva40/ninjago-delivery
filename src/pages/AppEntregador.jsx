@@ -56,6 +56,7 @@ import {
 } from '@/components/ui/select';
 import moment from 'moment';
 import 'moment/locale/pt-br';
+import RotaOtimizadaCard from '@/components/entregador/RotaOtimizadaCard';
 moment.locale('pt-br');
 
 const statusConfig = {
