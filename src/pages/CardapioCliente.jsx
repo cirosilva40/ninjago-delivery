@@ -62,7 +62,6 @@ export default function CardapioCliente() {
   
   const [pizzariaId, setPizzariaId] = useState(getInitialPizzariaId);
   const [mpPublicKey, setMpPublicKey] = useState(null);
-  const { mp, isLoaded: mpLoaded } = useMercadoPago(mpPublicKey);
   const [carrinho, setCarrinho] = useState([]);
   const [categoriaFiltro, setCategoriaFiltro] = useState('todos');
   const [busca, setBusca] = useState('');
