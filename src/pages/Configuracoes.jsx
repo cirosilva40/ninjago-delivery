@@ -330,15 +330,48 @@ export default function Configuracoes() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-slate-400">Endereço Completo</Label>
-                  <Input
-                    value={pizzaria.endereco}
-                    onChange={(e) => setPizzaria({ ...pizzaria, endereco: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="Rua, número"
-                  />
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-2">
+                    <Label className="text-slate-400">Rua/Avenida</Label>
+                    <Input
+                      value={pizzaria.endereco}
+                      onChange={(e) => setPizzaria({ ...pizzaria, endereco: e.target.value })}
+                      className="bg-slate-800 border-slate-700 text-white"
+                      placeholder="Ex: Rua das Flores"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-slate-400">Número</Label>
+                    <Input
+                      value={pizzaria.numero || ''}
+                      onChange={(e) => setPizzaria({ ...pizzaria, numero: e.target.value })}
+                      className="bg-slate-800 border-slate-700 text-white"
+                      placeholder="Ex: 123"
+                    />
+                  </div>
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-slate-400">Bairro</Label>
+                    <Input
+                      value={pizzaria.bairro || ''}
+                      onChange={(e) => setPizzaria({ ...pizzaria, bairro: e.target.value })}
+                      className="bg-slate-800 border-slate-700 text-white"
+                      placeholder="Ex: Centro"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-slate-400">Complemento (opcional)</Label>
+                    <Input
+                      value={pizzaria.complemento || ''}
+                      onChange={(e) => setPizzaria({ ...pizzaria, complemento: e.target.value })}
+                      className="bg-slate-800 border-slate-700 text-white"
+                      placeholder="Ex: Sala 2"
+                    />
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <Label className="text-slate-400">Cidade</Label>
@@ -378,7 +411,7 @@ export default function Configuracoes() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-slate-400">CEP</Label>
+                   <Label className="text-slate-400">CEP</Label>
                     <CepInput
                       value={pizzaria.cep}
                       onChange={(e) => setPizzaria({ ...pizzaria, cep: e.target.value })}
@@ -397,7 +430,7 @@ export default function Configuracoes() {
                     
                     setLoading(true);
                     try {
-                      const enderecoCompleto = `${pizzaria.endereco}, ${pizzaria.cidade} - ${pizzaria.estado}, ${pizzaria.cep}`;
+                      const enderecoCompleto = `${pizzaria.endereco}${pizzaria.numero ? ', ' + pizzaria.numero : ''} - ${pizzaria.bairro || ''}, ${pizzaria.cidade} - ${pizzaria.estado}, ${pizzaria.cep}`;
                       const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(enderecoCompleto)}&format=json&limit=1`);
                       const data = await response.json();
                       
