@@ -1714,10 +1714,7 @@ export default function CardapioCliente() {
                             alert('Selecione uma forma de pagamento');
                             return;
                           }
-                          if (formCliente.forma_pagamento === 'online' && !metodoPagamentoOnline) {
-                            alert('Selecione o método de pagamento online (PIX, Crédito ou Débito)');
-                            return;
-                          }
+
                           setCheckoutStep(3);
                         }}
                         className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
