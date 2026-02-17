@@ -45,6 +45,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import MapaRaioEntrega from '@/components/configuracoes/MapaRaioEntrega';
+import TestarMercadoPago from '@/components/configuracoes/TestarMercadoPago';
 import { createPageUrl } from '@/utils';
 
 export default function Configuracoes() {
