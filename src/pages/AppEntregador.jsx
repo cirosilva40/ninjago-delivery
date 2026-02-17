@@ -929,16 +929,30 @@ export default function AppEntregador() {
                 <MessageCircle className="w-5 h-5 text-blue-400" />
                 Suporte
               </h3>
-              <a 
-                href={`tel:${pizzaria?.[0]?.telefone || ''}`}
-                className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <Phone className="w-5 h-5 text-emerald-400" />
-                  <span className="text-white">Ligar para Pizzaria</span>
-                </div>
-                <span className="text-slate-400">{pizzaria?.[0]?.telefone}</span>
-              </a>
+              <div className="space-y-2">
+                <a 
+                  href={`tel:${pizzaria?.[0]?.telefone || ''}`}
+                  className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-5 h-5 text-emerald-400" />
+                    <span className="text-white">Ligar para Suporte</span>
+                  </div>
+                  <span className="text-slate-400">{pizzaria?.[0]?.telefone}</span>
+                </a>
+                <a 
+                  href={`https://wa.me/55${(pizzaria?.[0]?.telefone || '').replace(/\D/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 transition-all border border-emerald-500/20"
+                >
+                  <div className="flex items-center gap-3">
+                    <MessageCircle className="w-5 h-5 text-emerald-400" />
+                    <span className="text-white">WhatsApp Suporte</span>
+                  </div>
+                  <span className="text-slate-400">{pizzaria?.[0]?.telefone}</span>
+                </a>
+              </div>
             </Card>
 
             {/* Logout */}
