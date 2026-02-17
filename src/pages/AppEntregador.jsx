@@ -241,6 +241,9 @@ export default function AppEntregador() {
 
   const stats = calcularEstatisticas();
 
+  // Rastreamento GPS em tempo real
+  useGeoTracking(entregador);
+
   const updateStatus = async (entregaId, newStatus, dadosExtras = {}) => {
     setLoading(true);
     try {
