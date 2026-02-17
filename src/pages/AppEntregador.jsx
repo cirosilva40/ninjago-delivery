@@ -202,6 +202,29 @@ export default function AppEntregador() {
   };
 
   const entregasPendentes = entregas.filter(e => e.status === 'pendente');
+
+  // Notificação push quando chegar nova entrega pendente
+  useEffect(() => {
+    if (!entregasPendentes.length) {
+      entregasPendentesAnterioresRef.current = entregasPendentes;
+      return;
+    }
+    const idsAnteriores = entregasPendentesAnterioresRef.current.map(e => e.id);
+    const novasEntregas = entregasPendentes.filter(e => !idsAnteriores.includes(e.id));
+
+    if (novasEntregas.length > 0 && 'Notification' in window && Notification.permission === 'granted') {
+      novasEntregas.forEach(entrega => {
+        new Notification('🚴 Nova Entrega!', {
+          body: `Pedido #${entrega.numero_pedido} - ${entrega.cliente_nome}\n${entrega.bairro || entrega.endereco_completo}\nR$ ${entrega.valor_pedido?.toFixed(2)}`,
+          icon: '/icon.png',
+          badge: '/icon.png',
+          tag: `entrega-${entrega.id}`,
+          requireInteraction: true,
+        });
+      });
+    }
+    entregasPendentesAnterioresRef.current = entregasPendentes;
+  }, [entregasPendentes]);
   const entregaAtiva = entregas.find(e => e.status === 'aceita' || e.status === 'em_rota');
   const entregasConcluidas = getEntregasFiltradas();
   const historicoCompleto = entregas.filter(e => e.status === 'entregue');
