@@ -105,7 +105,7 @@ const statusConfig = {
 };
 
 export default function MapaTempoReal() {
-  const [viewMode, setViewMode] = useState('map');
+  const [viewMode, setViewMode] = useState('list');
   const [selectedEntrega, setSelectedEntrega] = useState(null);
   const [selectedEntregador, setSelectedEntregador] = useState(null);
   const [selectedPizzaria, setSelectedPizzaria] = useState(false);
