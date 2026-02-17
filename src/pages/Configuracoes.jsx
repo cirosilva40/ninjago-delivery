@@ -996,7 +996,6 @@ export default function Configuracoes() {
                 <div>
                   <Label className="text-slate-400">Access Token (Chave Privada)</Label>
                   <Input
-                    type="password"
                     value={pizzaria.configuracoes?.mp_access_token || ''}
                     onChange={(e) => updateConfig('mp_access_token', e.target.value)}
                     className="bg-slate-800 border-slate-700 text-white font-mono text-sm"
@@ -1006,11 +1005,8 @@ export default function Configuracoes() {
                 </div>
               </div>
 
-              {(pizzaria.configuracoes?.mp_public_key || pizzaria.configuracoes?.mp_access_token) && (
-                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2">
-                  <span className="text-emerald-400">✓</span>
-                  <p className="text-sm text-emerald-400">Chaves configuradas — pagamentos online habilitados</p>
-                </div>
+              {pizzaria.configuracoes?.mp_access_token && (
+                <TestarMercadoPago accessToken={pizzaria.configuracoes.mp_access_token} />
               )}
             </CardContent>
           </Card>
