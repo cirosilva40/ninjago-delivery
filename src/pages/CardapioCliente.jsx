@@ -183,6 +183,13 @@ export default function CardapioCliente() {
   });
 
   const pizzariaConfig = pizzarias[0] || {};
+
+  // Carregar chave pública do MP da pizzaria quando disponível
+  useEffect(() => {
+    if (pizzariaConfig?.configuracoes?.mp_public_key) {
+      setMpPublicKey(pizzariaConfig.configuracoes.mp_public_key);
+    }
+  }, [pizzariaConfig?.configuracoes?.mp_public_key]);
   
   // Debug: mostrar erro se pizzaria não encontrada
   if (!loadingPizzaria && pizzarias.length === 0 && pizzariaId) {
