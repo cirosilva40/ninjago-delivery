@@ -48,7 +48,9 @@ import { Toaster } from 'sonner';
 import { useMercadoPago, criarTokenCartao } from '../components/cliente/MercadoPagoHelper';
 
 export default function CardapioCliente() {
-  const { mp, isLoaded: mpLoaded } = useMercadoPago();
+  // A chave pública virá do banco de dados da pizzaria (carregada depois)
+  const [mpPublicKey, setMpPublicKey] = useState(null);
+  const { mp, isLoaded: mpLoaded } = useMercadoPago(mpPublicKey);
   const navigate = useNavigate();
   
   // Inicializar pizzariaId da URL imediatamente
