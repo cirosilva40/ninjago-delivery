@@ -495,6 +495,25 @@ Retorne a rota otimizada com as seguintes informações.
                 </Marker>
               ))}
               
+              {/* Marcadores dos Pedidos dos Clientes */}
+              {pedidosAtivos.filter(p => p.latitude && p.longitude && p.tipo_pedido === 'delivery').map((pedido) => (
+                <Marker
+                  key={`pedido-${pedido.id}`}
+                  position={[pedido.latitude, pedido.longitude]}
+                  icon={clienteIcon}
+                >
+                  <Popup>
+                    <div className="min-w-[200px]">
+                      <p className="font-bold text-gray-900">🏠 {pedido.cliente_nome}</p>
+                      <p className="text-sm text-gray-600">Pedido #{pedido.numero_pedido}</p>
+                      <p className="text-xs text-gray-500 mt-1">{pedido.cliente_endereco}, {pedido.cliente_numero} - {pedido.cliente_bairro}</p>
+                      <p className="text-sm font-bold text-green-600 mt-1">R$ {pedido.valor_total?.toFixed(2)}</p>
+                      <span className="inline-block mt-1 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full capitalize">{pedido.status?.replace('_', ' ')}</span>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+
               {/* Marcadores das Entregas */}
               {entregas.filter(e => e.latitude_destino && e.longitude_destino).map((entrega) => (
                 <Marker 
