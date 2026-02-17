@@ -158,6 +158,12 @@ export default function MapaTempoReal() {
     refetchInterval: 10000,
   });
 
+  const { data: pedidosAtivos = [] } = useQuery({
+    queryKey: ['pedidos-ativos-mapa'],
+    queryFn: () => base44.entities.Pedido.filter({ status: { $in: ['novo', 'em_preparo', 'pronto'] } }, '-created_date', 50),
+    refetchInterval: 10000,
+  });
+
 
 
   const openGoogleMaps = (lat, lng) => {
