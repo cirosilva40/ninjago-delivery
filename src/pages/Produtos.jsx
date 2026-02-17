@@ -640,6 +640,41 @@ export default function Produtos() {
         </DialogContent>
       </Dialog>
 
+      {/* Modal de Sucesso */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-sm text-center">
+          <div className="flex flex-col items-center gap-4 py-4">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center">
+              <Check className="w-8 h-8 text-emerald-400" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white mb-1">Produto cadastrado!</h2>
+              <p className="text-slate-400 text-sm">Deseja cadastrar mais um produto?</p>
+            </div>
+            <div className="flex gap-3 w-full mt-2">
+              <Button
+                variant="outline"
+                className="flex-1 border-slate-600 text-slate-300"
+                onClick={() => setShowSuccessModal(false)}
+              >
+                Não, obrigado
+              </Button>
+              <Button
+                className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  resetForm();
+                  setShowModal(true);
+                }}
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Cadastrar mais
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Modal Nova Categoria */}
       <Dialog open={showCategoriaModal} onOpenChange={setShowCategoriaModal}>
         <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md">
