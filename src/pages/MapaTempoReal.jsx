@@ -781,9 +781,15 @@ Retorne a rota otimizada com as seguintes informações.
                     <button
                       key={motoboy.id}
                       onClick={async () => {
+                        // Captura a rota localmente para evitar problema de null durante a execução
+                        const rotaSnapshot = rotaOtimizada;
+                        if (!rotaSnapshot || !rotaSnapshot.pedidos?.length) {
+                          toast.error('Rota inválida, gere novamente.');
+                          return;
+                        }
                         setAtribuindoRota(true);
                         try {
-                          for (const pedido of rotaOtimizada.pedidos) {
+                          for (const pedido of rotaSnapshot.pedidos) {
                             await base44.entities.Entrega.create({
                               pizzaria_id: pizzaria?.id || 'default',
                               pedido_id: pedido.id,
@@ -793,6 +799,8 @@ Retorne a rota otimizada com as seguintes informações.
                               cliente_telefone: pedido.cliente_telefone,
                               endereco_completo: `${pedido.cliente_endereco}, ${pedido.cliente_numero} - ${pedido.cliente_bairro}`,
                               bairro: pedido.cliente_bairro,
+                              latitude_destino: pedido.latitude,
+                              longitude_destino: pedido.longitude,
                               valor_pedido: pedido.valor_total,
                               taxa_entregador: pizzaria?.taxa_entrega_base || 5,
                               forma_pagamento: pedido.forma_pagamento,
@@ -812,17 +820,18 @@ Retorne a rota otimizada com as seguintes informações.
                             destinatario_id: motoboy.id,
                             tipo: 'nova_entrega',
                             titulo: 'Novas Entregas Atribuídas',
-                            mensagem: `Você recebeu ${rotaOtimizada.pedidos.length} entregas. Abra o app para ver a rota.`,
-                            dados: { quantidade: rotaOtimizada.pedidos.length },
+                            mensagem: `Você recebeu ${rotaSnapshot.pedidos.length} entregas. Abra o app para ver a rota.`,
+                            dados: { quantidade: rotaSnapshot.pedidos.length },
+                            lida: false,
                           });
 
-                          toast.success('Rota atribuída com sucesso!');
+                          toast.success(`Rota atribuída para ${motoboy.nome} com sucesso!`);
                           setShowAtribuirRotaModal(false);
                           setRotaOtimizada(null);
                           refetch();
                         } catch (error) {
                           console.error('Erro ao atribuir rota:', error);
-                          toast.error('Erro ao atribuir rota');
+                          toast.error('Erro ao atribuir rota: ' + error.message);
                         } finally {
                           setAtribuindoRota(false);
                         }
