@@ -157,6 +157,8 @@ export default function Produtos() {
     return matchSearch && matchCategoria;
   });
 
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
   const handleSave = async () => {
     try {
       const data = {
@@ -167,12 +169,16 @@ export default function Produtos() {
 
       if (editingProduto) {
         await base44.entities.Produto.update(editingProduto.id, data);
+        refetch();
+        setShowModal(false);
+        resetForm();
       } else {
         await base44.entities.Produto.create(data);
+        refetch();
+        setShowModal(false);
+        resetForm();
+        setShowSuccessModal(true);
       }
-      refetch();
-      setShowModal(false);
-      resetForm();
     } catch (error) {
       console.error('Erro ao salvar:', error);
     }
