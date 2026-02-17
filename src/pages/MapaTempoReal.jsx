@@ -813,7 +813,7 @@ Retorne a rota otimizada com as seguintes informações.
                             await base44.entities.Pedido.update(pedido.id, { status: 'em_entrega' });
                           }
 
-                          await base44.entities.Entregador.update(motoboy.id, { status: 'em_entrega' });
+                          // Não alterar status do entregador aqui — ele muda quando aceitar no app
 
                           await base44.entities.Notificacao.create({
                             pizzaria_id: pizzaria?.id,
