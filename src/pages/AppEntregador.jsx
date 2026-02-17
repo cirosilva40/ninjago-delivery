@@ -472,6 +472,45 @@ export default function AppEntregador() {
 
       {/* Content */}
       <main className="p-4 pb-28">
+        {/* Banner Rota Recalculada */}
+        <AnimatePresence>
+          {rotaNotificacao && !rotaNotificacao.lida && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="mb-4"
+            >
+              <div className="rounded-2xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-2 border-blue-500/40 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-500/30 flex items-center justify-center flex-shrink-0">
+                    <Navigation className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-white text-sm">{rotaNotificacao.titulo}</p>
+                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">{rotaNotificacao.mensagem}</p>
+                    {rotaNotificacao.dados?.sequencia_numeros?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {rotaNotificacao.dados.sequencia_numeros.map((num, i) => (
+                          <span key={i} className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full">
+                            {i + 1}. #{num}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => base44.entities.Notificacao.update(rotaNotificacao.id, { lida: true })}
+                    className="text-slate-400 hover:text-white p-1"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Alerta Nova Entrega */}
         <AnimatePresence>
           {entregasPendentes.length > 0 && !selectedEntrega && (
