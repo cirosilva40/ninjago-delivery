@@ -518,7 +518,7 @@ Retorne a rota otimizada com as seguintes informações.
           </Card>
         </div>
 
-        {/* Painel lateral - ao lado do mapa no modo mapa, ou coluna única no modo lista */}
+        {/* Painel lateral - busca + entregadores online */}
         <div className="lg:col-span-1">
           <div className="space-y-4">
             {/* Campo de busca de motoboy */}
@@ -544,10 +544,7 @@ Retorne a rota otimizada com as seguintes informações.
                     ).map((motoboy) => (
                       <button
                         key={motoboy.id}
-                        onClick={() => {
-                          setSelectedEntregadorId(motoboy.id);
-                          setBuscaMotoboy('');
-                        }}
+                        onClick={() => { setSelectedEntregadorId(motoboy.id); setBuscaMotoboy(''); }}
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition-colors text-left border-b border-slate-700/50 last:border-0"
                       >
                         <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center flex-shrink-0">
@@ -568,112 +565,8 @@ Retorne a rota otimizada com as seguintes informações.
               )}
             </div>
 
+            {/* Entregadores Online */}
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-              <Package className="w-5 h-5 text-orange-500" />
-              Entregas Ativas
-            </h3>
-
-            {entregas.length === 0 ? (
-              <Card className="rounded-xl bg-white/5 border-white/10 p-8 text-center">
-                <MapPin className="w-12 h-12 mx-auto text-slate-600 mb-4" />
-                <p className="text-slate-400">Nenhuma entrega em andamento</p>
-              </Card>
-            ) : (
-              <div className="space-y-3">
-                <AnimatePresence>
-                  {entregas.map((entrega) => {
-                    const status = statusConfig[entrega.status] || statusConfig.pendente;
-                    const entregador = entregadores.find(e => e.id === entrega.entregador_id);
-                    
-                    return (
-                      <motion.div
-                        key={entrega.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="rounded-xl bg-white/5 border border-white/10 p-4 hover:bg-white/8 transition-all"
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-white">#{entrega.numero_pedido}</span>
-                              <Badge className={`${status.color}/20 text-white text-xs`}>
-                                {status.label}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-slate-400 mt-1">{entrega.cliente_nome}</p>
-                          </div>
-                          <p className="text-xl font-bold text-emerald-400">
-                            R$ {entrega.valor_pedido?.toFixed(2)}
-                          </p>
-                        </div>
-
-                        <div className="flex items-start gap-2 text-sm text-slate-400 mb-3">
-                          <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                          <span>{entrega.endereco_completo}</span>
-                        </div>
-
-                        {entregador && (
-                          <div className="flex items-center gap-3 p-2 rounded-lg bg-white/5 mb-3">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
-                              <Bike className="w-4 h-4 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-white">{entregador.nome}</p>
-                              <p className="text-xs text-slate-400">{entregador.telefone}</p>
-                            </div>
-                            <a 
-                              href={`tel:${entregador.telefone}`}
-                              className="p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-                            >
-                              <Phone className="w-4 h-4 text-white" />
-                            </a>
-                          </div>
-                        )}
-
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 border-slate-700 text-slate-300"
-                            onClick={() => openGoogleMaps(
-                              entrega.latitude_destino || -23.5505,
-                              entrega.longitude_destino || -46.6333
-                            )}
-                          >
-                            <Navigation className="w-4 h-4 mr-1" />
-                            Google Maps
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 border-slate-700 text-slate-300"
-                            onClick={() => openWaze(
-                              entrega.latitude_destino || -23.5505,
-                              entrega.longitude_destino || -46.6333
-                            )}
-                          >
-                            <ExternalLink className="w-4 h-4 mr-1" />
-                            Waze
-                          </Button>
-                        </div>
-
-                        <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-500">
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {moment(entrega.horario_atribuicao).fromNow()}
-                          </span>
-                          <span>{entrega.forma_pagamento}</span>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </AnimatePresence>
-              </div>
-            )}
-
-            {/* Entregadores Section */}
-            <h3 className="text-lg font-semibold text-white flex items-center gap-2 mt-8">
               <Bike className="w-5 h-5 text-emerald-500" />
               Entregadores Online
             </h3>
@@ -688,27 +581,16 @@ Retorne a rota otimizada com as seguintes informações.
                 {entregadores.map((entregador) => {
                   const status = statusConfig[entregador.status] || { label: 'Offline', color: 'bg-slate-500' };
                   const isSelected = selectedEntregadorId === entregador.id;
-                  
                   return (
                     <div
                       key={entregador.id}
-                      onClick={() => {
-                        if (entregador.latitude && entregador.longitude) {
-                          setSelectedEntregadorId(isSelected ? null : entregador.id);
-                        }
-                      }}
+                      onClick={() => { if (entregador.latitude && entregador.longitude) setSelectedEntregadorId(isSelected ? null : entregador.id); }}
                       className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
-                        isSelected 
-                          ? 'bg-orange-500/20 border-orange-500/50 shadow-lg' 
-                          : 'bg-white/5 border-white/10 hover:bg-white/8'
+                        isSelected ? 'bg-orange-500/20 border-orange-500/50 shadow-lg' : 'bg-white/5 border-white/10 hover:bg-white/8'
                       }`}
                     >
                       <div className="relative">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          isSelected 
-                            ? 'bg-gradient-to-br from-orange-500 to-red-600' 
-                            : 'bg-gradient-to-br from-blue-500 to-indigo-600'
-                        }`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isSelected ? 'bg-gradient-to-br from-orange-500 to-red-600' : 'bg-gradient-to-br from-blue-500 to-indigo-600'}`}>
                           <span className="text-white font-bold">{entregador.nome?.charAt(0)}</span>
                         </div>
                         <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ${status.color} border-2 border-slate-900`} />
@@ -719,15 +601,10 @@ Retorne a rota otimizada com as seguintes informações.
                       </div>
                       {isSelected && entregador.latitude && entregador.longitude && (
                         <Badge className="bg-orange-500/20 text-orange-400 text-xs">
-                          <MapPin className="w-3 h-3 mr-1" />
-                          No mapa
+                          <MapPin className="w-3 h-3 mr-1" />No mapa
                         </Badge>
                       )}
-                      <a 
-                        href={`tel:${entregador.telefone}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="p-2 rounded-lg bg-white/10 hover:bg-white/20"
-                      >
+                      <a href={`tel:${entregador.telefone}`} onClick={(e) => e.stopPropagation()} className="p-2 rounded-lg bg-white/10 hover:bg-white/20">
                         <Phone className="w-4 h-4 text-white" />
                       </a>
                     </div>
@@ -737,6 +614,84 @@ Retorne a rota otimizada com as seguintes informações.
             )}
           </div>
         </div>
+      </div>
+
+      {/* Entregas Ativas - abaixo do mapa, em lista horizontal */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+          <Package className="w-5 h-5 text-orange-500" />
+          Entregas Ativas
+          <Badge className="bg-orange-500/20 text-orange-400">{entregas.length}</Badge>
+        </h3>
+
+        {entregas.length === 0 ? (
+          <Card className="rounded-xl bg-white/5 border-white/10 p-8 text-center">
+            <MapPin className="w-12 h-12 mx-auto text-slate-600 mb-4" />
+            <p className="text-slate-400">Nenhuma entrega em andamento</p>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <AnimatePresence>
+              {entregas.map((entrega) => {
+                const status = statusConfig[entrega.status] || statusConfig.pendente;
+                const entregador = entregadores.find(e => e.id === entrega.entregador_id);
+                return (
+                  <motion.div
+                    key={entrega.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="rounded-xl bg-white/5 border border-white/10 p-4 hover:bg-white/8 transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-white">#{entrega.numero_pedido}</span>
+                          <Badge className={`${status.color}/20 text-white text-xs`}>{status.label}</Badge>
+                        </div>
+                        <p className="text-sm text-slate-400 mt-1">{entrega.cliente_nome}</p>
+                      </div>
+                      <p className="text-lg font-bold text-emerald-400">R$ {entrega.valor_pedido?.toFixed(2)}</p>
+                    </div>
+
+                    <div className="flex items-start gap-2 text-sm text-slate-400 mb-3">
+                      <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      <span className="truncate">{entrega.endereco_completo}</span>
+                    </div>
+
+                    {entregador && (
+                      <div className="flex items-center gap-2 p-2 rounded-lg bg-white/5 mb-3">
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
+                          <Bike className="w-3.5 h-3.5 text-white" />
+                        </div>
+                        <p className="text-sm font-medium text-white flex-1 truncate">{entregador.nome}</p>
+                        <a href={`tel:${entregador.telefone}`} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20">
+                          <Phone className="w-3.5 h-3.5 text-white" />
+                        </a>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="outline" className="flex-1 border-slate-700 text-slate-300 text-xs"
+                        onClick={() => openGoogleMaps(entrega.latitude_destino || -23.5505, entrega.longitude_destino || -46.6333)}>
+                        <Navigation className="w-3.5 h-3.5 mr-1" />Maps
+                      </Button>
+                      <Button size="sm" variant="outline" className="flex-1 border-slate-700 text-slate-300 text-xs"
+                        onClick={() => openWaze(entrega.latitude_destino || -23.5505, entrega.longitude_destino || -46.6333)}>
+                        <ExternalLink className="w-3.5 h-3.5 mr-1" />Waze
+                      </Button>
+                    </div>
+
+                    <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-500">
+                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{moment(entrega.horario_atribuicao).fromNow()}</span>
+                      <span>{entrega.forma_pagamento}</span>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       {/* Modal Atribuir Rota ao Motoboy */}
