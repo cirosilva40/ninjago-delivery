@@ -42,7 +42,6 @@ const menuItems = [
   { name: 'Configurações', icon: Settings, page: 'Configuracoes' },
 ];
 
-// Menu items principais para bottom navigation (mobile)
 const mobileNavItems = [
   { name: 'Pedidos', icon: Package, page: 'Pedidos' },
   { name: 'Novo', icon: ClipboardList, page: 'NovoPedido' },
@@ -62,8 +61,13 @@ export default function Layout({ children, currentPageName }) {
 
   useEffect(() => {
     loadUser();
-    loadNotificacoes();
   }, []);
+
+  useEffect(() => {
+    if (user?.pizzaria_id) {
+      loadNotificacoes(user.pizzaria_id);
+    }
+  }, [user]);
 
   const loadUser = async () => {
     try {
@@ -74,23 +78,26 @@ export default function Layout({ children, currentPageName }) {
     }
   };
 
-  const loadNotificacoes = async () => {
+  const loadNotificacoes = async (pizzariaId) => {
     try {
-      const data = await base44.entities.Notificacao.filter({ lida: false }, '-created_date', 5);
+      const data = await base44.entities.Notificacao.filter(
+        { lida: false, pizzaria_id: pizzariaId },
+        '-created_date',
+        5
+      );
       setNotificacoes(data);
-    } catch (e) {}
+    } catch (e) {
+      console.error('Erro ao carregar notificações:', e);
+    }
   };
 
   const marcarComoLida = async (notificacaoId) => {
     try {
-      // Remove imediatamente da UI para feedback instantâneo
       setNotificacoes(prev => prev.filter(n => n.id !== notificacaoId));
-      // Atualiza no backend
       await base44.entities.Notificacao.update(notificacaoId, { lida: true });
     } catch (e) {
       console.error('Erro ao marcar notificação como lida:', e);
-      // Recarrega em caso de erro
-      loadNotificacoes();
+      if (user?.pizzaria_id) loadNotificacoes(user.pizzaria_id);
     }
   };
 
