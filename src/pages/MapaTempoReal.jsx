@@ -115,6 +115,8 @@ export default function MapaTempoReal() {
   const [atribuindoRota, setAtribuindoRota] = useState(false);
   const [selectedEntregadorId, setSelectedEntregadorId] = useState(null);
 
+  const [buscaMotoboy, setBuscaMotoboy] = useState('');
+
   const [horarioInicio, setHorarioInicio] = useState(() => {
     const now = moment();
     return now.format('HH:mm');
