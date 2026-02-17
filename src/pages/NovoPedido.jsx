@@ -109,25 +109,13 @@ export default function NovoPedido() {
 
   const { data: produtos = [] } = useQuery({
     queryKey: ['produtos-disponiveis', pizzariaId],
-    queryFn: async () => {
-      if (!pizzariaId) return [];
-      if (user?.role === 'admin') {
-        return base44.entities.Produto.filter({ disponivel: true }, 'categoria', 500);
-      }
-      return base44.entities.Produto.filter({ disponivel: true, restaurante_id: pizzariaId }, 'categoria', 500);
-    },
+    queryFn: () => base44.entities.Produto.filter({ disponivel: true, restaurante_id: pizzariaId }, 'categoria', 500),
     enabled: !!pizzariaId,
   });
 
   const { data: pizzarias = [] } = useQuery({
     queryKey: ['pizzarias', pizzariaId],
-    queryFn: async () => {
-      if (!pizzariaId) return [];
-      if (user?.role === 'admin') {
-        return base44.entities.Pizzaria.list('-created_date', 1);
-      }
-      return base44.entities.Pizzaria.filter({ id: pizzariaId }, '-created_date', 1);
-    },
+    queryFn: () => base44.entities.Pizzaria.filter({ id: pizzariaId }, '-created_date', 1),
     enabled: !!pizzariaId,
   });
 
