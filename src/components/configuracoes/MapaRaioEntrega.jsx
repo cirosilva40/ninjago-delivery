@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Circle, Popup, useMap } from 'react-leaflet';
+import React, { useEffect, useRef, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Circle, Popup, useMap, useMapEvents } from 'react-leaflet';
 import { Store } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -56,15 +56,37 @@ function MapUpdater({ center, raio }) {
 }
 
 export default function MapaRaioEntrega({ latitude, longitude, raioKm, taxaBase, taxaAdicional, onLocationChange }) {
-  const center = latitude && longitude ? [latitude, longitude] : [-23.5505, -46.6333];
+  const [markerPosition, setMarkerPosition] = useState(
+    latitude && longitude ? [latitude, longitude] : [-23.5505, -46.6333]
+  );
   const hasLocation = latitude && longitude;
+
+  useEffect(() => {
+    if (latitude && longitude) {
+      setMarkerPosition([latitude, longitude]);
+    }
+  }, [latitude, longitude]);
+
+  // Componente para capturar cliques no mapa
+  function LocationMarker() {
+    useMapEvents({
+      click(e) {
+        if (onLocationChange) {
+          const { lat, lng } = e.latlng;
+          setMarkerPosition([lat, lng]);
+          onLocationChange(lat, lng);
+        }
+      },
+    });
+    return null;
+  }
 
   return (
     <div className="relative w-full h-[400px] rounded-xl overflow-hidden border-2 border-white/10">
       {hasLocation ? (
         <MapContainer
-          center={center}
-          zoom={13}
+          center={markerPosition}
+          zoom={15}
           className="w-full h-full"
           zoomControl={true}
           whenReady={(map) => {
@@ -76,41 +98,59 @@ export default function MapaRaioEntrega({ latitude, longitude, raioKm, taxaBase,
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           
-          <MapUpdater center={center} raio={raioKm} />
+          <MapUpdater center={markerPosition} raio={raioKm} />
+          <LocationMarker />
           
-          {/* Marcador da Pizzaria */}
-          <Marker position={center} icon={pizzariaIcon}>
+          {/* Marcador da Pizzaria - Arrastável e Clicável */}
+          <Marker 
+            position={markerPosition} 
+            icon={pizzariaIcon}
+            draggable={!!onLocationChange}
+            eventHandlers={{
+              dragend: (e) => {
+                if (onLocationChange) {
+                  const { lat, lng } = e.target.getLatLng();
+                  setMarkerPosition([lat, lng]);
+                  onLocationChange(lat, lng);
+                }
+              },
+            }}
+          >
             <Popup>
               <div className="text-center">
                 <div className="text-lg font-bold text-gray-900">📍 Sua Pizzaria</div>
-                <p className="text-sm text-gray-600 mt-1">Centro de distribuição</p>
+                <p className="text-sm text-gray-600 mt-1">
+                  {onLocationChange ? 'Arraste para ajustar' : 'Centro de distribuição'}
+                </p>
               </div>
             </Popup>
           </Marker>
           
           {/* Círculo do Raio Base */}
-          <Circle
-            center={center}
-            radius={raioKm * 1000}
-            pathOptions={{
-              color: '#10b981',
-              fillColor: '#10b981',
-              fillOpacity: 0.2,
-              weight: 2,
-            }}
-          >
-            <Popup>
-              <div className="text-center">
-                <div className="text-sm font-bold text-gray-900">Raio Base: {raioKm} km</div>
-                <p className="text-xs text-gray-600">Taxa: R$ {(parseFloat(taxaBase) || 0).toFixed(2)}</p>
-                {parseFloat(taxaAdicional) > 0 && (
-                  <p className="text-xs text-amber-600 mt-1">
-                    Além deste raio: +R$ {(parseFloat(taxaAdicional) || 0).toFixed(2)}/km
-                  </p>
-                )}
-              </div>
-            </Popup>
-          </Circle>
+          {raioKm > 0 && (
+            <Circle
+              center={markerPosition}
+              radius={raioKm * 1000}
+              pathOptions={{
+                color: '#10b981',
+                fillColor: '#10b981',
+                fillOpacity: 0.2,
+                weight: 2,
+              }}
+            >
+              <Popup>
+                <div className="text-center">
+                  <div className="text-sm font-bold text-gray-900">Raio Base: {raioKm} km</div>
+                  <p className="text-xs text-gray-600">Taxa: R$ {(parseFloat(taxaBase) || 0).toFixed(2)}</p>
+                  {parseFloat(taxaAdicional) > 0 && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      Além deste raio: +R$ {(parseFloat(taxaAdicional) || 0).toFixed(2)}/km
+                    </p>
+                  )}
+                </div>
+              </Popup>
+            </Circle>
+          )}
         </MapContainer>
       ) : (
         <div className="w-full h-full flex flex-col items-center justify-center bg-slate-800/50 text-slate-400">
