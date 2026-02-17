@@ -3,24 +3,27 @@ import { useEffect, useState } from 'react';
 /**
  * Hook para carregar o SDK do Mercado Pago
  */
-export const useMercadoPago = () => {
+// Aceita a chave pública como parâmetro (vinda do banco de dados da pizzaria)
+export const useMercadoPago = (publicKey) => {
   const [mp, setMp] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const publicKey = import.meta.env.VITE_MERCADO_PAGO_PUBLIC_KEY;
-    
-    // Se não tiver chave pública, não tentar carregar
     if (!publicKey) {
-      console.warn('Chave pública do Mercado Pago não configurada');
+      setMp(null);
+      setIsLoaded(false);
       return;
     }
 
-    // Verificar se já foi carregado
-    if (window.MercadoPago) {
+    const initMP = () => {
       const mpInstance = new window.MercadoPago(publicKey);
       setMp(mpInstance);
       setIsLoaded(true);
+    };
+
+    // Verificar se o script já foi carregado
+    if (window.MercadoPago) {
+      initMP();
       return;
     }
 
@@ -28,21 +31,12 @@ export const useMercadoPago = () => {
     const script = document.createElement('script');
     script.src = 'https://sdk.mercadopago.com/js/v2';
     script.async = true;
-    
     script.onload = () => {
-      if (window.MercadoPago) {
-        const mpInstance = new window.MercadoPago(publicKey);
-        setMp(mpInstance);
-        setIsLoaded(true);
-      }
+      if (window.MercadoPago) initMP();
     };
 
     document.body.appendChild(script);
-
-    return () => {
-      // Não remover o script para reutilização
-    };
-  }, []);
+  }, [publicKey]);
 
   return { mp, isLoaded };
 };
