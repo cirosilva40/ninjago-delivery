@@ -182,7 +182,9 @@ export default function CardapioCliente() {
 
   const pizzariaConfig = pizzarias[0] || {};
 
-  // Carregar chave pública do MP da pizzaria quando disponível
+  // Inicializar SDK do MP com a chave pública da pizzaria
+  const { mp, isLoaded: mpLoaded } = useMercadoPago(mpPublicKey);
+
   useEffect(() => {
     if (pizzariaConfig?.configuracoes?.mp_public_key) {
       setMpPublicKey(pizzariaConfig.configuracoes.mp_public_key);
