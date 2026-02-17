@@ -1638,68 +1638,10 @@ export default function CardapioCliente() {
                       )}
 
                       {formCliente.forma_pagamento === 'online' && (
-                        <div className="space-y-4 p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
-                          <Label className="text-white">Escolha o método de pagamento online</Label>
-                          <div className="grid grid-cols-2 gap-3">
-                            <button
-                              type="button"
-                              onClick={() => setMetodoPagamentoOnline('pix')}
-                              className={`p-4 rounded-lg border-2 transition-all ${
-                                metodoPagamentoOnline === 'pix'
-                                  ? 'border-emerald-500 bg-emerald-500/20'
-                                  : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
-                              }`}
-                            >
-                              <div className="text-3xl mb-2">🔳</div>
-                              <p className="text-sm font-medium text-white">PIX</p>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setMetodoPagamentoOnline('credit_card')}
-                              className={`p-4 rounded-lg border-2 transition-all ${
-                                metodoPagamentoOnline === 'credit_card'
-                                  ? 'border-blue-500 bg-blue-500/20'
-                                  : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
-                              }`}
-                            >
-                              <div className="text-3xl mb-2">💳</div>
-                              <p className="text-sm font-medium text-white">Crédito</p>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setMetodoPagamentoOnline('debit_card')}
-                              className={`p-4 rounded-lg border-2 transition-all ${
-                                metodoPagamentoOnline === 'debit_card'
-                                  ? 'border-purple-500 bg-purple-500/20'
-                                  : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
-                              }`}
-                            >
-                              <div className="text-3xl mb-2">💰</div>
-                              <p className="text-sm font-medium text-white">Débito</p>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setMetodoPagamentoOnline('vale_refeicao')}
-                              className={`p-4 rounded-lg border-2 transition-all ${
-                                metodoPagamentoOnline === 'vale_refeicao'
-                                  ? 'border-yellow-500 bg-yellow-500/20'
-                                  : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
-                              }`}
-                            >
-                              <div className="text-3xl mb-2">🎫</div>
-                              <p className="text-sm font-medium text-white">Vale Refeição</p>
-                            </button>
-                          </div>
-                          {metodoPagamentoOnline && (
-                            <div className="mt-3 p-3 rounded-lg bg-slate-700/50">
-                              <p className="text-xs text-slate-300">
-                                {metodoPagamentoOnline === 'pix' && '✓ Você será redirecionado para gerar o código PIX'}
-                                {metodoPagamentoOnline === 'credit_card' && '✓ Você será redirecionado para inserir os dados do cartão de crédito'}
-                                {metodoPagamentoOnline === 'debit_card' && '✓ Você será redirecionado para inserir os dados do cartão de débito'}
-                                {metodoPagamentoOnline === 'vale_refeicao' && '✓ Você será redirecionado para inserir os dados do vale refeição'}
-                              </p>
-                            </div>
-                          )}
+                        <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
+                          <p className="text-sm text-blue-300">
+                            💳 Você será redirecionado para o Mercado Pago para escolher a forma de pagamento (PIX, cartão de crédito, débito e mais).
+                          </p>
                         </div>
                       )}
                     </div>
