@@ -48,20 +48,38 @@ const COLORS = ['#f97316', '#10b981', '#8b5cf6', '#3b82f6', '#ef4444', '#06b6d4'
 
 export default function Relatorios() {
   const [periodo, setPeriodo] = useState('semana');
+  const [pizzariaId, setPizzariaId] = useState(null);
+
+  React.useEffect(() => {
+    const loadPizzariaId = async () => {
+      const estabelecimentoLogado = localStorage.getItem('estabelecimento_logado');
+      if (estabelecimentoLogado) {
+        const estab = JSON.parse(estabelecimentoLogado);
+        setPizzariaId(estab.id);
+      } else {
+        const userData = await base44.auth.me();
+        setPizzariaId(userData.pizzaria_id || null);
+      }
+    };
+    loadPizzariaId();
+  }, []);
 
   const { data: entregas = [] } = useQuery({
-    queryKey: ['entregas-relatorio'],
-    queryFn: () => base44.entities.Entrega.list('-created_date', 500),
+    queryKey: ['entregas-relatorio', pizzariaId],
+    queryFn: () => base44.entities.Entrega.filter({ pizzaria_id: pizzariaId }, '-created_date', 500),
+    enabled: !!pizzariaId,
   });
 
   const { data: pedidos = [] } = useQuery({
-    queryKey: ['pedidos-relatorio'],
-    queryFn: () => base44.entities.Pedido.list('-created_date', 500),
+    queryKey: ['pedidos-relatorio', pizzariaId],
+    queryFn: () => base44.entities.Pedido.filter({ pizzaria_id: pizzariaId }, '-created_date', 500),
+    enabled: !!pizzariaId,
   });
 
   const { data: entregadores = [] } = useQuery({
-    queryKey: ['entregadores-relatorio'],
-    queryFn: () => base44.entities.Entregador.list(),
+    queryKey: ['entregadores-relatorio', pizzariaId],
+    queryFn: () => base44.entities.Entregador.filter({ pizzaria_id: pizzariaId }),
+    enabled: !!pizzariaId,
   });
 
   // Filter by period
