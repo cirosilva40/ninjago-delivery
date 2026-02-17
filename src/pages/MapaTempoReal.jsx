@@ -712,7 +712,7 @@ Retorne a rota otimizada com as seguintes informações.
 
       {/* Modal Atribuir Rota ao Motoboy */}
       <Dialog open={showAtribuirRotaModal} onOpenChange={setShowAtribuirRotaModal}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg">
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-lg z-[9999]">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <Bike className="w-6 h-6 text-orange-500" />
