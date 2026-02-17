@@ -55,7 +55,7 @@ function MapUpdater({ center, raio }) {
   return null;
 }
 
-export default function MapaRaioEntrega({ latitude, longitude, raioKm, taxaBase, taxaAdicional }) {
+export default function MapaRaioEntrega({ latitude, longitude, raioKm, taxaBase, taxaAdicional, onLocationChange }) {
   const center = latitude && longitude ? [latitude, longitude] : [-23.5505, -46.6333];
   const hasLocation = latitude && longitude;
 

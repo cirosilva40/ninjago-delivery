@@ -414,71 +414,74 @@ export default function Configuracoes() {
                    <Label className="text-slate-400">CEP</Label>
                     <CepInput
                       value={pizzaria.cep}
-                      onChange={(e) => setPizzaria({ ...pizzaria, cep: e.target.value })}
+                      onChange={async (e) => {
+                        const cep = e.target.value;
+                        setPizzaria({ ...pizzaria, cep });
+                        
+                        // Buscar automaticamente quando CEP estiver completo (8 dígitos)
+                        const cepNumeros = cep.replace(/\D/g, '');
+                        if (cepNumeros.length === 8) {
+                          setLoading(true);
+                          try {
+                            const enderecoCompleto = `${pizzaria.endereco}${pizzaria.numero ? ', ' + pizzaria.numero : ''} - ${pizzaria.bairro || ''}, ${pizzaria.cidade} - ${pizzaria.estado}, ${cep}`;
+                            const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(enderecoCompleto)}&format=json&limit=1`);
+                            const data = await response.json();
+                            
+                            if (data && data.length > 0) {
+                              setPizzaria(prev => ({
+                                ...prev,
+                                latitude: parseFloat(data[0].lat),
+                                longitude: parseFloat(data[0].lon),
+                              }));
+                            }
+                          } catch (error) {
+                            console.error('Erro ao geocodificar:', error);
+                          } finally {
+                            setLoading(false);
+                          }
+                        }
+                      }}
                       className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
                     />
+                    <p className="text-xs text-purple-400 mt-1">
+                      💡 A localização será buscada automaticamente ao preencher
+                    </p>
                   </div>
                 </div>
 
-                {/* Botão para Geocodificar */}
-                <Button
-                  onClick={async () => {
-                    if (!pizzaria.endereco || !pizzaria.cidade) {
-                      alert('Preencha o endereço e cidade primeiro');
-                      return;
-                    }
-                    
-                    setLoading(true);
-                    try {
-                      const enderecoCompleto = `${pizzaria.endereco}${pizzaria.numero ? ', ' + pizzaria.numero : ''} - ${pizzaria.bairro || ''}, ${pizzaria.cidade} - ${pizzaria.estado}, ${pizzaria.cep}`;
-                      const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(enderecoCompleto)}&format=json&limit=1`);
-                      const data = await response.json();
-                      
-                      if (data && data.length > 0) {
-                        setPizzaria({
-                          ...pizzaria,
-                          latitude: parseFloat(data[0].lat),
-                          longitude: parseFloat(data[0].lon),
-                        });
-                        alert('✅ Localização encontrada no mapa!');
-                      } else {
-                        alert('❌ Não foi possível encontrar o endereço. Verifique se está correto.');
-                      }
-                    } catch (error) {
-                      console.error('Erro ao geocodificar:', error);
-                      alert('Erro ao buscar localização');
-                    } finally {
-                      setLoading(false);
-                    }
-                  }}
-                  variant="outline"
-                  className="w-full border-purple-500/50 text-purple-400 hover:bg-purple-500/10"
-                  disabled={loading}
-                >
-                  <MapPin className="w-4 h-4 mr-2" />
-                  {loading ? 'Buscando...' : 'Localizar no Mapa'}
-                </Button>
-
-                {/* Mapa de Visualização */}
-                {pizzaria.latitude && pizzaria.longitude && (
-                  <div className="mt-4 rounded-xl overflow-hidden border-2 border-emerald-500/30">
-                    <MapaRaioEntrega
-                      latitude={pizzaria.latitude}
-                      longitude={pizzaria.longitude}
-                      raioKm={1}
-                      taxaBase={0}
-                      taxaAdicional={0}
-                    />
+                {/* Mapa Interativo para Fixar Localização */}
+                <div className="mt-4 rounded-xl overflow-hidden border-2 border-purple-500/30">
+                  <div className="bg-purple-500/10 border-b-2 border-purple-500/30 p-3">
+                    <p className="text-sm text-purple-400 flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      Clique no mapa para fixar a localização exata
+                    </p>
+                  </div>
+                  <MapaRaioEntrega
+                    latitude={pizzaria.latitude}
+                    longitude={pizzaria.longitude}
+                    raioKm={1}
+                    taxaBase={0}
+                    taxaAdicional={0}
+                    onLocationChange={(lat, lng) => {
+                      setPizzaria({
+                        ...pizzaria,
+                        latitude: lat,
+                        longitude: lng,
+                      });
+                    }}
+                  />
+                  {pizzaria.latitude && pizzaria.longitude && (
                     <div className="bg-emerald-500/10 border-t-2 border-emerald-500/30 p-3">
                       <p className="text-sm text-emerald-400 flex items-center gap-2">
-                        ✓ Localização confirmada no mapa
+                        ✓ Localização confirmada
                       </p>
                       <p className="text-xs text-slate-400 mt-1">
                         Lat: {pizzaria.latitude.toFixed(6)} | Lng: {pizzaria.longitude.toFixed(6)}
                       </p>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
               </CardContent>
             </Card>
