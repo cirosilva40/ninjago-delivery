@@ -17,6 +17,7 @@ import {
   Trash2,
   Circle,
   Car,
+  MessageCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -125,7 +126,7 @@ export default function Entregadores() {
           pizzaria_id: pizzariaId,
         });
       } else {
-        await base44.entities.Entregador.create({
+        const novoEntregador = await base44.entities.Entregador.create({
           ...form,
           pizzaria_id: pizzariaId,
           saldo_taxas: 0,
@@ -133,6 +134,14 @@ export default function Entregadores() {
           avaliacao_media: 5,
           ativo: true,
         });
+        
+        // Enviar link do app via WhatsApp após cadastro
+        if (form.telefone) {
+          const appUrl = `${window.location.origin}${createPageUrl('AppEntregador')}`;
+          const mensagem = `Olá ${form.nome}! Você foi cadastrado como entregador. Acesse o app pelo link: ${appUrl} e faça login com seu telefone: ${form.telefone}`;
+          const whatsappUrl = `https://wa.me/${form.telefone.replace(/\D/g, '')}?text=${encodeURIComponent(mensagem)}`;
+          window.open(whatsappUrl, '_blank');
+        }
       }
       refetch();
       setShowModal(false);
@@ -483,6 +492,11 @@ export default function Entregadores() {
               <p className="text-xs text-slate-400">
                 O entregador faz login no app e informa o <strong className="text-white">telefone cadastrado</strong> ({form.telefone || '(00) 00000-0000'}) para vincular sua conta e receber entregas.
               </p>
+              {!editingEntregador && (
+                <p className="text-xs text-emerald-400 mt-2">
+                  ✓ Após cadastrar, o link do app será enviado automaticamente via WhatsApp
+                </p>
+              )}
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
