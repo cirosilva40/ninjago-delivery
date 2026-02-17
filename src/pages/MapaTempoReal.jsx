@@ -518,8 +518,8 @@ Retorne a rota otimizada com as seguintes informações.
           </Card>
         </div>
 
-        {/* Painel lateral */}
-        <div className={viewMode === 'list' ? 'lg:col-span-3' : ''}>
+        {/* Painel lateral - ao lado do mapa no modo mapa, ou coluna única no modo lista */}
+        <div className="lg:col-span-1">
           <div className="space-y-4">
             {/* Campo de busca de motoboy */}
             <div className="relative">
