@@ -512,9 +512,122 @@ export default function CardapioCliente() {
       return;
     }
 
-    // Se for pagamento online, ir para tela de pagamento SEM criar pedido ainda
+    // Se for pagamento online, criar pedido e redirecionar para Mercado Pago
     if (formCliente.forma_pagamento === 'online') {
-      setCheckoutStep(4);
+      setProcessandoPagamento(true);
+      try {
+        // Criar o pedido antes de redirecionar
+        let clienteId = null;
+        if (tipoCliente === 'cadastrado') {
+          if (clienteLogado) {
+            await base44.entities.Cliente.update(clienteLogado.id, {
+              nome: formCliente.nome,
+              telefone: formCliente.telefone,
+              email: formCliente.email,
+              cep: formCliente.cep,
+              endereco: formCliente.endereco,
+              numero: formCliente.numero,
+              complemento: formCliente.complemento,
+              bairro: formCliente.bairro,
+              cidade: formCliente.cidade,
+              estado: formCliente.estado,
+              total_pedidos: (clienteLogado.total_pedidos || 0) + 1,
+              pontos_fidelidade: (clienteLogado.pontos_fidelidade || 0) + Math.floor(calcularSubtotal()),
+            });
+            clienteId = clienteLogado.id;
+          } else {
+            const clientesExistentes = await base44.entities.Cliente.filter({ telefone: formCliente.telefone });
+            if (clientesExistentes.length > 0) {
+              alert('Já existe uma conta com este telefone. Faça login.');
+              setProcessandoPagamento(false);
+              return;
+            }
+            const novoCliente = await base44.entities.Cliente.create({
+              pizzaria_id: pizzariaId,
+              nome: formCliente.nome,
+              telefone: formCliente.telefone,
+              senha: cadastroSenha,
+              email: formCliente.email,
+              cep: formCliente.cep,
+              endereco: formCliente.endereco,
+              numero: formCliente.numero,
+              complemento: formCliente.complemento,
+              bairro: formCliente.bairro,
+              cidade: formCliente.cidade,
+              estado: formCliente.estado,
+              latitude: formCliente.latitude,
+              longitude: formCliente.longitude,
+              total_pedidos: 1,
+              pontos_fidelidade: Math.floor(calcularSubtotal()),
+            });
+            clienteId = novoCliente.id;
+            localStorage.setItem('cliente_logado', JSON.stringify({ ...novoCliente, pizzaria_id_atual: pizzariaId }));
+          }
+        }
+
+        const pedidoData = {
+          pizzaria_id: pizzariaId,
+          numero_pedido: `PED${Date.now()}`,
+          tipo_pedido: 'delivery',
+          cliente_nome: formCliente.nome,
+          cliente_telefone: formCliente.telefone,
+          cliente_cep: formCliente.cep,
+          cliente_endereco: formCliente.endereco,
+          cliente_numero: formCliente.numero,
+          cliente_bairro: formCliente.bairro,
+          cliente_cidade: formCliente.cidade,
+          cliente_estado: formCliente.estado,
+          cliente_complemento: formCliente.complemento,
+          latitude: formCliente.latitude,
+          longitude: formCliente.longitude,
+          itens: carrinho.map(item => ({
+            produto_id: item.id,
+            nome: item.nome,
+            quantidade: item.quantidade,
+            preco_unitario: item.preco_final || item.preco,
+            observacao: ''
+          })),
+          valor_produtos: calcularSubtotal(),
+          taxa_entrega: taxaEntrega,
+          desconto: calcularDesconto(),
+          valor_total: calcularTotal(),
+          forma_pagamento: 'online',
+          status: 'novo',
+          status_pagamento: 'pendente',
+          observacoes: formCliente.observacoes,
+          horario_pedido: new Date().toISOString(),
+          origem: 'site',
+        };
+
+        const novoPedido = await base44.entities.Pedido.create(pedidoData);
+
+        // Chamar Checkout Pro do Mercado Pago
+        const { data } = await base44.functions.invoke('criarPagamentoMercadoPago', {
+          pedidoId: novoPedido.id,
+          valorTotal: calcularTotal(),
+          pizzariaId,
+          clienteNome: formCliente.nome,
+          clienteTelefone: formCliente.telefone,
+          clienteEmail: formCliente.email || `${formCliente.telefone}@cliente.com`,
+          itens: carrinho.map(item => ({
+            nome: item.nome,
+            quantidade: item.quantidade,
+            preco_unitario: item.preco_final || item.preco,
+          }))
+        });
+
+        if (data.success && data.init_point) {
+          // Redirecionar para o Checkout Pro do Mercado Pago
+          window.location.href = data.init_point;
+        } else {
+          alert('Erro ao iniciar pagamento: ' + (data.error || 'Tente novamente'));
+          setProcessandoPagamento(false);
+        }
+      } catch (error) {
+        console.error('Erro ao criar pagamento:', error);
+        alert('Erro ao iniciar pagamento. Tente novamente.');
+        setProcessandoPagamento(false);
+      }
       return;
     }
 
