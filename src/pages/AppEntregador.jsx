@@ -57,6 +57,7 @@ import {
 import moment from 'moment';
 import 'moment/locale/pt-br';
 import RotaOtimizadaCard from '@/components/entregador/RotaOtimizadaCard';
+import { useGeoTracking } from '@/components/entregador/useGeoTracking';
 moment.locale('pt-br');
 
 const statusConfig = {
