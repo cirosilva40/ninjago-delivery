@@ -1037,39 +1037,49 @@ export default function CardapioCliente() {
             </div>
           ) : (
             <div className="space-y-4">
-              {carrinho.map((item) => (
-                <div key={item.id} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
-                  <div className="flex-1">
-                    <h3 className="font-bold text-white">{item.nome}</h3>
-                    <p className="text-emerald-400 font-semibold">R$ {item.preco?.toFixed(2)}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
+              {carrinho.map((item, idx) => (
+                <div key={`${item.id}-${idx}`} className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <h3 className="font-bold text-white">{item.nome}</h3>
+                      <p className="text-emerald-400 font-semibold">R$ {(item.preco_final || item.preco)?.toFixed(2)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => alterarQuantidade(item.id, item.quantidade - 1)}
+                        className="border-slate-600 h-8 w-8"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </Button>
+                      <span className="w-6 text-center font-bold text-white">{item.quantidade}</span>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => alterarQuantidade(item.id, item.quantidade + 1)}
+                        className="border-slate-600 h-8 w-8"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </Button>
+                    </div>
                     <Button
                       size="icon"
-                      variant="outline"
-                      onClick={() => alterarQuantidade(item.id, item.quantidade - 1)}
-                      className="border-slate-600"
+                      variant="ghost"
+                      onClick={() => removerDoCarrinho(item.id)}
+                      className="text-red-400 h-8 w-8"
                     >
-                      <Minus className="w-4 h-4" />
-                    </Button>
-                    <span className="w-8 text-center font-bold">{item.quantidade}</span>
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      onClick={() => alterarQuantidade(item.id, item.quantidade + 1)}
-                      className="border-slate-600"
-                    >
-                      <Plus className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => removerDoCarrinho(item.id)}
-                    className="text-red-400"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </Button>
+                  {/* Observação por item */}
+                  <input
+                    type="text"
+                    value={item.observacao_item || ''}
+                    onChange={(e) => setCarrinho(prev => prev.map((c, i) => i === idx ? { ...c, observacao_item: e.target.value } : c))}
+                    placeholder="📝 Observação (ex: sem cebola, bem passado...)"
+                    className="w-full text-xs bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-orange-500"
+                  />
                 </div>
               ))}
 
