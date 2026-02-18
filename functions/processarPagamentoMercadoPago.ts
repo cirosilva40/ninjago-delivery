@@ -45,12 +45,6 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Pedido não encontrado' }, { status: 404 });
     }
 
-    // Buscar dados da pizzaria
-    const pizzaria = await base44.asServiceRole.entities.Pizzaria.get(pizzariaId);
-    if (!pizzaria) {
-      return Response.json({ error: 'Pizzaria não encontrada' }, { status: 404 });
-    }
-
     // Preparar itens do pedido
     const items = pedido.itens.map(item => ({
       title: item.nome,
