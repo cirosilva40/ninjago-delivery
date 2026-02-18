@@ -33,6 +33,9 @@ const statusSteps = [
 export default function AcompanharPedido() {
   const [pedidoId, setPedidoId] = useState(null);
   const [pizzariaId, setPizzariaId] = useState(null);
+  const [notifPermissao, setNotifPermissao] = useState('default');
+  const [toast, setToast] = useState(null);
+  const prevStatusRef = useRef(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -42,16 +45,46 @@ export default function AcompanharPedido() {
       setPizzariaId(pizzaria);
       localStorage.setItem('pizzaria_id_atual', pizzaria);
     }
+    if ('Notification' in window) {
+      setNotifPermissao(Notification.permission);
+    }
   }, []);
 
-  const { data: pedido } = useQuery({
+  const pedidoSubscriptionRef = useRef(null);
+
+  const { data: pedido, refetch } = useQuery({
     queryKey: ['pedido-cliente', pedidoId],
     queryFn: () => base44.entities.Pedido.filter({ id: pedidoId }),
     enabled: !!pedidoId,
-    refetchInterval: 5000, // Atualiza a cada 5 segundos
+    refetchInterval: 5000,
   });
 
   const pedidoAtual = pedido?.[0];
+
+  // Detectar mudança de status e notificar
+  useEffect(() => {
+    if (!pedidoAtual) return;
+    const novoStatus = pedidoAtual.status;
+    if (prevStatusRef.current && prevStatusRef.current !== novoStatus) {
+      const msgs = {
+        em_preparo: { titulo: '👨‍🍳 Seu pedido está sendo preparado!', body: 'A cozinha já começou a preparar seu pedido.' },
+        pronto: { titulo: '✅ Pedido pronto!', body: 'Seu pedido está pronto e aguardando entregador.' },
+        em_entrega: { titulo: '🛵 Entregador a caminho!', body: 'Seu pedido saiu para entrega. Fique atento!' },
+        entregue: { titulo: '🎉 Pedido entregue!', body: 'Bom apetite! Obrigado pelo seu pedido.' },
+      };
+      const msg = msgs[novoStatus];
+      if (msg) {
+        // Toast interno
+        setToast(msg);
+        setTimeout(() => setToast(null), 5000);
+        // Notificação push do navegador
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification(msg.titulo, { body: msg.body, icon: '/favicon.ico' });
+        }
+      }
+    }
+    prevStatusRef.current = novoStatus;
+  }, [pedidoAtual?.status]);
 
   if (!pedidoId || !pedidoAtual) {
     return (
