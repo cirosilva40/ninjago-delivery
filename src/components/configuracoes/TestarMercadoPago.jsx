@@ -16,7 +16,7 @@ export default function TestarMercadoPago({ accessToken, onSalvarCredenciais }) 
       if (data.ok) {
         setStatus('ok');
         setResultado(data);
-        if (onSalvarCredenciais) onSalvarCredenciais();
+        if (onSalvarCredenciais) setTimeout(() => onSalvarCredenciais(), 3000);
       } else {
         setStatus('erro');
         setResultado(data);
