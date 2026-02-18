@@ -200,36 +200,50 @@ export default function AcompanharPedido() {
         {/* Timeline de Status */}
         <Card className="bg-white/5 border-white/10 p-6 mb-8">
           <h3 className="font-bold text-white mb-6">Progresso do Pedido</h3>
-          <div className="space-y-4">
-            {statusSteps.map((step, index) => {
-              const isCompleted = index <= currentStepIndex;
-              const isCurrent = index === currentStepIndex;
-              
-              return (
-                <div key={step.key} className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${
-                    isCompleted 
-                      ? 'bg-emerald-500 border-emerald-500' 
-                      : 'bg-slate-800 border-slate-700'
-                  }`}>
-                    {React.createElement(step.icon, {
-                      className: `w-6 h-6 ${isCompleted ? 'text-white' : 'text-slate-600'}`
-                    })}
-                  </div>
-                  <div className="flex-1">
-                    <p className={`font-semibold ${isCompleted ? 'text-white' : 'text-slate-500'}`}>
-                      {step.label}
-                    </p>
-                    {isCurrent && (
-                      <p className="text-sm text-orange-400">Em andamento...</p>
-                    )}
-                  </div>
-                  {isCompleted && (
-                    <CheckCircle2 className="w-6 h-6 text-emerald-400" />
-                  )}
-                </div>
-              );
-            })}
+          <div className="relative">
+            {/* Linha vertical de progresso */}
+            <div className="absolute left-5 top-6 bottom-6 w-0.5 bg-slate-700" />
+            <div
+              className="absolute left-5 top-6 w-0.5 bg-gradient-to-b from-emerald-500 to-orange-500 transition-all duration-700"
+              style={{ height: `${(currentStepIndex / (statusSteps.length - 1)) * 100}%` }}
+            />
+            <div className="space-y-6">
+              {statusSteps.map((step, index) => {
+                const isCompleted = index < currentStepIndex;
+                const isCurrent = index === currentStepIndex;
+                const isPending = index > currentStepIndex;
+                return (
+                  <motion.div
+                    key={step.key}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.08 }}
+                    className="flex items-center gap-4 relative z-10"
+                  >
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-500 shrink-0 ${
+                      isCompleted
+                        ? 'bg-emerald-500 border-emerald-500 shadow-lg shadow-emerald-500/30'
+                        : isCurrent
+                          ? 'bg-orange-500 border-orange-500 shadow-lg shadow-orange-500/40 animate-pulse'
+                          : 'bg-slate-800 border-slate-700'
+                    }`}>
+                      {React.createElement(step.icon, {
+                        className: `w-5 h-5 ${isCompleted || isCurrent ? 'text-white' : 'text-slate-600'}`
+                      })}
+                    </div>
+                    <div className="flex-1">
+                      <p className={`font-semibold text-sm ${isCompleted ? 'text-emerald-400' : isCurrent ? 'text-orange-400' : 'text-slate-500'}`}>
+                        {step.label}
+                      </p>
+                      {isCurrent && (
+                        <p className="text-xs text-slate-400 mt-0.5">Em andamento...</p>
+                      )}
+                    </div>
+                    {isCompleted && <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />}
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
         </Card>
 
