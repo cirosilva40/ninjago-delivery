@@ -1678,7 +1678,7 @@ export default function CardapioCliente() {
                         className="flex-1 h-14 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-bold"
                       >
                         {processandoPagamento ? 'Processando...' : 
-                         formCliente.forma_pagamento === 'online' ? 'Ir para Pagamento' : 'Confirmar Pedido'}
+                         formCliente.forma_pagamento === 'online' ? 'Escolher Pagamento Online' : 'Confirmar Pedido'}
                       </Button>
                     </div>
                     </>
