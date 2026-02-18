@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 
-export default function TestarMercadoPago({ accessToken }) {
+export default function TestarMercadoPago({ accessToken, onSalvarCredenciais }) {
   const [status, setStatus] = useState(null); // null | 'loading' | 'ok' | 'erro'
   const [resultado, setResultado] = useState(null);
 
@@ -16,6 +16,7 @@ export default function TestarMercadoPago({ accessToken }) {
       if (data.ok) {
         setStatus('ok');
         setResultado(data);
+        if (onSalvarCredenciais) onSalvarCredenciais();
       } else {
         setStatus('erro');
         setResultado(data);
