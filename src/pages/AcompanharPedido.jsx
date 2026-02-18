@@ -86,6 +86,13 @@ export default function AcompanharPedido() {
     prevStatusRef.current = novoStatus;
   }, [pedidoAtual?.status]);
 
+  const solicitarNotificacoes = async () => {
+    if ('Notification' in window) {
+      const perm = await Notification.requestPermission();
+      setNotifPermissao(perm);
+    }
+  };
+
   if (!pedidoId || !pedidoAtual) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
