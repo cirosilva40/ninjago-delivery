@@ -983,23 +983,25 @@ export default function Configuracoes() {
               </div>
 
               {pizzaria.configuracoes?.mp_credenciais_salvas ? (
-                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-400 text-lg">✅</span>
-                    <div>
-                      <p className="font-semibold text-emerald-400">Mercado Pago conectado</p>
-                      <p className="text-xs text-slate-400">Credenciais salvas com sucesso</p>
+                <div className="space-y-3">
+                  <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-emerald-400 text-lg">✅</span>
+                      <div>
+                        <p className="font-semibold text-emerald-400">Mercado Pago conectado</p>
+                        <p className="text-xs text-slate-400">Credenciais salvas e ocultas por segurança</p>
+                      </div>
                     </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => updateConfig('mp_credenciais_salvas', false)}
+                      className="border-slate-600 text-slate-300 hover:bg-white/10 text-xs"
+                    >
+                      Alterar credenciais
+                    </Button>
                   </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => updateConfig('mp_credenciais_salvas', false)}
-                    className="border-slate-600 text-slate-300 hover:bg-white/10 text-xs"
-                  >
-                    Alterar credenciais
-                  </Button>
                 </div>
               ) : (
                 <>
