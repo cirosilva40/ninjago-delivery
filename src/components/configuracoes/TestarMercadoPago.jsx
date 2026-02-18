@@ -47,7 +47,7 @@ export default function TestarMercadoPago({ accessToken, onSalvarCredenciais }) 
         <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-1">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-            <p className="font-semibold text-emerald-400">Conexão OK!</p>
+            <p className="font-semibold text-emerald-400">Conexão OK! Credenciais salvas.</p>
           </div>
           <p className="text-sm text-slate-300">Nome: <span className="text-white">{resultado.nome}</span></p>
           <p className="text-sm text-slate-300">Email: <span className="text-white">{resultado.email}</span></p>
