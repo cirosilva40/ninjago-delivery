@@ -1919,8 +1919,11 @@ export default function CardapioCliente() {
                        )}
 
                        {(metodoPagamentoOnline === 'credit_card' || metodoPagamentoOnline === 'debit_card' || metodoPagamentoOnline === 'vale_refeicao') && (
-                          <div className="space-y-4">
-                            <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
+                           <div className="space-y-4">
+                             <button onClick={() => setMetodoPagamentoOnline('')} className="text-slate-400 hover:text-white text-sm flex items-center gap-1">
+                               ← Voltar à escolha de pagamento
+                             </button>
+                             <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
                               <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
                                 <div className="text-2xl">{metodoPagamentoOnline === 'vale_refeicao' ? '🎫' : '💳'}</div>
                                 Dados do {metodoPagamentoOnline === 'credit_card' ? 'Cartão de Crédito' : metodoPagamentoOnline === 'debit_card' ? 'Cartão de Débito' : 'Vale Refeição'}
