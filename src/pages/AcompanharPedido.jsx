@@ -108,6 +108,24 @@ export default function AcompanharPedido() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Toast de notificação de status */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -60 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -60 }}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-[90vw] max-w-sm bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl shadow-2xl p-4 flex items-start gap-3"
+          >
+            <span className="text-2xl">{toast.titulo.split(' ')[0]}</span>
+            <div>
+              <p className="font-bold text-white text-sm">{toast.titulo.slice(toast.titulo.indexOf(' ') + 1)}</p>
+              <p className="text-xs text-white/80 mt-0.5">{toast.body}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-900/80 border-b border-white/10">
         <div className="max-w-4xl mx-auto px-4 py-4">
@@ -123,12 +141,31 @@ export default function AcompanharPedido() {
                 <p className="text-xs text-slate-400">Pedido #{pedidoAtual.numero_pedido}</p>
               </div>
             </div>
-            <Link to={createPageUrl('CardapioCliente') + (pizzariaId ? `?pizzaria_id=${pizzariaId}` : '')}>
-              <Button variant="outline" className="border-slate-600 text-slate-300">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              {/* Botão de Notificações Push */}
+              {'Notification' in window && notifPermissao !== 'granted' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={solicitarNotificacoes}
+                  className="border-orange-500/50 text-orange-400 hover:bg-orange-500/10 text-xs gap-1"
+                >
+                  <Bell className="w-4 h-4" />
+                  Ativar alertas
+                </Button>
+              )}
+              {notifPermissao === 'granted' && (
+                <span className="text-xs text-emerald-400 flex items-center gap-1">
+                  <Bell className="w-3 h-3" /> Alertas ativos
+                </span>
+              )}
+              <Link to={createPageUrl('CardapioCliente') + (pizzariaId ? `?pizzaria_id=${pizzariaId}` : '')}>
+                <Button variant="outline" className="border-slate-600 text-slate-300">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Voltar
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
