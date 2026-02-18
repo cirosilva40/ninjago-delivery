@@ -133,7 +133,18 @@ export default function Configuracoes() {
 
   useEffect(() => {
     if (pizzarias.length > 0) {
-      setPizzaria(pizzarias[0]);
+      const p = pizzarias[0];
+      // Garantir que configuracoes nunca seja null/undefined
+      setPizzaria({
+        ...p,
+        configuracoes: {
+          aceitar_pix: true,
+          aceitar_cartao: true,
+          aceitar_dinheiro: true,
+          tempo_medio_preparo: 30,
+          ...(p.configuracoes || {}),
+        },
+      });
     }
   }, [pizzarias]);
 
