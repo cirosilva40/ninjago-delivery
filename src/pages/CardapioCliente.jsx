@@ -1688,6 +1688,55 @@ export default function CardapioCliente() {
                     <>
                      {/* Dados de Pagamento Online */}
                      <div className="space-y-4">
+
+                       {/* Seleção do método de pagamento online */}
+                       {!metodoPagamentoOnline && (
+                         <div className="space-y-4">
+                           <h3 className="font-semibold text-white text-lg">Como deseja pagar online?</h3>
+                           <div className="grid grid-cols-2 gap-4">
+                             <button
+                               onClick={() => setMetodoPagamentoOnline('pix')}
+                               className="p-6 rounded-xl border-2 border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all text-center"
+                             >
+                               <div className="text-4xl mb-2">🔳</div>
+                               <p className="font-bold text-white">PIX</p>
+                               <p className="text-xs text-slate-400 mt-1">Aprovação instantânea</p>
+                             </button>
+                             <button
+                               onClick={() => setMetodoPagamentoOnline('credit_card')}
+                               className="p-6 rounded-xl border-2 border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20 transition-all text-center"
+                             >
+                               <div className="text-4xl mb-2">💳</div>
+                               <p className="font-bold text-white">Cartão de Crédito</p>
+                               <p className="text-xs text-slate-400 mt-1">Parcelamento disponível</p>
+                             </button>
+                             <button
+                               onClick={() => setMetodoPagamentoOnline('debit_card')}
+                               className="p-6 rounded-xl border-2 border-purple-500/50 bg-purple-500/10 hover:bg-purple-500/20 transition-all text-center"
+                             >
+                               <div className="text-4xl mb-2">💳</div>
+                               <p className="font-bold text-white">Cartão de Débito</p>
+                               <p className="text-xs text-slate-400 mt-1">À vista</p>
+                             </button>
+                             <button
+                               onClick={() => setMetodoPagamentoOnline('vale_refeicao')}
+                               className="p-6 rounded-xl border-2 border-yellow-500/50 bg-yellow-500/10 hover:bg-yellow-500/20 transition-all text-center"
+                             >
+                               <div className="text-4xl mb-2">🎫</div>
+                               <p className="font-bold text-white">Vale Refeição</p>
+                               <p className="text-xs text-slate-400 mt-1">À vista</p>
+                             </button>
+                           </div>
+                           <Button
+                             onClick={() => setCheckoutStep(3)}
+                             variant="outline"
+                             className="w-full border-slate-600"
+                           >
+                             Voltar
+                           </Button>
+                         </div>
+                       )}
+
                        {metodoPagamentoOnline === 'pix' && (
                          <div className="space-y-4">
                            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
