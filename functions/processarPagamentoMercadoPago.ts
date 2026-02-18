@@ -21,11 +21,18 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    const accessToken = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN');
+    // Buscar dados da pizzaria ANTES para pegar o access token dela
+    const pizzaria = await base44.asServiceRole.entities.Pizzaria.get(pizzariaId);
+    if (!pizzaria) {
+      return Response.json({ error: 'Pizzaria não encontrada' }, { status: 404 });
+    }
+
+    // Usar o access token da pizzaria (configurado nas configurações de pagamento)
+    const accessToken = pizzaria.configuracoes?.mp_access_token || Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN');
     
     if (!accessToken) {
       return Response.json({ 
-        error: 'Token do Mercado Pago não configurado' 
+        error: 'Token do Mercado Pago não configurado. Configure nas Configurações > Pagamento.'
       }, { status: 500 });
     }
 
