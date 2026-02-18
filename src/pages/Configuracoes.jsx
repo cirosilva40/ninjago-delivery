@@ -1038,6 +1038,8 @@ export default function Configuracoes() {
                           configuracoes: {
                             ...pizzaria.configuracoes,
                             mp_credenciais_salvas: true,
+                            mp_access_token: pizzaria.configuracoes.mp_access_token,
+                            mp_public_key: pizzaria.configuracoes.mp_public_key,
                           },
                         };
                         setPizzaria(updated);
