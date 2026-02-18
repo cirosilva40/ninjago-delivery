@@ -161,10 +161,19 @@ export default function Configuracoes() {
     
     setLoading(true);
     try {
+      // Garantir que configuracoes com credenciais MP sejam sempre preservadas
+      const dadosParaSalvar = {
+        ...pizzaria,
+        configuracoes: {
+          ...(pizzarias[0]?.configuracoes || {}),
+          ...pizzaria.configuracoes,
+        },
+      };
+
       if (pizzarias.length > 0) {
-        await base44.entities.Pizzaria.update(pizzarias[0].id, pizzaria);
+        await base44.entities.Pizzaria.update(pizzarias[0].id, dadosParaSalvar);
       } else {
-        await base44.entities.Pizzaria.create(pizzaria);
+        await base44.entities.Pizzaria.create(dadosParaSalvar);
       }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
