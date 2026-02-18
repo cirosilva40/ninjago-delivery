@@ -591,7 +591,7 @@ export default function CardapioCliente() {
         latitude: formCliente.latitude,
         longitude: formCliente.longitude,
         itens: carrinho.map(item => {
-          let observacaoItem = '';
+          let observacaoItem = item.observacao_item || '';
           
           if (item.personalizacoes) {
             const detalhes = [];
@@ -605,7 +605,8 @@ export default function CardapioCliente() {
                 detalhes.push(`${grupo.nome_grupo}: ${itensGrupo}`);
               }
             });
-            observacaoItem = detalhes.join(' | ');
+            const personalizacoesTxt = detalhes.join(' | ');
+            observacaoItem = [personalizacoesTxt, observacaoItem].filter(Boolean).join(' • ');
           }
           
           return {
