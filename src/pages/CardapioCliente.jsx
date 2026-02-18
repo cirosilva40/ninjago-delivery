@@ -1739,6 +1739,9 @@ export default function CardapioCliente() {
 
                        {metodoPagamentoOnline === 'pix' && (
                          <div className="space-y-4">
+                           <button onClick={() => setMetodoPagamentoOnline('')} className="text-slate-400 hover:text-white text-sm flex items-center gap-1">
+                             ← Voltar à escolha de pagamento
+                           </button>
                            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
                              <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
                                <div className="text-2xl">🔳</div>
