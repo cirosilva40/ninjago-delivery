@@ -613,6 +613,98 @@ export default function Configuracoes() {
             </CardContent>
           </Card>
 
+          {/* Domínio Personalizado */}
+          <Card className="bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border-purple-500/30">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Globe className="w-5 h-5 text-purple-400" />
+                Domínio Personalizado
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                Configure um domínio próprio para sua loja (ex: cardapio.suapizzaria.com.br)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {/* Como funciona */}
+              <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-sm text-purple-200 space-y-2">
+                <p className="font-semibold flex items-center gap-2">
+                  <Globe className="w-4 h-4" /> Como configurar seu domínio próprio:
+                </p>
+                <ol className="space-y-1 text-slate-300 list-decimal list-inside">
+                  <li>Registre um domínio ou subdomínio no seu provedor (ex: GoDaddy, Registro.br, Cloudflare)</li>
+                  <li>Crie um registro <span className="font-mono bg-white/10 px-1 rounded">CNAME</span> apontando para o endereço abaixo</li>
+                  <li>Informe o domínio configurado no campo e salve</li>
+                </ol>
+              </div>
+
+              {/* Endereço CNAME */}
+              <div>
+                <Label className="text-slate-400">Aponte seu CNAME para:</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    value="cname.base44.app"
+                    readOnly
+                    className="bg-slate-900 border-slate-700 text-purple-300 font-mono text-sm"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      navigator.clipboard.writeText('cname.base44.app');
+                      alert('✅ Copiado!');
+                    }}
+                    className="border-slate-600 text-slate-300 hover:bg-white/10"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Campo do domínio personalizado */}
+              <div>
+                <Label className="text-slate-400">Seu Domínio Personalizado</Label>
+                <div className="flex gap-2 mt-1">
+                  <div className="flex-1 relative">
+                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <Input
+                      value={pizzaria.configuracoes?.dominio_personalizado || ''}
+                      onChange={(e) => updateConfig('dominio_personalizado', e.target.value.toLowerCase().trim())}
+                      className="bg-slate-800 border-slate-700 text-white pl-9 font-mono"
+                      placeholder="cardapio.suapizzaria.com.br"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Informe apenas o domínio/subdomínio, sem <span className="font-mono">https://</span>
+                </p>
+              </div>
+
+              {pizzaria.configuracoes?.dominio_personalizado && (
+                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" />
+                  <div className="text-sm">
+                    <p className="font-medium text-emerald-400">Domínio configurado</p>
+                    <p className="text-slate-400 mt-1">
+                      Após o DNS propagar (pode levar até 24h), sua loja estará acessível em:{' '}
+                      <a
+                        href={`https://${pizzaria.configuracoes.dominio_personalizado}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-purple-400 underline font-mono"
+                      >
+                        https://{pizzaria.configuracoes.dominio_personalizado}
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300">
+                ⚠️ Após configurar o CNAME e salvar o domínio aqui, clique em <strong>Salvar Alterações</strong> no topo da página.
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="bg-white/5 border-white/10">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
