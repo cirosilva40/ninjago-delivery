@@ -233,13 +233,13 @@ export default function CardapioCliente() {
   }, {});
 
   const adicionarAoCarrinho = (produto) => {
-    const itemExistente = carrinho.find(item => item.id === produto.id);
+    const itemExistente = carrinho.find(item => item.id === produto.id && !item.personalizacoes);
     if (itemExistente) {
       setCarrinho(carrinho.map(item =>
-        item.id === produto.id ? { ...item, quantidade: item.quantidade + 1 } : item
+        item.id === produto.id && !item.personalizacoes ? { ...item, quantidade: item.quantidade + 1 } : item
       ));
     } else {
-      setCarrinho([...carrinho, { ...produto, quantidade: 1 }]);
+      setCarrinho([...carrinho, { ...produto, quantidade: 1, observacao_item: '' }]);
     }
   };
 
