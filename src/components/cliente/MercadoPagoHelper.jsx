@@ -4,39 +4,65 @@ import { useEffect, useState } from 'react';
  * Hook para carregar o SDK do Mercado Pago
  */
 // Aceita a chave pública como parâmetro (vinda do banco de dados da pizzaria)
+// Chave pública de fallback vinda do secret global da plataforma
+const FALLBACK_PUBLIC_KEY = import.meta.env.VITE_MERCADO_PAGO_PUBLIC_KEY;
+
 export const useMercadoPago = (publicKey) => {
   const [mp, setMp] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  // Usar a chave da pizzaria ou o fallback global
+  const keyToUse = publicKey || FALLBACK_PUBLIC_KEY;
+
   useEffect(() => {
-    if (!publicKey) {
+    if (!keyToUse) {
+      // Sem chave alguma, marcar como "carregado" para não travar o botão
       setMp(null);
-      setIsLoaded(false);
+      setIsLoaded(true);
       return;
     }
 
     const initMP = () => {
-      const mpInstance = new window.MercadoPago(publicKey);
-      setMp(mpInstance);
-      setIsLoaded(true);
+      try {
+        const mpInstance = new window.MercadoPago(keyToUse);
+        setMp(mpInstance);
+        setIsLoaded(true);
+      } catch (e) {
+        console.error('Erro ao inicializar MP SDK:', e);
+        setIsLoaded(true);
+      }
     };
 
-    // Verificar se o script já foi carregado
     if (window.MercadoPago) {
       initMP();
       return;
     }
 
-    // Carregar o script do SDK
+    // Evitar adicionar o script duas vezes
+    if (document.querySelector('script[src="https://sdk.mercadopago.com/js/v2"]')) {
+      const interval = setInterval(() => {
+        if (window.MercadoPago) {
+          clearInterval(interval);
+          initMP();
+        }
+      }, 200);
+      return () => clearInterval(interval);
+    }
+
     const script = document.createElement('script');
     script.src = 'https://sdk.mercadopago.com/js/v2';
     script.async = true;
     script.onload = () => {
       if (window.MercadoPago) initMP();
+      else setIsLoaded(true);
+    };
+    script.onerror = () => {
+      console.error('Falha ao carregar SDK do Mercado Pago');
+      setIsLoaded(true);
     };
 
     document.body.appendChild(script);
-  }, [publicKey]);
+  }, [keyToUse]);
 
   return { mp, isLoaded };
 };
