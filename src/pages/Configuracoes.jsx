@@ -982,32 +982,71 @@ export default function Configuracoes() {
                 </div>
               </div>
 
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-slate-400">Chave Pública (Public Key)</Label>
-                  <Input
-                    value={pizzaria.configuracoes?.mp_public_key || ''}
-                    onChange={(e) => updateConfig('mp_public_key', e.target.value)}
-                    className="bg-slate-800 border-slate-700 text-white font-mono text-sm"
-                    placeholder="APP_USR-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                  />
-                  <p className="text-xs text-slate-500 mt-1">Usada no frontend para inicializar o checkout</p>
+              {pizzaria.configuracoes?.mp_credenciais_salvas ? (
+                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-400 text-lg">✅</span>
+                    <div>
+                      <p className="font-semibold text-emerald-400">Mercado Pago conectado</p>
+                      <p className="text-xs text-slate-400">Credenciais salvas com sucesso</p>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => updateConfig('mp_credenciais_salvas', false)}
+                    className="border-slate-600 text-slate-300 hover:bg-white/10 text-xs"
+                  >
+                    Alterar credenciais
+                  </Button>
                 </div>
+              ) : (
+                <>
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-slate-400">Chave Pública (Public Key)</Label>
+                      <Input
+                        value={pizzaria.configuracoes?.mp_public_key || ''}
+                        onChange={(e) => updateConfig('mp_public_key', e.target.value)}
+                        className="bg-slate-800 border-slate-700 text-white font-mono text-sm"
+                        placeholder="APP_USR-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                      />
+                      <p className="text-xs text-slate-500 mt-1">Usada no frontend para inicializar o checkout</p>
+                    </div>
 
-                <div>
-                  <Label className="text-slate-400">Access Token (Chave Privada)</Label>
-                  <Input
-                    value={pizzaria.configuracoes?.mp_access_token || ''}
-                    onChange={(e) => updateConfig('mp_access_token', e.target.value)}
-                    className="bg-slate-800 border-slate-700 text-white font-mono text-sm"
-                    placeholder="APP_USR-xxxxxxxxxxxx-xxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx-xxxxxxxxx"
-                  />
-                  <p className="text-xs text-slate-500 mt-1">Chave secreta para processar pagamentos no servidor</p>
-                </div>
-              </div>
+                    <div>
+                      <Label className="text-slate-400">Access Token (Chave Privada)</Label>
+                      <Input
+                        value={pizzaria.configuracoes?.mp_access_token || ''}
+                        onChange={(e) => updateConfig('mp_access_token', e.target.value)}
+                        className="bg-slate-800 border-slate-700 text-white font-mono text-sm"
+                        placeholder="APP_USR-xxxxxxxxxxxx-xxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx-xxxxxxxxx"
+                      />
+                      <p className="text-xs text-slate-500 mt-1">Chave secreta para processar pagamentos no servidor</p>
+                    </div>
+                  </div>
 
-              {pizzaria.configuracoes?.mp_access_token && (
-                <TestarMercadoPago accessToken={pizzaria.configuracoes.mp_access_token} />
+                  {pizzaria.configuracoes?.mp_access_token && (
+                    <TestarMercadoPago
+                      accessToken={pizzaria.configuracoes.mp_access_token}
+                      onSalvarCredenciais={async () => {
+                        const updated = {
+                          ...pizzaria,
+                          configuracoes: {
+                            ...pizzaria.configuracoes,
+                            mp_credenciais_salvas: true,
+                          },
+                        };
+                        setPizzaria(updated);
+                        if (pizzarias.length > 0) {
+                          await base44.entities.Pizzaria.update(pizzarias[0].id, updated);
+                          refetch();
+                        }
+                      }}
+                    />
+                  )}
+                </>
               )}
             </CardContent>
           </Card>
