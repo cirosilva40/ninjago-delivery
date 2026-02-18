@@ -256,14 +256,33 @@ export default function AcompanharPedido() {
             </h3>
             <div className="space-y-3">
               {pedidoAtual.itens?.map((item, i) => (
-                <div key={i} className="flex justify-between text-slate-300">
-                  <span>{item.quantidade}x {item.nome}</span>
-                  <span className="text-emerald-400">R$ {(item.preco_unitario * item.quantidade).toFixed(2)}</span>
+                <div key={i} className="rounded-xl bg-white/5 p-3">
+                  <div className="flex justify-between text-slate-300">
+                    <span className="font-medium text-white">{item.quantidade}x {item.nome}</span>
+                    <span className="text-emerald-400 font-semibold">R$ {(item.preco_unitario * item.quantidade).toFixed(2)}</span>
+                  </div>
+                  {item.observacao && (
+                    <p className="text-xs text-slate-400 mt-1 italic">📝 {item.observacao}</p>
+                  )}
                 </div>
               ))}
-              <div className="border-t border-white/10 pt-3 flex justify-between font-bold">
-                <span className="text-white">Total:</span>
-                <span className="text-emerald-400 text-xl">R$ {pedidoAtual.valor_total?.toFixed(2)}</span>
+              <div className="border-t border-white/10 pt-3 space-y-1">
+                {pedidoAtual.taxa_entrega > 0 && (
+                  <div className="flex justify-between text-sm text-slate-400">
+                    <span>Taxa de entrega:</span>
+                    <span>R$ {pedidoAtual.taxa_entrega?.toFixed(2)}</span>
+                  </div>
+                )}
+                {pedidoAtual.desconto > 0 && (
+                  <div className="flex justify-between text-sm text-emerald-400">
+                    <span>Desconto:</span>
+                    <span>- R$ {pedidoAtual.desconto?.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold pt-1">
+                  <span className="text-white">Total:</span>
+                  <span className="text-emerald-400 text-xl">R$ {pedidoAtual.valor_total?.toFixed(2)}</span>
+                </div>
               </div>
             </div>
           </Card>
