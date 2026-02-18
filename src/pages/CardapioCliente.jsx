@@ -1527,7 +1527,7 @@ export default function CardapioCliente() {
                       {formCliente.forma_pagamento === 'online' && (
                         <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
                           <p className="text-sm text-blue-300">
-                            💳 Você será redirecionado para o Mercado Pago para escolher a forma de pagamento (PIX, cartão de crédito, débito e mais).
+                            💳 Você escolherá a forma de pagamento online (PIX ou cartão de crédito/débito) na próxima etapa, sem sair do site.
                           </p>
                         </div>
                       )}
