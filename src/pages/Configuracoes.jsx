@@ -162,11 +162,15 @@ export default function Configuracoes() {
     setLoading(true);
     try {
       // Garantir que configuracoes com credenciais MP sejam sempre preservadas
+      const configAtual = pizzaria.configuracoes || {};
       const dadosParaSalvar = {
         ...pizzaria,
         configuracoes: {
           ...(pizzarias[0]?.configuracoes || {}),
-          ...pizzaria.configuracoes,
+          ...configAtual,
+          // Preservar flag mp_credenciais_salvas se as chaves estiverem preenchidas
+          mp_credenciais_salvas: configAtual.mp_credenciais_salvas === true || 
+            (!!configAtual.mp_public_key && !!configAtual.mp_access_token),
         },
       };
 
