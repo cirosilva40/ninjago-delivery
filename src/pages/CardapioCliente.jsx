@@ -201,6 +201,23 @@ export default function CardapioCliente() {
   const logoUrl = pizzariaConfig.logo_url || 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6925e1fdd6376091844799ad/74cee5df9_WhatsAppImage2025-11-26at115948.jpeg';
   const nomeExibicao = pizzariaConfig.nome_exibicao_cliente || pizzariaConfig.nome || 'NinjaGO Delivery';
 
+  // Verificar se a loja está aberta
+  const verificarLojaAberta = () => {
+    if (!pizzariaConfig.horario_abertura || !pizzariaConfig.horario_fechamento) return true;
+    const agora = new Date();
+    const [hAbr, mAbr] = pizzariaConfig.horario_abertura.split(':').map(Number);
+    const [hFech, mFech] = pizzariaConfig.horario_fechamento.split(':').map(Number);
+    const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+    const minutosAbertura = hAbr * 60 + mAbr;
+    const minutosFechamento = hFech * 60 + mFech;
+    // Suporte para virada de meia noite (ex: 18:00 - 02:00)
+    if (minutosFechamento < minutosAbertura) {
+      return minutosAgora >= minutosAbertura || minutosAgora < minutosFechamento;
+    }
+    return minutosAgora >= minutosAbertura && minutosAgora < minutosFechamento;
+  };
+  const lojaAberta = verificarLojaAberta();
+
   const produtosFiltrados = produtos.filter(p => {
     const matchCategoria = categoriaAtiva === 'todos' || p.categoria === categoriaAtiva;
     const matchBusca = !busca || 
