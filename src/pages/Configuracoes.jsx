@@ -343,6 +343,59 @@ export default function Configuracoes() {
                     />
                   </div>
                 </div>
+
+                {/* Horário de Funcionamento — junto aos Meus Dados */}
+                <div className="pt-4 border-t border-white/10">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Clock className="w-4 h-4 text-blue-400" />
+                    <p className="text-sm font-semibold text-white">Horário de Funcionamento</p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div>
+                      <Label className="text-slate-400">Abertura</Label>
+                      <Input
+                        type="time"
+                        value={pizzaria.horario_abertura}
+                        onChange={(e) => setPizzaria({ ...pizzaria, horario_abertura: e.target.value })}
+                        className="bg-slate-800/50 border-slate-600 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-slate-400">Fechamento</Label>
+                      <Input
+                        type="time"
+                        value={pizzaria.horario_fechamento}
+                        onChange={(e) => setPizzaria({ ...pizzaria, horario_fechamento: e.target.value })}
+                        className="bg-slate-800/50 border-slate-600 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-slate-400">Tempo Médio Preparo (min)</Label>
+                      <Input
+                        type="number"
+                        value={pizzaria.configuracoes?.tempo_medio_preparo || 30}
+                        onChange={(e) => updateConfig('tempo_medio_preparo', parseInt(e.target.value))}
+                        className="bg-slate-800/50 border-slate-600 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-slate-400">Status</Label>
+                      <Select
+                        value={pizzaria.status}
+                        onValueChange={(v) => setPizzaria({ ...pizzaria, status: v })}
+                      >
+                        <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-800 border-slate-700">
+                          <SelectItem value="ativa">Ativa</SelectItem>
+                          <SelectItem value="inativa">Inativa</SelectItem>
+                          <SelectItem value="suspensa">Suspensa</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
