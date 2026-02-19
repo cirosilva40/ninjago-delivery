@@ -402,10 +402,10 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <button className="btn-red px-8 py-4 rounded-xl text-base font-bold text-white flex items-center gap-2 glow-red w-fit">
+              <a href="https://wa.me/5511977468757" target="_blank" rel="noopener noreferrer" className="btn-red px-8 py-4 rounded-xl text-base font-bold text-white flex items-center gap-2 glow-red w-fit">
                 Começar agora
                 <ArrowRight className="w-5 h-5" />
-              </button>
+              </a>
             </motion.div>
 
             <motion.div
