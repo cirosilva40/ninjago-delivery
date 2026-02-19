@@ -106,7 +106,7 @@ export default function Layout({ children, currentPageName }) {
   };
 
   // Páginas que não usam o layout padrão
-  if (currentPageName === 'AppEntregador' || currentPageName === 'AdminUsers' || currentPageName === 'CardapioCliente' || currentPageName === 'AcompanharPedido' || currentPageName === 'AcessoCliente' || currentPageName === 'PerfilCliente' || currentPageName === 'AcessoUsuario' || currentPageName === 'PagamentoSucesso' || currentPageName === 'PagamentoFalha') {
+  if (currentPageName === 'Home' || currentPageName === 'AppEntregador' || currentPageName === 'AdminUsers' || currentPageName === 'CardapioCliente' || currentPageName === 'AcompanharPedido' || currentPageName === 'AcessoCliente' || currentPageName === 'PerfilCliente' || currentPageName === 'AcessoUsuario' || currentPageName === 'PagamentoSucesso' || currentPageName === 'PagamentoFalha') {
     return <>{children}</>;
   }
 
