@@ -7,28 +7,24 @@ import { Shield, LogIn, ArrowLeft, Lock } from 'lucide-react';
 
 export default function AcessoAdmin() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const [redirecting, setRedirecting] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Verifica se já está autenticado como admin
-    base44.auth.me().then(user => {
-      if (user?.role === 'admin') {
-        navigate(createPageUrl('AdminUsers'));
-      } else if (user) {
-        // Logado mas não é admin
-        setError('Acesso negado. Apenas administradores podem acessar este painel.');
-        setLoading(false);
-      } else {
-        setLoading(false);
-      }
-    }).catch(() => {
-      setLoading(false);
-    });
+    base44.auth.isAuthenticated().then(isAuth => {
+      if (!isAuth) return;
+      base44.auth.me().then(user => {
+        if (user?.role === 'admin') {
+          navigate(createPageUrl('AdminUsers'));
+        } else if (user) {
+          setError('Acesso negado. Apenas administradores podem acessar este painel.');
+        }
+      }).catch(() => {});
+    }).catch(() => {});
   }, []);
 
   const handleLogin = () => {
-    setLoading(true);
+    setRedirecting(true);
     base44.auth.redirectToLogin(createPageUrl('AdminUsers'));
   };
 
