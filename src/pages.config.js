@@ -112,7 +112,7 @@ export const PAGES = {
 }
 
 export const pagesConfig = {
-    mainPage: "CardapioCliente",
+    mainPage: "Home",
     Pages: PAGES,
     Layout: __Layout,
 };
