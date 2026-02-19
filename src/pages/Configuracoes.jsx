@@ -578,62 +578,7 @@ export default function Configuracoes() {
               </CardContent>
             </Card>
 
-            {/* Horário de Funcionamento */}
-            <Card className="bg-white/5 border-white/10 lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-blue-500" />
-                  Horário de Funcionamento
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div>
-                    <Label className="text-slate-400">Abertura</Label>
-                    <Input
-                      type="time"
-                      value={pizzaria.horario_abertura}
-                      onChange={(e) => setPizzaria({ ...pizzaria, horario_abertura: e.target.value })}
-                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-slate-400">Fechamento</Label>
-                    <Input
-                      type="time"
-                      value={pizzaria.horario_fechamento}
-                      onChange={(e) => setPizzaria({ ...pizzaria, horario_fechamento: e.target.value })}
-                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-slate-400">Tempo Médio Preparo (min)</Label>
-                    <Input
-                      type="number"
-                      value={pizzaria.configuracoes?.tempo_medio_preparo || 30}
-                      onChange={(e) => updateConfig('tempo_medio_preparo', parseInt(e.target.value))}
-                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-slate-400">Status</Label>
-                    <Select 
-                      value={pizzaria.status} 
-                      onValueChange={(v) => setPizzaria({ ...pizzaria, status: v })}
-                    >
-                      <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-700">
-                        <SelectItem value="ativa">Ativa</SelectItem>
-                        <SelectItem value="inativa">Inativa</SelectItem>
-                        <SelectItem value="suspensa">Suspensa</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+
           </div>
         </TabsContent>
 
