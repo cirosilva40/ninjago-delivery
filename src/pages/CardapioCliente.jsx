@@ -741,6 +741,19 @@ export default function CardapioCliente() {
       </header>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 pb-6">
+        {/* Banner loja fechada */}
+        {pizzariaConfig.id && !lojaAberta && (
+          <div className="mb-4 p-4 rounded-2xl bg-red-500/20 border-2 border-red-500/50 flex items-center gap-4">
+            <span className="text-3xl">🔒</span>
+            <div>
+              <p className={`font-bold text-lg ${isLight ? 'text-red-700' : 'text-red-300'}`}>Loja Fechada no Momento</p>
+              <p className={`text-sm ${isLight ? 'text-red-600' : 'text-red-400'}`}>
+                Funcionamento: {pizzariaConfig.horario_abertura} às {pizzariaConfig.horario_fechamento}. Volte em breve!
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Mensagem de erro se pizzaria não encontrada */}
         {!loadingPizzaria && pizzarias.length === 0 && pizzariaId && (
           <div className="text-center py-12 px-4">
