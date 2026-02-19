@@ -507,15 +507,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 py-16">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-2 mb-4">
                 <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6925e1fdd6376091844799ad/74cee5df9_WhatsAppImage2025-11-26at115948.jpeg"
-                  alt="NinjaGo"
-                  className="w-10 h-10 rounded-xl object-cover"
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6925e1fdd6376091844799ad/0f905828c_IMG_0111.png"
+                  alt="NinjaGo Delivery"
+                  className="h-12 w-auto object-contain"
                 />
-                <span className="text-xl font-bold text-white tracking-tight" translate="no">
-                  NinjaGo <span className="text-[#E11D48]">Delivery</span>
-                </span>
               </div>
               <p className="text-slate-500 text-sm leading-relaxed max-w-xs">
                 A plataforma completa de gestão e automação para delivery independente. Seu delivery no ritmo ninja.
