@@ -145,9 +145,9 @@ export default function Home() {
               <a href={createPageUrl('AppEntregador')} className="block py-3 text-slate-300 hover:text-white text-sm font-medium border-b border-white/5">
                 Área do Entregador
               </a>
-              <button className="btn-red w-full py-3 rounded-xl text-sm font-semibold text-white mt-3">
+              <a href="https://wa.me/5511977468757" target="_blank" rel="noopener noreferrer" className="btn-red w-full py-3 rounded-xl text-sm font-semibold text-white mt-3 block text-center">
                 Teste Grátis
-              </button>
+              </a>
             </motion.div>
           )}
         </AnimatePresence>
