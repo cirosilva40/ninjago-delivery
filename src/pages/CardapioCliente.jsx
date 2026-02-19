@@ -1742,7 +1742,81 @@ export default function CardapioCliente() {
                            <h3 className="font-semibold text-white text-lg">Como deseja pagar online?</h3>
                            <div className="grid grid-cols-2 gap-4">
                              <button
-                               onClick={() => setMetodoPagamentoOnline('pix')}
+                               onClick={async () => {
+                                 setMetodoPagamentoOnline('pix');
+                                 // Criar pedido imediatamente ao escolher PIX
+                                 try {
+                                   let clienteId = null;
+                                   if (tipoCliente === 'cadastrado') {
+                                     if (clienteLogado) {
+                                       await base44.entities.Cliente.update(clienteLogado.id, {
+                                         total_pedidos: (clienteLogado.total_pedidos || 0) + 1,
+                                         pontos_fidelidade: (clienteLogado.pontos_fidelidade || 0) + Math.floor(calcularSubtotal()),
+                                       });
+                                       clienteId = clienteLogado.id;
+                                     } else {
+                                       const clientesExistentes = await base44.entities.Cliente.filter({ telefone: formCliente.telefone });
+                                       if (clientesExistentes.length === 0) {
+                                         const novoCliente = await base44.entities.Cliente.create({
+                                           pizzaria_id: pizzariaId,
+                                           nome: formCliente.nome,
+                                           telefone: formCliente.telefone,
+                                           senha: cadastroSenha,
+                                           email: formCliente.email,
+                                           cep: formCliente.cep,
+                                           endereco: formCliente.endereco,
+                                           numero: formCliente.numero,
+                                           bairro: formCliente.bairro,
+                                           cidade: formCliente.cidade,
+                                           estado: formCliente.estado,
+                                           total_pedidos: 1,
+                                           pontos_fidelidade: Math.floor(calcularSubtotal()),
+                                         });
+                                         clienteId = novoCliente.id;
+                                         localStorage.setItem('cliente_logado', JSON.stringify({ ...novoCliente, pizzaria_id_atual: pizzariaId }));
+                                       } else {
+                                         clienteId = clientesExistentes[0].id;
+                                       }
+                                     }
+                                   }
+                                   const novoPedido = await base44.entities.Pedido.create({
+                                     pizzaria_id: pizzariaId,
+                                     numero_pedido: `PED${Date.now()}`,
+                                     tipo_pedido: 'delivery',
+                                     cliente_nome: formCliente.nome,
+                                     cliente_telefone: formCliente.telefone,
+                                     cliente_cep: formCliente.cep,
+                                     cliente_endereco: formCliente.endereco,
+                                     cliente_numero: formCliente.numero,
+                                     cliente_bairro: formCliente.bairro,
+                                     cliente_cidade: formCliente.cidade,
+                                     cliente_estado: formCliente.estado,
+                                     cliente_complemento: formCliente.complemento,
+                                     latitude: formCliente.latitude,
+                                     longitude: formCliente.longitude,
+                                     itens: carrinho.map(item => ({
+                                       produto_id: item.id,
+                                       nome: item.nome,
+                                       quantidade: item.quantidade,
+                                       preco_unitario: item.preco_final || item.preco,
+                                       observacao: item.observacao_item || ''
+                                     })),
+                                     valor_produtos: calcularSubtotal(),
+                                     taxa_entrega: taxaEntrega,
+                                     desconto: calcularDesconto(),
+                                     valor_total: calcularTotal(),
+                                     forma_pagamento: 'pix',
+                                     status: 'novo',
+                                     status_pagamento: 'pendente',
+                                     observacoes: formCliente.observacoes,
+                                     horario_pedido: new Date().toISOString(),
+                                     origem: 'site',
+                                   });
+                                   setPixPedidoId(novoPedido.id);
+                                 } catch (error) {
+                                   console.error('Erro ao criar pedido PIX:', error);
+                                 }
+                               }}
                                className="p-6 rounded-xl border-2 border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all text-center"
                              >
                                <div className="text-4xl mb-2">🔳</div>
