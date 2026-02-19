@@ -46,6 +46,7 @@ import ProdutoCard from '../components/cliente/ProdutoCard';
 import { enviarNotificacaoStatusPedido } from '../components/pedidos/NotificacaoHelper';
 import { Toaster } from 'sonner';
 import { useMercadoPago, criarTokenCartao } from '../components/cliente/MercadoPagoHelper';
+import PixCheckout from '../components/cliente/PixCheckout';
 
 export default function CardapioCliente() {
   const navigate = useNavigate();
