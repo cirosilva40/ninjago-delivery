@@ -195,14 +195,14 @@ export default function Home() {
             initial="hidden" animate="visible" variants={fadeUp} custom={3}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
           >
-            <button className="btn-red px-8 py-4 rounded-xl text-base font-bold text-white flex items-center gap-2 glow-red w-full sm:w-auto justify-center">
+            <a href="https://wa.me/5511977468757" target="_blank" rel="noopener noreferrer" className="btn-red px-8 py-4 rounded-xl text-base font-bold text-white flex items-center gap-2 glow-red w-full sm:w-auto justify-center">
               Quero Testar Gratuitamente
               <ArrowRight className="w-5 h-5" />
-            </button>
-            <button className="px-8 py-4 rounded-xl text-base font-semibold text-white border border-white/15 hover:border-white/30 hover:bg-white/5 transition-all w-full sm:w-auto flex items-center justify-center gap-2">
+            </a>
+            <a href="https://wa.me/5511977468757" target="_blank" rel="noopener noreferrer" className="px-8 py-4 rounded-xl text-base font-semibold text-white border border-white/15 hover:border-white/30 hover:bg-white/5 transition-all w-full sm:w-auto flex items-center justify-center gap-2">
               <MessageCircle className="w-5 h-5 text-slate-400" />
               Fale com um Especialista
-            </button>
+            </a>
           </motion.div>
 
           {/* Stats */}
