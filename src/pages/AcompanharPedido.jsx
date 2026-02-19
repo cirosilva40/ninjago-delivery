@@ -325,6 +325,31 @@ export default function AcompanharPedido() {
           </div>
         </Card>
 
+        {/* Status do Pagamento PIX pendente */}
+        {pedidoAtual.forma_pagamento === 'pix' && pedidoAtual.status_pagamento === 'pendente' && (
+          <Card className="bg-yellow-500/10 border-yellow-500/30 p-6 mt-6">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">⏳</span>
+              <div>
+                <h3 className="font-bold text-yellow-300">Aguardando Pagamento PIX</h3>
+                <p className="text-sm text-slate-300 mt-1">Após pagar, aguarde alguns instantes — o status será atualizado automaticamente aqui.</p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {pedidoAtual.forma_pagamento === 'pix' && pedidoAtual.status_pagamento === 'pago' && (
+          <Card className="bg-emerald-500/10 border-emerald-500/30 p-6 mt-6">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">✅</span>
+              <div>
+                <h3 className="font-bold text-emerald-300">Pagamento PIX Confirmado</h3>
+                <p className="text-sm text-slate-300 mt-1">Seu pagamento foi recebido com sucesso!</p>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Observações */}
         {pedidoAtual.observacoes && (
           <Card className="bg-white/5 border-white/10 p-6 mt-6">
