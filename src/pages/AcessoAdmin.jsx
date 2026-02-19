@@ -125,13 +125,13 @@ export default function AcessoAdmin() {
 
           <button
             onClick={handleLogin}
-            disabled={loading}
+            disabled={redirecting}
             className="btn-red w-full py-4 rounded-xl text-base font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {loading ? (
+            {redirecting ? (
               <>
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Aguarde...
+                Redirecionando...
               </>
             ) : (
               <>
