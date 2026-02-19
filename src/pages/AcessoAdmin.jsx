@@ -25,18 +25,10 @@ export default function AcessoAdmin() {
     }).catch(() => {});
   }, []);
 
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
-
-    try {
-      await base44.auth.redirectToLogin(createPageUrl('AdminUsers'));
-    } catch (err) {
-      setError('Erro ao redirecionar para login.');
-    } finally {
-      setLoading(false);
-    }
+    base44.auth.redirectToLogin(createPageUrl('AdminUsers'));
   };
 
   return (
