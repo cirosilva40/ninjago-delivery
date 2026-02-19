@@ -162,7 +162,7 @@ export default function Home() {
         <div className="relative z-10 max-w-7xl mx-auto px-6 py-20 text-center">
           {/* Badge */}
           <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#E11D48]/10 border border-[#E11D48]/25 text-[#FB7185] text-xs font-semibold uppercase tracking-widest mb-8">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-400/10 border border-emerald-400/40 text-emerald-400 text-xs font-semibold uppercase tracking-widest mb-8">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_#4ade80]" />
               Sistema completo para delivery
             </span>
