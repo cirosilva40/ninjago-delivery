@@ -3,30 +3,31 @@ import { motion } from 'framer-motion';
 import { base44 } from '@/api/base44Client';
 import { createPageUrl } from '@/utils';
 import { useNavigate } from 'react-router-dom';
-import { Shield, LogIn, Eye, EyeOff, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Shield, LogIn, ArrowLeft, Lock } from 'lucide-react';
 
 export default function AcessoAdmin() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Se já estiver logado como admin, redireciona direto
+    // Verifica se já está autenticado como admin
     base44.auth.me().then(user => {
       if (user?.role === 'admin') {
         navigate(createPageUrl('AdminUsers'));
+      } else if (user) {
+        // Logado mas não é admin
+        setError('Acesso negado. Apenas administradores podem acessar este painel.');
+        setLoading(false);
+      } else {
+        setLoading(false);
       }
-    }).catch(() => {});
+    }).catch(() => {
+      setLoading(false);
+    });
   }, []);
 
-  const handleLogin = (e) => {
-    e.preventDefault();
+  const handleLogin = () => {
     setLoading(true);
     base44.auth.redirectToLogin(createPageUrl('AdminUsers'));
   };
@@ -34,7 +35,8 @@ export default function AcessoAdmin() {
   return (
     <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4 relative overflow-hidden">
       <style>{`
-        .glow-red { box-shadow: 0 0 40px rgba(225, 29, 72, 0.35); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        * { font-family: 'Inter', sans-serif; }
         .btn-red {
           background: linear-gradient(135deg, #E11D48, #BE123C);
           transition: all 0.3s ease;
@@ -44,11 +46,19 @@ export default function AcessoAdmin() {
           transform: translateY(-1px);
           box-shadow: 0 8px 30px rgba(225, 29, 72, 0.4);
         }
+        .bg-grid {
+          background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+          background-size: 60px 60px;
+        }
       `}</style>
 
-      {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
-        style={{ background: 'radial-gradient(circle, rgba(225,29,72,0.1) 0%, transparent 70%)' }} />
+      {/* Grid background */}
+      <div className="absolute inset-0 bg-grid pointer-events-none" />
+
+      {/* Central glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(225,29,72,0.1) 0%, transparent 65%)' }} />
 
       {/* Back to Home */}
       <a
@@ -63,9 +73,9 @@ export default function AcessoAdmin() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-md"
+        className="w-full max-w-md relative z-10"
       >
-        {/* Logo */}
+        {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-6">
             <img
@@ -74,7 +84,7 @@ export default function AcessoAdmin() {
               className="w-14 h-14 rounded-2xl object-cover"
             />
             <div className="text-left">
-              <span className="text-2xl font-bold text-white tracking-tight" translate="no">
+              <span className="text-2xl font-bold text-white tracking-tight">
                 NinjaGo <span className="text-[#E11D48]">Delivery</span>
               </span>
               <p className="text-xs text-slate-500">Painel Administrativo</p>
@@ -82,12 +92,12 @@ export default function AcessoAdmin() {
           </div>
 
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#E11D48]/10 border border-[#E11D48]/25 text-[#FB7185] text-xs font-semibold uppercase tracking-widest mb-4">
-            <Shield className="w-4 h-4" />
+            <Shield className="w-3.5 h-3.5" />
             Acesso Restrito
           </div>
 
           <h1 className="text-3xl font-black text-white mb-2">Área Administrativa</h1>
-          <p className="text-slate-400 text-sm">Faça login com sua conta de administrador</p>
+          <p className="text-slate-400 text-sm">Apenas administradores autorizados têm acesso</p>
         </div>
 
         {/* Card */}
@@ -99,39 +109,46 @@ export default function AcessoAdmin() {
             backdropFilter: 'blur(12px)',
           }}
         >
-          {error && (
-            <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
+          {/* Lock icon */}
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-[#E11D48]/10 border border-[#E11D48]/20 flex items-center justify-center">
+              <Lock className="w-7 h-7 text-[#E11D48]" />
+            </div>
+          </div>
+
+          {error ? (
+            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm text-center">
               {error}
             </div>
-          )}
-
-          <div className="space-y-4 mb-6">
-            <p className="text-slate-300 text-sm text-center leading-relaxed">
-              Clique no botão abaixo para ser redirecionado à tela de login seguro. Apenas administradores têm acesso ao painel.
+          ) : (
+            <p className="text-slate-400 text-sm text-center mb-6 leading-relaxed">
+              Clique no botão abaixo para acessar o sistema com sua conta de administrador.
+              Você será redirecionado para a tela de login seguro.
             </p>
-          </div>
+          )}
 
           <button
             onClick={handleLogin}
             disabled={loading}
-            className="btn-red w-full py-4 rounded-xl text-base font-bold text-white flex items-center justify-center gap-2 glow-red disabled:opacity-60 disabled:cursor-not-allowed"
+            className="btn-red w-full py-4 rounded-xl text-base font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Redirecionando...
+                Aguarde...
               </>
             ) : (
               <>
                 <LogIn className="w-5 h-5" />
-                Entrar no Painel Admin
+                Entrar como Administrador
               </>
             )}
           </button>
 
-          <div className="mt-6 pt-6 border-t border-white/5 text-center">
+          <div className="mt-6 pt-6 border-t border-white/5 flex items-center justify-center gap-2">
+            <span className="text-xs text-slate-600">🔒</span>
             <p className="text-xs text-slate-600">
-              🔒 Acesso protegido • Somente administradores autorizados
+              Acesso protegido • Somente administradores autorizados
             </p>
           </div>
         </div>
