@@ -1783,183 +1783,24 @@ export default function CardapioCliente() {
                          </div>
                        )}
 
-                       {metodoPagamentoOnline === 'pix' && (
+                       {metodoPagamentoOnline === 'pix' && pixPedidoId && (
+                         <PixCheckout
+                           pedidoId={pixPedidoId}
+                           valorTotal={calcularTotal()}
+                           pizzariaId={pizzariaId}
+                           clienteEmail={formCliente.email || `${formCliente.telefone}@cliente.com`}
+                           onVoltar={() => setMetodoPagamentoOnline('')}
+                         />
+                       )}
+
+                       {metodoPagamentoOnline === 'pix' && !pixPedidoId && (
                          <div className="space-y-4">
                            <button onClick={() => setMetodoPagamentoOnline('')} className="text-slate-400 hover:text-white text-sm flex items-center gap-1">
                              ← Voltar à escolha de pagamento
                            </button>
-                           <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
-                             <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
-                               <div className="text-2xl">🔳</div>
-                               Pagamento via PIX
-                             </h3>
-                             {!pixData ? (
-                               <div className="text-center py-6">
-                                 <p className="text-slate-300 mb-4">Clique no botão abaixo para gerar o código PIX</p>
-                                 <Button
-                                   onClick={async () => {
-                                     setAguardandoPix(true);
-                                     try {
-                                       // Primeiro, criar o pedido
-                                       let clienteId = null;
-                                       if (tipoCliente === 'cadastrado') {
-                                         if (clienteLogado) {
-                                           await base44.entities.Cliente.update(clienteLogado.id, {
-                                             nome: formCliente.nome,
-                                             telefone: formCliente.telefone,
-                                             email: formCliente.email,
-                                             cep: formCliente.cep,
-                                             endereco: formCliente.endereco,
-                                             numero: formCliente.numero,
-                                             complemento: formCliente.complemento,
-                                             bairro: formCliente.bairro,
-                                             cidade: formCliente.cidade,
-                                             estado: formCliente.estado,
-                                             total_pedidos: (clienteLogado.total_pedidos || 0) + 1,
-                                             pontos_fidelidade: (clienteLogado.pontos_fidelidade || 0) + Math.floor(calcularSubtotal()),
-                                           });
-                                           clienteId = clienteLogado.id;
-                                         } else {
-                                           const clientesExistentes = await base44.entities.Cliente.filter({ telefone: formCliente.telefone });
-                                           if (clientesExistentes.length > 0) {
-                                             alert('Já existe uma conta com este telefone. Faça login.');
-                                             return;
-                                           }
-                                           const novoCliente = await base44.entities.Cliente.create({
-                                             pizzaria_id: pizzariaId,
-                                             nome: formCliente.nome,
-                                             telefone: formCliente.telefone,
-                                             senha: cadastroSenha,
-                                             email: formCliente.email,
-                                             cep: formCliente.cep,
-                                             endereco: formCliente.endereco,
-                                             numero: formCliente.numero,
-                                             complemento: formCliente.complemento,
-                                             bairro: formCliente.bairro,
-                                             cidade: formCliente.cidade,
-                                             estado: formCliente.estado,
-                                             latitude: formCliente.latitude,
-                                             longitude: formCliente.longitude,
-                                             total_pedidos: 1,
-                                             pontos_fidelidade: Math.floor(calcularSubtotal()),
-                                           });
-                                           clienteId = novoCliente.id;
-                                           localStorage.setItem('cliente_logado', JSON.stringify({ ...novoCliente, pizzaria_id_atual: pizzariaId }));
-                                         }
-                                       }
-
-                                       const pedidoData = {
-                                         pizzaria_id: pizzariaId,
-                                         numero_pedido: `PED${Date.now()}`,
-                                         tipo_pedido: 'delivery',
-                                         cliente_nome: formCliente.nome,
-                                         cliente_telefone: formCliente.telefone,
-                                         cliente_cep: formCliente.cep,
-                                         cliente_endereco: formCliente.endereco,
-                                         cliente_numero: formCliente.numero,
-                                         cliente_bairro: formCliente.bairro,
-                                         cliente_cidade: formCliente.cidade,
-                                         cliente_estado: formCliente.estado,
-                                         cliente_complemento: formCliente.complemento,
-                                         latitude: formCliente.latitude,
-                                         longitude: formCliente.longitude,
-                                         itens: carrinho.map(item => ({
-                                           produto_id: item.id,
-                                           nome: item.nome,
-                                           quantidade: item.quantidade,
-                                           preco_unitario: item.preco_final || item.preco,
-                                           observacao: ''
-                                         })),
-                                         valor_produtos: calcularSubtotal(),
-                                         taxa_entrega: taxaEntrega,
-                                         desconto: calcularDesconto(),
-                                         valor_total: calcularTotal(),
-                                         forma_pagamento: 'pix',
-                                         status: 'novo',
-                                         status_pagamento: 'pendente',
-                                         observacoes: formCliente.observacoes,
-                                         horario_pedido: new Date().toISOString(),
-                                         origem: 'site',
-                                       };
-
-                                       const novoPedido = await base44.entities.Pedido.create(pedidoData);
-
-                                       // Agora gerar o PIX
-                                       const { data } = await base44.functions.invoke('processarPagamentoMercadoPago', {
-                                         pedidoId: novoPedido.id,
-                                         valorTotal: calcularTotal(),
-                                         pizzariaId,
-                                         metodoPagamento: 'pix',
-                                         clienteEmail: formCliente.email || `${formCliente.telefone}@cliente.com`
-                                       });
-
-                                       if (data.success) {
-                                         setPixData(data);
-                                         localStorage.setItem('pedido_aguardando_pagamento', novoPedido.id);
-                                       } else {
-                                         alert('Erro ao gerar PIX: ' + (data.error || 'Tente novamente'));
-                                       }
-                                     } catch (error) {
-                                       alert('Erro ao gerar PIX. Tente novamente.');
-                                       console.error(error);
-                                     } finally {
-                                       setAguardandoPix(false);
-                                     }
-                                   }}
-                                   disabled={aguardandoPix}
-                                   className="bg-emerald-500 hover:bg-emerald-600"
-                                 >
-                                   {aguardandoPix ? 'Gerando...' : 'Gerar Código PIX'}
-                                 </Button>
-                               </div>
-                             ) : (
-                               <div className="space-y-4">
-                                 {pixData.qr_code_base64 && (
-                                   <div className="flex justify-center">
-                                     <img 
-                                       src={`data:image/png;base64,${pixData.qr_code_base64}`} 
-                                       alt="QR Code PIX"
-                                       className="w-64 h-64"
-                                     />
-                                   </div>
-                                 )}
-                                 <div>
-                                   <Label className="text-white">Código PIX (Copia e Cola)</Label>
-                                   <div className="flex gap-2">
-                                     <Input
-                                       value={pixData.qr_code || ''}
-                                       readOnly
-                                       className="bg-slate-800 border-slate-700 text-white font-mono text-xs"
-                                     />
-                                     <Button
-                                       onClick={() => {
-                                         navigator.clipboard.writeText(pixData.qr_code);
-                                         alert('Código PIX copiado!');
-                                       }}
-                                       variant="outline"
-                                       className="border-emerald-500 text-emerald-400"
-                                     >
-                                       Copiar
-                                     </Button>
-                                   </div>
-                                 </div>
-                                 <div className="p-3 rounded-lg bg-yellow-500/20 border border-yellow-500/50">
-                                   <p className="text-sm text-yellow-300">
-                                     ⏱️ Após realizar o pagamento, aguarde alguns instantes. O pedido será confirmado automaticamente.
-                                   </p>
-                                 </div>
-                                 <Button
-                                   onClick={() => {
-                                     const pedidoId = localStorage.getItem('pedido_aguardando_pagamento');
-                                     localStorage.removeItem('pedido_aguardando_pagamento');
-                                     navigate(createPageUrl('AcompanharPedido') + `?id=${pedidoId}&pizzaria_id=${pizzariaId}`);
-                                   }}
-                                   className="w-full bg-gradient-to-r from-orange-500 to-red-600"
-                                 >
-                                   Já paguei - Acompanhar Pedido
-                                 </Button>
-                               </div>
-                             )}
+                           <div className="text-center py-8">
+                             <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                             <p className="text-slate-300">Criando pedido e gerando PIX...</p>
                            </div>
                          </div>
                        )}
