@@ -444,26 +444,41 @@ export default function Configuracoes() {
                       value={pizzaria.cep}
                       onChange={async (e) => {
                         const cep = e.target.value;
-                        setPizzaria({ ...pizzaria, cep });
+                        setPizzaria(prev => ({ ...prev, cep }));
                         
-                        // Buscar automaticamente quando CEP estiver completo (8 dígitos)
                         const cepNumeros = cep.replace(/\D/g, '');
                         if (cepNumeros.length === 8) {
                           setLoading(true);
                           try {
-                            const enderecoCompleto = `${pizzaria.endereco}${pizzaria.numero ? ', ' + pizzaria.numero : ''} - ${pizzaria.bairro || ''}, ${pizzaria.cidade} - ${pizzaria.estado}, ${cep}`;
-                            const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(enderecoCompleto)}&format=json&limit=1`);
-                            const data = await response.json();
+                            // 1. Buscar endereço via ViaCEP
+                            const viaCepRes = await fetch(`https://viacep.com.br/ws/${cepNumeros}/json/`);
+                            const viaCepData = await viaCepRes.json();
                             
-                            if (data && data.length > 0) {
+                            if (!viaCepData.erro) {
                               setPizzaria(prev => ({
                                 ...prev,
-                                latitude: parseFloat(data[0].lat),
-                                longitude: parseFloat(data[0].lon),
+                                cep,
+                                endereco: viaCepData.logradouro || prev.endereco,
+                                bairro: viaCepData.bairro || prev.bairro,
+                                cidade: viaCepData.localidade || prev.cidade,
+                                estado: viaCepData.uf || prev.estado,
                               }));
+
+                              // 2. Geocodificar para obter lat/lng
+                              const enderecoCompleto = `${viaCepData.logradouro}, ${viaCepData.localidade} - ${viaCepData.uf}, Brasil`;
+                              const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(enderecoCompleto)}&format=json&limit=1`);
+                              const geoData = await geoRes.json();
+                              
+                              if (geoData && geoData.length > 0) {
+                                setPizzaria(prev => ({
+                                  ...prev,
+                                  latitude: parseFloat(geoData[0].lat),
+                                  longitude: parseFloat(geoData[0].lon),
+                                }));
+                              }
                             }
                           } catch (error) {
-                            console.error('Erro ao geocodificar:', error);
+                            console.error('Erro ao buscar CEP:', error);
                           } finally {
                             setLoading(false);
                           }
@@ -472,7 +487,7 @@ export default function Configuracoes() {
                       className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
                     />
                     <p className="text-xs text-purple-400 mt-1">
-                      💡 A localização será buscada automaticamente ao preencher
+                      💡 Endereço e mapa preenchidos automaticamente pelo CEP
                     </p>
                   </div>
                 </div>
