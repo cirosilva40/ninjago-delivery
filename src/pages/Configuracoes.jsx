@@ -411,6 +411,54 @@ export default function Configuracoes() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* CEP primeiro — preenche o restante automaticamente */}
+                <div>
+                  <Label className="text-slate-400">CEP</Label>
+                  <CepInput
+                    value={pizzaria.cep}
+                    onChange={async (e) => {
+                      const cep = e.target.value;
+                      setPizzaria(prev => ({ ...prev, cep }));
+                      const cepNumeros = cep.replace(/\D/g, '');
+                      if (cepNumeros.length === 8) {
+                        setLoading(true);
+                        try {
+                          const viaCepRes = await fetch(`https://viacep.com.br/ws/${cepNumeros}/json/`);
+                          const viaCepData = await viaCepRes.json();
+                          if (!viaCepData.erro) {
+                            setPizzaria(prev => ({
+                              ...prev,
+                              cep,
+                              endereco: viaCepData.logradouro || prev.endereco,
+                              bairro: viaCepData.bairro || prev.bairro,
+                              cidade: viaCepData.localidade || prev.cidade,
+                              estado: viaCepData.uf || prev.estado,
+                            }));
+                            const enderecoCompleto = `${viaCepData.logradouro}, ${viaCepData.localidade} - ${viaCepData.uf}, Brasil`;
+                            const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(enderecoCompleto)}&format=json&limit=1`);
+                            const geoData = await geoRes.json();
+                            if (geoData && geoData.length > 0) {
+                              setPizzaria(prev => ({
+                                ...prev,
+                                latitude: parseFloat(geoData[0].lat),
+                                longitude: parseFloat(geoData[0].lon),
+                              }));
+                            }
+                          }
+                        } catch (error) {
+                          console.error('Erro ao buscar CEP:', error);
+                        } finally {
+                          setLoading(false);
+                        }
+                      }
+                    }}
+                    className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
+                  />
+                  <p className="text-xs text-purple-400 mt-1">
+                    💡 Digite o CEP para preencher o endereço e o mapa automaticamente
+                  </p>
+                </div>
+
                 <div className="grid grid-cols-3 gap-4">
                   <div className="col-span-2">
                     <Label className="text-slate-400">Rua/Avenida</Label>
@@ -453,7 +501,7 @@ export default function Configuracoes() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-slate-400">Cidade</Label>
                     <Input
@@ -464,8 +512,8 @@ export default function Configuracoes() {
                   </div>
                   <div>
                     <Label className="text-slate-400">Estado</Label>
-                    <Select 
-                      value={pizzaria.estado} 
+                    <Select
+                      value={pizzaria.estado}
                       onValueChange={(v) => setPizzaria({ ...pizzaria, estado: v })}
                     >
                       <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
@@ -490,58 +538,6 @@ export default function Configuracoes() {
                         <SelectItem value="AM">AM</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-                  <div>
-                   <Label className="text-slate-400">CEP</Label>
-                    <CepInput
-                      value={pizzaria.cep}
-                      onChange={async (e) => {
-                        const cep = e.target.value;
-                        setPizzaria(prev => ({ ...prev, cep }));
-                        
-                        const cepNumeros = cep.replace(/\D/g, '');
-                        if (cepNumeros.length === 8) {
-                          setLoading(true);
-                          try {
-                            // 1. Buscar endereço via ViaCEP
-                            const viaCepRes = await fetch(`https://viacep.com.br/ws/${cepNumeros}/json/`);
-                            const viaCepData = await viaCepRes.json();
-                            
-                            if (!viaCepData.erro) {
-                              setPizzaria(prev => ({
-                                ...prev,
-                                cep,
-                                endereco: viaCepData.logradouro || prev.endereco,
-                                bairro: viaCepData.bairro || prev.bairro,
-                                cidade: viaCepData.localidade || prev.cidade,
-                                estado: viaCepData.uf || prev.estado,
-                              }));
-
-                              // 2. Geocodificar para obter lat/lng
-                              const enderecoCompleto = `${viaCepData.logradouro}, ${viaCepData.localidade} - ${viaCepData.uf}, Brasil`;
-                              const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(enderecoCompleto)}&format=json&limit=1`);
-                              const geoData = await geoRes.json();
-                              
-                              if (geoData && geoData.length > 0) {
-                                setPizzaria(prev => ({
-                                  ...prev,
-                                  latitude: parseFloat(geoData[0].lat),
-                                  longitude: parseFloat(geoData[0].lon),
-                                }));
-                              }
-                            }
-                          } catch (error) {
-                            console.error('Erro ao buscar CEP:', error);
-                          } finally {
-                            setLoading(false);
-                          }
-                        }
-                      }}
-                      className="bg-slate-800/50 border-slate-600 text-white placeholder:text-slate-500"
-                    />
-                    <p className="text-xs text-purple-400 mt-1">
-                      💡 Endereço e mapa preenchidos automaticamente pelo CEP
-                    </p>
                   </div>
                 </div>
 
