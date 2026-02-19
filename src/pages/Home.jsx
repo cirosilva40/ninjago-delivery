@@ -94,15 +94,12 @@ export default function Home() {
       <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-[#0F172A]/95 backdrop-blur-xl border-b border-white/5 shadow-xl shadow-black/20' : 'bg-transparent'}`}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <img
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6925e1fdd6376091844799ad/74cee5df9_WhatsAppImage2025-11-26at115948.jpeg"
-              alt="NinjaGo"
-              className="w-10 h-10 rounded-xl object-cover"
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/6925e1fdd6376091844799ad/0f905828c_IMG_0111.png"
+              alt="NinjaGo Delivery"
+              className="h-12 w-auto object-contain"
             />
-            <span className="text-xl font-bold text-white tracking-tight" translate="no">
-              NinjaGo <span className="text-[#E11D48]">Delivery</span>
-            </span>
           </div>
 
           {/* Desktop Nav */}
