@@ -492,14 +492,14 @@ export default function Home() {
               Sem comissão. Sem dependência. Sem limites.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button className="btn-red px-10 py-5 rounded-xl text-lg font-bold text-white flex items-center gap-2 glow-red w-full sm:w-auto justify-center">
+              <a href="https://wa.me/5511977468757" target="_blank" rel="noopener noreferrer" className="btn-red px-10 py-5 rounded-xl text-lg font-bold text-white flex items-center gap-2 glow-red w-full sm:w-auto justify-center">
                 Solicitar Teste Gratuito
                 <ArrowRight className="w-5 h-5" />
-              </button>
-              <button className="px-10 py-5 rounded-xl text-base font-semibold text-slate-300 border border-white/10 hover:border-white/25 hover:bg-white/5 transition-all w-full sm:w-auto flex items-center justify-center gap-2">
+              </a>
+              <a href="https://wa.me/5511977468757" target="_blank" rel="noopener noreferrer" className="px-10 py-5 rounded-xl text-base font-semibold text-slate-300 border border-white/10 hover:border-white/25 hover:bg-white/5 transition-all w-full sm:w-auto flex items-center justify-center gap-2">
                 <MessageCircle className="w-5 h-5" />
                 Falar no WhatsApp
-              </button>
+              </a>
             </div>
           </div>
         </motion.div>
