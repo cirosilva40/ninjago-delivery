@@ -527,8 +527,13 @@ export default function Home() {
             <div>
               <p className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Sistema</p>
               <div className="space-y-3">
-                {['Área do Restaurante', 'Área do Entregador', 'Cardápio Digital', 'Painel Admin'].map((item, i) => (
-                  <a key={i} href="#" className="block text-slate-500 hover:text-white text-sm transition-colors">{item}</a>
+                {[
+                  { label: 'Área do Restaurante', href: createPageUrl('AcessoUsuario') },
+                  { label: 'Área do Entregador', href: createPageUrl('AppEntregador') },
+                  { label: 'Cardápio Digital', href: '#' },
+                  { label: 'Painel Admin', href: createPageUrl('AcessoAdmin') },
+                ].map((item, i) => (
+                  <a key={i} href={item.href} className="block text-slate-500 hover:text-white text-sm transition-colors">{item.label}</a>
                 ))}
               </div>
             </div>
