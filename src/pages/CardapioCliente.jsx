@@ -95,6 +95,7 @@ export default function CardapioCliente() {
   });
   const [pixData, setPixData] = useState(null);
   const [aguardandoPix, setAguardandoPix] = useState(false);
+  const [pixPedidoId, setPixPedidoId] = useState(null);
 
   // Obter pizzaria_id da URL se fornecido
   useEffect(() => {
