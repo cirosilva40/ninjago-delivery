@@ -100,7 +100,7 @@ export default function Home() {
               alt="NinjaGo"
               className="w-10 h-10 rounded-xl object-cover"
             />
-            <span className="text-xl font-bold text-white tracking-tight">
+            <span className="text-xl font-bold text-white tracking-tight" translate="no">
               NinjaGo <span className="text-[#E11D48]">Delivery</span>
             </span>
           </div>
