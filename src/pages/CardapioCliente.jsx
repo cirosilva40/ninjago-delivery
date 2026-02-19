@@ -1139,12 +1139,16 @@ export default function CardapioCliente() {
 
               <Button
                 onClick={() => {
+                  if (!lojaAberta) {
+                    alert(`🔒 A loja está fechada no momento.\nHorário de funcionamento: ${pizzariaConfig.horario_abertura} às ${pizzariaConfig.horario_fechamento}`);
+                    return;
+                  }
                   setShowCarrinho(false);
                   setShowCheckout(true);
                 }}
-                className="w-full h-14 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-bold"
+                className={`w-full h-14 text-lg font-bold ${!lojaAberta ? 'bg-slate-600 cursor-not-allowed' : 'bg-gradient-to-r from-orange-500 to-red-600'}`}
               >
-                Finalizar Pedido
+                {!lojaAberta ? '🔒 Loja Fechada' : 'Finalizar Pedido'}
               </Button>
             </div>
           )}
