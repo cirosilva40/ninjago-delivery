@@ -119,9 +119,9 @@ export default function Home() {
             >
               Área do Entregador
             </a>
-            <button className="btn-red px-5 py-2.5 rounded-xl text-sm font-semibold text-white glow-red-sm ml-2">
+            <a href="https://wa.me/5511977468757" target="_blank" rel="noopener noreferrer" className="btn-red px-5 py-2.5 rounded-xl text-sm font-semibold text-white glow-red-sm ml-2">
               Teste Grátis
-            </button>
+            </a>
           </nav>
 
           {/* Mobile toggle */}
