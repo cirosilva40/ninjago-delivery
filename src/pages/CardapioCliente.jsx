@@ -1988,7 +1988,7 @@ export default function CardapioCliente() {
                                  }
 
                                  if (!mpLoaded || !mp) {
-                                   alert('Aguarde o carregamento do sistema de pagamento...');
+                                   alert('Sistema de pagamento ainda não carregado. Aguarde alguns segundos e tente novamente. Verifique se a chave pública do Mercado Pago está configurada em Configurações > Pagamento.');
                                    return;
                                  }
 
