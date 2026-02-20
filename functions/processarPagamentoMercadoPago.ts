@@ -1,144 +1,156 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { MercadoPagoConfig, Preference, Payment } from 'npm:mercadopago@2.0.0';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
+
     const payload = await req.json();
-    const { 
+    const {
       pedidoId,
       valorTotal,
       pizzariaId,
-      metodoPagamento, // 'pix', 'credit_card', 'debit_card'
-      dadosCartao, // { number, cvv, expiration_month, expiration_year, cardholder_name, cardholder_cpf }
+      metodoPagamento, // 'pix', 'credit_card', 'debit_card', 'vale_refeicao'
+      dadosCartao,     // { token, payment_method_id, cardholder_name, cardholder_cpf, installments }
       clienteEmail
     } = payload;
 
     if (!pedidoId || !valorTotal || !pizzariaId || !metodoPagamento) {
-      return Response.json({ 
-        error: 'Dados incompletos' 
-      }, { status: 400 });
+      return Response.json({ error: 'Dados incompletos' }, { status: 400 });
     }
 
-    // Buscar dados da pizzaria ANTES para pegar o access token dela
+    // Buscar pizzaria para pegar o access token dela
     const pizzaria = await base44.asServiceRole.entities.Pizzaria.get(pizzariaId);
     if (!pizzaria) {
       return Response.json({ error: 'Pizzaria não encontrada' }, { status: 404 });
     }
 
-    // Usar o access token da pizzaria (configurado nas configurações de pagamento)
     const accessToken = pizzaria.configuracoes?.mp_access_token || Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN');
-    
     if (!accessToken) {
-      return Response.json({ 
+      return Response.json({
         error: 'Token do Mercado Pago não configurado. Configure nas Configurações > Pagamento.'
       }, { status: 500 });
     }
 
-    // Configurar cliente do Mercado Pago
-    const client = new MercadoPagoConfig({ accessToken });
-
-    // Buscar dados do pedido
     const pedido = await base44.asServiceRole.entities.Pedido.get(pedidoId);
     if (!pedido) {
       return Response.json({ error: 'Pedido não encontrado' }, { status: 404 });
     }
 
-    // Preparar itens do pedido
-    const items = pedido.itens.map(item => ({
-      title: item.nome,
-      quantity: item.quantidade,
-      unit_price: item.preco_unitario,
-      currency_id: 'BRL'
-    }));
+    const email = clienteEmail || `cliente_${pedidoId}@ninjago.delivery`;
+    const idempotencyKey = `${pedidoId}-${metodoPagamento}-${Date.now()}`;
 
-    // Adicionar taxa de entrega se houver
-    if (pedido.taxa_entrega > 0) {
-      items.push({
-        title: 'Taxa de Entrega',
-        quantity: 1,
-        unit_price: pedido.taxa_entrega,
-        currency_id: 'BRL'
-      });
-    }
+    const headers = {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+      'X-Idempotency-Key': idempotencyKey
+    };
 
-    // Processar pagamento via PIX
+    // ── PIX ──────────────────────────────────────────────────────────────────
     if (metodoPagamento === 'pix') {
-      const payment = new Payment(client);
-      const paymentData = await payment.create({
-        body: {
-          transaction_amount: valorTotal,
-          description: `Pedido #${pedido.numero_pedido} - ${pizzaria.nome}`,
-          external_reference: pedidoId,
-          payment_method_id: 'pix',
-          payer: {
-            email: clienteEmail
-          }
-        }
+      const body = {
+        transaction_amount: parseFloat(valorTotal.toFixed(2)),
+        description: `Pedido #${pedido.numero_pedido || pedidoId} - ${pizzaria.nome}`,
+        external_reference: pedidoId,
+        payment_method_id: 'pix',
+        payer: { email }
+      };
+
+      const res = await fetch('https://api.mercadopago.com/v1/payments', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body)
       });
 
-      // Atualizar pedido com informações do PIX
+      const data = await res.json();
+      console.log('PIX response:', JSON.stringify(data));
+
+      if (!res.ok) {
+        return Response.json({
+          error: 'Erro ao gerar PIX',
+          details: data?.message || JSON.stringify(data)
+        }, { status: res.status });
+      }
+
       await base44.asServiceRole.entities.Pedido.update(pedidoId, {
         status_pagamento: 'pendente',
-        observacoes_financeiras: `Pagamento PIX - ID: ${paymentData.id}`
+        observacoes_financeiras: `Pagamento PIX - ID: ${data.id}`
       });
 
       return Response.json({
         success: true,
         tipo: 'pix',
-        qr_code: paymentData.point_of_interaction?.transaction_data?.qr_code,
-        qr_code_base64: paymentData.point_of_interaction?.transaction_data?.qr_code_base64,
-        payment_id: paymentData.id,
-        status: paymentData.status
+        qr_code: data.point_of_interaction?.transaction_data?.qr_code,
+        qr_code_base64: data.point_of_interaction?.transaction_data?.qr_code_base64,
+        payment_id: data.id,
+        status: data.status
       });
     }
 
-    // Processar pagamento com cartão (crédito, débito ou vale refeição)
-    if (metodoPagamento === 'credit_card' || metodoPagamento === 'debit_card' || metodoPagamento === 'vale_refeicao') {
-      if (!dadosCartao || !dadosCartao.token) {
-        return Response.json({ 
-          error: 'Token do cartão não fornecido' 
-        }, { status: 400 });
+    // ── CARTÃO (crédito, débito, vale refeição) ───────────────────────────────
+    if (['credit_card', 'debit_card', 'vale_refeicao'].includes(metodoPagamento)) {
+      if (!dadosCartao?.token) {
+        return Response.json({ error: 'Token do cartão não fornecido' }, { status: 400 });
       }
 
-      // Processar pagamento com cartão usando o token seguro
-      const payment = new Payment(client);
-      const paymentData = await payment.create({
-        body: {
-          transaction_amount: valorTotal,
-          token: dadosCartao.token,
-          description: `Pedido #${pedido.numero_pedido} - ${pizzaria.nome}`,
-          payment_method_id: dadosCartao.payment_method_id,
-          installments: metodoPagamento === 'credit_card' ? (dadosCartao.installments || 1) : 1,
-          payer: {
-            email: clienteEmail,
-            identification: {
-              type: 'CPF',
-              number: dadosCartao.cardholder_cpf
-            }
+      const installments = metodoPagamento === 'credit_card' ? (dadosCartao.installments || 1) : 1;
+
+      const body = {
+        transaction_amount: parseFloat(valorTotal.toFixed(2)),
+        token: dadosCartao.token,
+        description: `Pedido #${pedido.numero_pedido || pedidoId} - ${pizzaria.nome}`,
+        external_reference: pedidoId,
+        payment_method_id: dadosCartao.payment_method_id,
+        installments,
+        payer: {
+          email,
+          identification: {
+            type: 'CPF',
+            number: dadosCartao.cardholder_cpf?.replace(/\D/g, '')
           }
         }
+      };
+
+      console.log('Card payment body:', JSON.stringify({ ...body, token: '***' }));
+
+      const res = await fetch('https://api.mercadopago.com/v1/payments', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(body)
       });
 
-      // Atualizar status do pedido
-      const novoStatus = paymentData.status === 'approved' ? 'pago' : 
-                         paymentData.status === 'pending' ? 'pendente' : 'cancelado';
+      const data = await res.json();
+      console.log('Card payment response:', JSON.stringify(data));
 
-      const tipoPagamento = metodoPagamento === 'credit_card' ? 'Crédito' : 
+      if (!res.ok) {
+        const errMsg = data?.message || data?.cause?.[0]?.description || JSON.stringify(data);
+        return Response.json({
+          error: 'Erro ao processar pagamento com cartão',
+          details: errMsg
+        }, { status: res.status });
+      }
+
+      const statusMap = { approved: 'pago', pending: 'pendente', in_process: 'pendente' };
+      const novoStatus = statusMap[data.status] || 'cancelado';
+
+      const tipoPagamento = metodoPagamento === 'credit_card' ? 'Crédito' :
                             metodoPagamento === 'debit_card' ? 'Débito' : 'Vale Refeição';
 
       await base44.asServiceRole.entities.Pedido.update(pedidoId, {
         status_pagamento: novoStatus,
-        observacoes_financeiras: `Pagamento ${tipoPagamento} - ID: ${paymentData.id}`
+        observacoes_financeiras: `Pagamento ${tipoPagamento} - ID: ${data.id} - Status: ${data.status} (${data.status_detail})`
       });
 
+      // Se aprovado, mover para em_preparo
+      if (data.status === 'approved') {
+        await base44.asServiceRole.entities.Pedido.update(pedidoId, { status: 'em_preparo' });
+      }
+
       return Response.json({
-        success: true,
+        success: data.status === 'approved' || data.status === 'pending' || data.status === 'in_process',
         tipo: 'cartao',
-        payment_id: paymentData.id,
-        status: paymentData.status,
-        status_detail: paymentData.status_detail
+        payment_id: data.id,
+        status: data.status,
+        status_detail: data.status_detail
       });
     }
 
@@ -146,13 +158,9 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Erro ao processar pagamento:', error);
-    console.error('Detalhes do erro:', error.cause);
-    console.error('Stack:', error.stack);
-    
-    return Response.json({ 
-      error: 'Erro ao processar pagamento com Mercado Pago',
-      details: error.message,
-      cause: error.cause ? JSON.stringify(error.cause) : null
+    return Response.json({
+      error: 'Erro interno ao processar pagamento',
+      details: error.message
     }, { status: 500 });
   }
 });
