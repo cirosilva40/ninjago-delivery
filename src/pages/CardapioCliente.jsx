@@ -1697,7 +1697,10 @@ export default function CardapioCliente() {
                                     }
                                   });
                                   if (data.success) {
-                                    navigate(createPageUrl('AcompanharPedido') + `?id=${pedidoCriado.id}&pizzaria_id=${pizzariaId}`);
+                                    toast.success('🎉 Pagamento confirmado! Seu pedido está sendo preparado!', { duration: 10000 });
+                                    setTimeout(() => {
+                                      navigate(createPageUrl('AcompanharPedido') + `?id=${pedidoCriado.id}&pizzaria_id=${pizzariaId}`);
+                                    }, 2500);
                                   } else {
                                     const errDetail = data.details ? `\n\n${data.details}` : '';
                                     alert('Erro ao processar pagamento: ' + (data.error || 'Tente novamente') + errDetail);
