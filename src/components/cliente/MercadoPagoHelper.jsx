@@ -89,30 +89,44 @@ export const useMercadoPago = (publicKey) => {
  */
 export const criarTokenCartao = async (mp, dadosCartao) => {
   if (!mp) {
-    throw new Error('SDK do Mercado Pago não está carregado');
+    throw new Error('SDK do Mercado Pago não está carregado. Aguarde ou recarregue a página.');
   }
 
   try {
-    // Extrair mês e ano da validade
     const [mes, ano] = dadosCartao.validade.split('/');
     const anoCompleto = ano.length === 2 ? `20${ano}` : ano;
 
     const cardData = {
-      cardNumber: dadosCartao.numero.replace(/\s/g, ''),
-      cardholderName: dadosCartao.nome,
-      cardExpirationMonth: mes,
+      cardNumber: dadosCartao.numero.replace(/\D/g, ''),
+      cardholderName: dadosCartao.nome.trim(),
+      cardExpirationMonth: mes.padStart(2, '0'),
       cardExpirationYear: anoCompleto,
       securityCode: dadosCartao.cvv,
       identificationType: 'CPF',
       identificationNumber: dadosCartao.cpf.replace(/\D/g, '')
     };
 
-    // Criar token
-    const response = await mp.createCardToken(cardData);
-    
-    if (response.error) {
-      throw new Error(response.error.message || 'Erro ao processar cartão');
+    console.log('Criando token com dados:', { ...cardData, cardNumber: '****', securityCode: '***' });
+
+    // SDK v2: usar fields ou createCardToken conforme disponível
+    let response;
+    if (typeof mp.createCardToken === 'function') {
+      response = await mp.createCardToken(cardData);
+    } else {
+      throw new Error('Método createCardToken não disponível no SDK. Verifique a chave pública.');
     }
+
+    if (!response || response.status === 'active' === false) {
+      const errMsg = response?.cause?.[0]?.description || response?.error || 'Erro ao tokenizar cartão';
+      throw new Error(errMsg);
+    }
+
+    if (!response.id) {
+      const errMsg = response?.cause?.[0]?.description || 'Não foi possível gerar o token do cartão';
+      throw new Error(errMsg);
+    }
+
+    console.log('✅ Token criado:', response.id);
 
     return {
       token: response.id,
@@ -124,6 +138,12 @@ export const criarTokenCartao = async (mp, dadosCartao) => {
     };
   } catch (error) {
     console.error('Erro ao criar token:', error);
+    // Traduzir erros comuns do MP
+    const msg = error.message || '';
+    if (msg.includes('cardNumber') || msg.includes('card_number')) throw new Error('Número do cartão inválido');
+    if (msg.includes('expirationDate') || msg.includes('expiration')) throw new Error('Data de validade inválida');
+    if (msg.includes('securityCode') || msg.includes('security_code')) throw new Error('CVV inválido');
+    if (msg.includes('identificationNumber')) throw new Error('CPF inválido');
     throw error;
   }
 };
