@@ -168,18 +168,13 @@ export default function Configuracoes() {
     
     setLoading(true);
     try {
-      // Garantir que configuracoes com credenciais MP sejam sempre preservadas
       const configAtual = pizzaria.configuracoes || {};
-      const dadosParaSalvar = {
-        ...pizzaria,
-        configuracoes: {
-          ...(pizzarias[0]?.configuracoes || {}),
-          ...configAtual,
-          // Preservar flag mp_credenciais_salvas se as chaves estiverem preenchidas
-          mp_credenciais_salvas: configAtual.mp_credenciais_salvas === true || 
-            (!!configAtual.mp_public_key && !!configAtual.mp_access_token),
-        },
-      };
+      // Preservar flag mp_credenciais_salvas se as chaves estiverem preenchidas
+      if (configAtual.mp_public_key && configAtual.mp_access_token) {
+        configAtual.mp_credenciais_salvas = true;
+      }
+
+      const dadosParaSalvar = { ...pizzaria, configuracoes: configAtual };
 
       if (pizzarias.length > 0) {
         await base44.entities.Pizzaria.update(pizzarias[0].id, dadosParaSalvar);
@@ -191,6 +186,7 @@ export default function Configuracoes() {
       refetch();
     } catch (error) {
       console.error('Erro ao salvar:', error);
+      alert('Erro ao salvar configurações: ' + error.message);
     } finally {
       setLoading(false);
     }
