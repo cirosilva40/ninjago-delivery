@@ -1608,397 +1608,117 @@ export default function CardapioCliente() {
                   </>
                 )}
 
-                    {checkoutStep === 4 && (
+                    {checkoutStep === 4 && pedidoCriado && (
                     <>
-                     {/* Dados de Pagamento Online */}
-                     <div className="space-y-4">
+                      {/* Step 4: Efetuar pagamento (pedido já criado) */}
+                      {metodoPagamentoOnline === 'pix' && (
+                        <PixCheckout
+                          pedidoId={pedidoCriado.id}
+                          valorTotal={calcularTotal()}
+                          pizzariaId={pizzariaId}
+                          clienteEmail={formCliente.email || `${formCliente.telefone}@cliente.com`}
+                          onVoltar={() => { setCheckoutStep(3); setPedidoCriado(null); }}
+                        />
+                      )}
 
-                       {/* Seleção do método de pagamento online */}
-                       {!metodoPagamentoOnline && (
-                         <div className="space-y-4">
-                           <h3 className="font-semibold text-white text-lg">Como deseja pagar online?</h3>
-                           <div className="grid grid-cols-2 gap-4">
-                             <button
-                               onClick={async () => {
-                                 setMetodoPagamentoOnline('pix');
-                                 // Criar pedido imediatamente ao escolher PIX
-                                 try {
-                                   let clienteId = null;
-                                   if (tipoCliente === 'cadastrado') {
-                                     if (clienteLogado) {
-                                       await base44.entities.Cliente.update(clienteLogado.id, {
-                                         total_pedidos: (clienteLogado.total_pedidos || 0) + 1,
-                                         pontos_fidelidade: (clienteLogado.pontos_fidelidade || 0) + Math.floor(calcularSubtotal()),
-                                       });
-                                       clienteId = clienteLogado.id;
-                                     } else {
-                                       const clientesExistentes = await base44.entities.Cliente.filter({ telefone: formCliente.telefone });
-                                       if (clientesExistentes.length === 0) {
-                                         const novoCliente = await base44.entities.Cliente.create({
-                                           pizzaria_id: pizzariaId,
-                                           nome: formCliente.nome,
-                                           telefone: formCliente.telefone,
-                                           senha: cadastroSenha,
-                                           email: formCliente.email,
-                                           cep: formCliente.cep,
-                                           endereco: formCliente.endereco,
-                                           numero: formCliente.numero,
-                                           bairro: formCliente.bairro,
-                                           cidade: formCliente.cidade,
-                                           estado: formCliente.estado,
-                                           total_pedidos: 1,
-                                           pontos_fidelidade: Math.floor(calcularSubtotal()),
-                                         });
-                                         clienteId = novoCliente.id;
-                                         localStorage.setItem('cliente_logado', JSON.stringify({ ...novoCliente, pizzaria_id_atual: pizzariaId }));
-                                       } else {
-                                         clienteId = clientesExistentes[0].id;
-                                       }
-                                     }
-                                   }
-                                   const novoPedido = await base44.entities.Pedido.create({
-                                     pizzaria_id: pizzariaId,
-                                     numero_pedido: `PED${Date.now()}`,
-                                     tipo_pedido: 'delivery',
-                                     cliente_nome: formCliente.nome,
-                                     cliente_telefone: formCliente.telefone,
-                                     cliente_cep: formCliente.cep,
-                                     cliente_endereco: formCliente.endereco,
-                                     cliente_numero: formCliente.numero,
-                                     cliente_bairro: formCliente.bairro,
-                                     cliente_cidade: formCliente.cidade,
-                                     cliente_estado: formCliente.estado,
-                                     cliente_complemento: formCliente.complemento,
-                                     latitude: formCliente.latitude,
-                                     longitude: formCliente.longitude,
-                                     itens: carrinho.map(item => ({
-                                       produto_id: item.id,
-                                       nome: item.nome,
-                                       quantidade: item.quantidade,
-                                       preco_unitario: item.preco_final || item.preco,
-                                       observacao: item.observacao_item || ''
-                                     })),
-                                     valor_produtos: calcularSubtotal(),
-                                     taxa_entrega: taxaEntrega,
-                                     desconto: calcularDesconto(),
-                                     valor_total: calcularTotal(),
-                                     forma_pagamento: 'pix',
-                                     status: 'novo',
-                                     status_pagamento: 'pendente',
-                                     observacoes: formCliente.observacoes,
-                                     horario_pedido: new Date().toISOString(),
-                                     origem: 'site',
-                                   });
-                                   setPixPedidoId(novoPedido.id);
-                                 } catch (error) {
-                                   console.error('Erro ao criar pedido PIX:', error);
-                                 }
-                               }}
-                               className="p-6 rounded-xl border-2 border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all text-center"
-                             >
-                               <div className="text-4xl mb-2">🔳</div>
-                               <p className="font-bold text-white">PIX</p>
-                               <p className="text-xs text-slate-400 mt-1">Aprovação instantânea</p>
-                             </button>
-                             <button
-                               onClick={() => setMetodoPagamentoOnline('credit_card')}
-                               className="p-6 rounded-xl border-2 border-blue-500/50 bg-blue-500/10 hover:bg-blue-500/20 transition-all text-center"
-                             >
-                               <div className="text-4xl mb-2">💳</div>
-                               <p className="font-bold text-white">Cartão de Crédito</p>
-                               <p className="text-xs text-slate-400 mt-1">Parcelamento disponível</p>
-                             </button>
-                             <button
-                               onClick={() => setMetodoPagamentoOnline('debit_card')}
-                               className="p-6 rounded-xl border-2 border-purple-500/50 bg-purple-500/10 hover:bg-purple-500/20 transition-all text-center"
-                             >
-                               <div className="text-4xl mb-2">💳</div>
-                               <p className="font-bold text-white">Cartão de Débito</p>
-                               <p className="text-xs text-slate-400 mt-1">À vista</p>
-                             </button>
-                             <button
-                               onClick={() => setMetodoPagamentoOnline('vale_refeicao')}
-                               className="p-6 rounded-xl border-2 border-yellow-500/50 bg-yellow-500/10 hover:bg-yellow-500/20 transition-all text-center"
-                             >
-                               <div className="text-4xl mb-2">🎫</div>
-                               <p className="font-bold text-white">Vale Refeição</p>
-                               <p className="text-xs text-slate-400 mt-1">À vista</p>
-                             </button>
-                           </div>
-                           <Button
-                             onClick={() => setCheckoutStep(3)}
-                             variant="outline"
-                             className="w-full border-slate-600"
-                           >
-                             Voltar
-                           </Button>
-                         </div>
-                       )}
+                      {(metodoPagamentoOnline === 'credit_card' || metodoPagamentoOnline === 'debit_card' || metodoPagamentoOnline === 'vale_refeicao') && (
+                        <div className="space-y-4">
+                          <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
+                            <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+                              <div className="text-2xl">{metodoPagamentoOnline === 'vale_refeicao' ? '🎫' : '💳'}</div>
+                              Dados do {metodoPagamentoOnline === 'credit_card' ? 'Cartão de Crédito' : metodoPagamentoOnline === 'debit_card' ? 'Cartão de Débito' : 'Vale Refeição'}
+                            </h3>
+                            <div className="space-y-4">
+                              <div>
+                                <Label>Número do Cartão</Label>
+                                <Input value={dadosCartao.numero} onChange={(e) => setDadosCartao({...dadosCartao, numero: e.target.value.replace(/\D/g, '')})} className="bg-slate-800 border-slate-700 text-white" placeholder="0000 0000 0000 0000" maxLength={16} />
+                              </div>
+                              <div>
+                                <Label>Nome do Titular (como está no cartão)</Label>
+                                <Input value={dadosCartao.nome} onChange={(e) => setDadosCartao({...dadosCartao, nome: e.target.value.toUpperCase()})} className="bg-slate-800 border-slate-700 text-white" placeholder="NOME COMPLETO" />
+                              </div>
+                              <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                  <Label>Validade</Label>
+                                  <Input value={dadosCartao.validade} onChange={(e) => setDadosCartao({...dadosCartao, validade: e.target.value})} className="bg-slate-800 border-slate-700 text-white" placeholder="MM/AA" maxLength={5} />
+                                </div>
+                                <div>
+                                  <Label>CVV</Label>
+                                  <Input value={dadosCartao.cvv} onChange={(e) => setDadosCartao({...dadosCartao, cvv: e.target.value.replace(/\D/g, '')})} className="bg-slate-800 border-slate-700 text-white" placeholder="000" maxLength={4} />
+                                </div>
+                                <div>
+                                  <Label>CPF</Label>
+                                  <Input value={dadosCartao.cpf} onChange={(e) => setDadosCartao({...dadosCartao, cpf: e.target.value.replace(/\D/g, '')})} className="bg-slate-800 border-slate-700 text-white" placeholder="000.000.000-00" maxLength={11} />
+                                </div>
+                              </div>
+                              {metodoPagamentoOnline === 'credit_card' && (
+                                <div>
+                                  <Label>Número de Parcelas</Label>
+                                  <Select value={dadosCartao.parcelas.toString()} onValueChange={(v) => setDadosCartao({...dadosCartao, parcelas: parseInt(v)})}>
+                                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue /></SelectTrigger>
+                                    <SelectContent className="bg-slate-800 border-slate-700">
+                                      {[1,2,3,4,5,6,7,8,9,10,11,12].map(p => (
+                                        <SelectItem key={p} value={p.toString()}>{p}x de R$ {(calcularTotal() / p).toFixed(2)}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              )}
+                            </div>
+                          </div>
 
-                       {metodoPagamentoOnline === 'pix' && pixPedidoId && (
-                         <PixCheckout
-                           pedidoId={pixPedidoId}
-                           valorTotal={calcularTotal()}
-                           pizzariaId={pizzariaId}
-                           clienteEmail={formCliente.email || `${formCliente.telefone}@cliente.com`}
-                           onVoltar={() => setMetodoPagamentoOnline('')}
-                         />
-                       )}
-
-                       {metodoPagamentoOnline === 'pix' && !pixPedidoId && (
-                         <div className="space-y-4">
-                           <button onClick={() => setMetodoPagamentoOnline('')} className="text-slate-400 hover:text-white text-sm flex items-center gap-1">
-                             ← Voltar à escolha de pagamento
-                           </button>
-                           <div className="text-center py-8">
-                             <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                             <p className="text-slate-300">Criando pedido e gerando PIX...</p>
-                           </div>
-                         </div>
-                       )}
-
-                       {(metodoPagamentoOnline === 'credit_card' || metodoPagamentoOnline === 'debit_card' || metodoPagamentoOnline === 'vale_refeicao') && (
-                           <div className="space-y-4">
-                             <button onClick={() => setMetodoPagamentoOnline('')} className="text-slate-400 hover:text-white text-sm flex items-center gap-1">
-                               ← Voltar à escolha de pagamento
-                             </button>
-                             <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
-                              <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-                                <div className="text-2xl">{metodoPagamentoOnline === 'vale_refeicao' ? '🎫' : '💳'}</div>
-                                Dados do {metodoPagamentoOnline === 'credit_card' ? 'Cartão de Crédito' : metodoPagamentoOnline === 'debit_card' ? 'Cartão de Débito' : 'Vale Refeição'}
-                              </h3>
-                             <div className="space-y-4">
-                               <div>
-                                 <Label>Número do Cartão</Label>
-                                 <Input
-                                   value={dadosCartao.numero}
-                                   onChange={(e) => setDadosCartao({...dadosCartao, numero: e.target.value.replace(/\D/g, '')})}
-                                   className="bg-slate-800 border-slate-700 text-white"
-                                   placeholder="0000 0000 0000 0000"
-                                   maxLength={16}
-                                 />
-                               </div>
-                               <div>
-                                 <Label>Nome do Titular (como está no cartão)</Label>
-                                 <Input
-                                   value={dadosCartao.nome}
-                                   onChange={(e) => setDadosCartao({...dadosCartao, nome: e.target.value.toUpperCase()})}
-                                   className="bg-slate-800 border-slate-700 text-white"
-                                   placeholder="NOME COMPLETO"
-                                 />
-                               </div>
-                               <div className="grid grid-cols-3 gap-4">
-                                 <div>
-                                   <Label>Validade</Label>
-                                   <Input
-                                     value={dadosCartao.validade}
-                                     onChange={(e) => setDadosCartao({...dadosCartao, validade: e.target.value})}
-                                     className="bg-slate-800 border-slate-700 text-white"
-                                     placeholder="MM/AA"
-                                     maxLength={5}
-                                   />
-                                 </div>
-                                 <div>
-                                   <Label>CVV</Label>
-                                   <Input
-                                     value={dadosCartao.cvv}
-                                     onChange={(e) => setDadosCartao({...dadosCartao, cvv: e.target.value.replace(/\D/g, '')})}
-                                     className="bg-slate-800 border-slate-700 text-white"
-                                     placeholder="000"
-                                     maxLength={4}
-                                   />
-                                 </div>
-                                 <div>
-                                   <Label>CPF</Label>
-                                   <Input
-                                     value={dadosCartao.cpf}
-                                     onChange={(e) => setDadosCartao({...dadosCartao, cpf: e.target.value.replace(/\D/g, '')})}
-                                     className="bg-slate-800 border-slate-700 text-white"
-                                     placeholder="000.000.000-00"
-                                     maxLength={11}
-                                   />
-                                 </div>
-                               </div>
-                               {metodoPagamentoOnline === 'credit_card' && (
-                                 <div>
-                                   <Label>Número de Parcelas</Label>
-                                   <Select 
-                                     value={dadosCartao.parcelas.toString()} 
-                                     onValueChange={(v) => setDadosCartao({...dadosCartao, parcelas: parseInt(v)})}
-                                   >
-                                     <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                                       <SelectValue />
-                                     </SelectTrigger>
-                                     <SelectContent className="bg-slate-800 border-slate-700">
-                                       {[1,2,3,4,5,6,7,8,9,10,11,12].map(p => (
-                                         <SelectItem key={p} value={p.toString()}>
-                                           {p}x de R$ {(calcularTotal() / p).toFixed(2)}
-                                         </SelectItem>
-                                       ))}
-                                     </SelectContent>
-                                   </Select>
-                                 </div>
-                               )}
-                               {metodoPagamentoOnline === 'vale_refeicao' && (
-                                 <div className="p-3 rounded-lg bg-yellow-500/20 border border-yellow-500/50">
-                                   <p className="text-sm text-yellow-300">
-                                     ℹ️ Vale refeição não permite parcelamento - pagamento à vista
-                                   </p>
-                                 </div>
-                               )}
-                             </div>
-                           </div>
-
-                           <div className="flex gap-3">
-                             <Button
-                               onClick={() => setCheckoutStep(3)}
-                               variant="outline"
-                               className="flex-1 border-slate-600"
-                             >
-                               Voltar
-                             </Button>
-                             <Button
-                               onClick={async () => {
-                                 if (!dadosCartao.numero || !dadosCartao.nome || !dadosCartao.validade || !dadosCartao.cvv || !dadosCartao.cpf) {
-                                   alert('Preencha todos os dados do cartão');
-                                   return;
-                                 }
-
-                                 if (!mpLoaded || !mp) {
-                                   alert('Sistema de pagamento ainda não carregado. Aguarde alguns segundos e tente novamente. Verifique se a chave pública do Mercado Pago está configurada em Configurações > Pagamento.');
-                                   return;
-                                 }
-
-                                 setProcessandoPagamento(true);
-                                 try {
-                                   // 1. Criar token seguro do cartão usando SDK do Mercado Pago
-                                   const tokenData = await criarTokenCartao(mp, dadosCartao);
-
-                                   // 2. Criar pedido e processar pagamento com cartão
-                                   let clienteId = null;
-                                   if (tipoCliente === 'cadastrado') {
-                                     if (clienteLogado) {
-                                       await base44.entities.Cliente.update(clienteLogado.id, {
-                                         nome: formCliente.nome,
-                                         telefone: formCliente.telefone,
-                                         email: formCliente.email,
-                                         cep: formCliente.cep,
-                                         endereco: formCliente.endereco,
-                                         numero: formCliente.numero,
-                                         complemento: formCliente.complemento,
-                                         bairro: formCliente.bairro,
-                                         cidade: formCliente.cidade,
-                                         estado: formCliente.estado,
-                                         total_pedidos: (clienteLogado.total_pedidos || 0) + 1,
-                                         pontos_fidelidade: (clienteLogado.pontos_fidelidade || 0) + Math.floor(calcularSubtotal()),
-                                       });
-                                       clienteId = clienteLogado.id;
-                                     } else {
-                                       const clientesExistentes = await base44.entities.Cliente.filter({ telefone: formCliente.telefone });
-                                       if (clientesExistentes.length > 0) {
-                                         alert('Já existe uma conta com este telefone. Faça login.');
-                                         setProcessandoPagamento(false);
-                                         return;
-                                       }
-                                       const novoCliente = await base44.entities.Cliente.create({
-                                         pizzaria_id: pizzariaId,
-                                         nome: formCliente.nome,
-                                         telefone: formCliente.telefone,
-                                         senha: cadastroSenha,
-                                         email: formCliente.email,
-                                         cep: formCliente.cep,
-                                         endereco: formCliente.endereco,
-                                         numero: formCliente.numero,
-                                         complemento: formCliente.complemento,
-                                         bairro: formCliente.bairro,
-                                         cidade: formCliente.cidade,
-                                         estado: formCliente.estado,
-                                         latitude: formCliente.latitude,
-                                         longitude: formCliente.longitude,
-                                         total_pedidos: 1,
-                                         pontos_fidelidade: Math.floor(calcularSubtotal()),
-                                       });
-                                       clienteId = novoCliente.id;
-                                       localStorage.setItem('cliente_logado', JSON.stringify({ ...novoCliente, pizzaria_id_atual: pizzariaId }));
-                                     }
-                                   }
-
-                                   const pedidoData = {
-                                     pizzaria_id: pizzariaId,
-                                     numero_pedido: `PED${Date.now()}`,
-                                     tipo_pedido: 'delivery',
-                                     cliente_nome: formCliente.nome,
-                                     cliente_telefone: formCliente.telefone,
-                                     cliente_cep: formCliente.cep,
-                                     cliente_endereco: formCliente.endereco,
-                                     cliente_numero: formCliente.numero,
-                                     cliente_bairro: formCliente.bairro,
-                                     cliente_cidade: formCliente.cidade,
-                                     cliente_estado: formCliente.estado,
-                                     cliente_complemento: formCliente.complemento,
-                                     latitude: formCliente.latitude,
-                                     longitude: formCliente.longitude,
-                                     itens: carrinho.map(item => ({
-                                       produto_id: item.id,
-                                       nome: item.nome,
-                                       quantidade: item.quantidade,
-                                       preco_unitario: item.preco_final || item.preco,
-                                       observacao: ''
-                                     })),
-                                     valor_produtos: calcularSubtotal(),
-                                     taxa_entrega: taxaEntrega,
-                                     desconto: calcularDesconto(),
-                                     valor_total: calcularTotal(),
-                                     forma_pagamento: metodoPagamentoOnline === 'credit_card' ? 'cartao_credito' : metodoPagamentoOnline === 'debit_card' ? 'cartao_debito' : 'vale_refeicao',
-                                     status: 'novo',
-                                     status_pagamento: 'pendente',
-                                     observacoes: formCliente.observacoes,
-                                     horario_pedido: new Date().toISOString(),
-                                     origem: 'site',
-                                   };
-
-                                   const novoPedido = await base44.entities.Pedido.create(pedidoData);
-
-                                   // 3. Processar pagamento com token seguro
-                                   const { data } = await base44.functions.invoke('processarPagamentoMercadoPago', {
-                                     pedidoId: novoPedido.id,
-                                     valorTotal: calcularTotal(),
-                                     pizzariaId,
-                                     metodoPagamento: metodoPagamentoOnline,
-                                     clienteEmail: formCliente.email || `${formCliente.telefone}@cliente.com`,
-                                     dadosCartao: {
-                                       token: tokenData.token,
-                                       payment_method_id: tokenData.payment_method_id,
-                                       cardholder_name: tokenData.cardholder_name,
-                                       cardholder_cpf: tokenData.cardholder_cpf,
-                                       installments: metodoPagamentoOnline === 'credit_card' ? dadosCartao.parcelas : 1
-                                     }
-                                   });
-
-                                   if (data.success) {
-                                     navigate(createPageUrl('AcompanharPedido') + `?id=${novoPedido.id}&pizzaria_id=${pizzariaId}`);
-                                   } else {
-                                     const errDetail = data.details ? `\n\n${data.details}` : '';
-                                     alert('Erro ao processar pagamento: ' + (data.error || 'Tente novamente') + errDetail);
-                                     // Deletar pedido criado com erro para não poluir o banco
-                                     try { await base44.entities.Pedido.delete(novoPedido.id); } catch(e) {}
-                                   }
-                                 } catch (error) {
-                                   alert('Erro ao processar pagamento: ' + (error.message || 'Verifique os dados do cartão'));
-                                   console.error(error);
-                                 } finally {
-                                   setProcessandoPagamento(false);
-                                 }
-                               }}
-                               disabled={processandoPagamento || !mpLoaded}
-                               className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
-                             >
-                               {processandoPagamento ? 'Processando...' : !mpLoaded ? 'Carregando...' : 'Pagar Agora'}
-                             </Button>
-                           </div>
-                         </div>
-                       )}
-                     </div>
+                          <div className="flex gap-3">
+                            <Button onClick={() => { setCheckoutStep(3); setPedidoCriado(null); }} variant="outline" className="flex-1 border-slate-600">Voltar</Button>
+                            <Button
+                              onClick={async () => {
+                                if (!dadosCartao.numero || !dadosCartao.nome || !dadosCartao.validade || !dadosCartao.cvv || !dadosCartao.cpf) {
+                                  alert('Preencha todos os dados do cartão');
+                                  return;
+                                }
+                                if (!mpLoaded || !mp) {
+                                  alert('Sistema de pagamento ainda não carregado. Verifique se a chave pública do Mercado Pago está configurada em Configurações > Pagamento.');
+                                  return;
+                                }
+                                setProcessandoPagamento(true);
+                                try {
+                                  const tokenData = await criarTokenCartao(mp, dadosCartao);
+                                  const { data } = await base44.functions.invoke('processarPagamentoMercadoPago', {
+                                    pedidoId: pedidoCriado.id,
+                                    valorTotal: calcularTotal(),
+                                    pizzariaId,
+                                    metodoPagamento: metodoPagamentoOnline,
+                                    clienteEmail: formCliente.email || `${formCliente.telefone}@cliente.com`,
+                                    dadosCartao: {
+                                      token: tokenData.token,
+                                      payment_method_id: tokenData.payment_method_id,
+                                      cardholder_name: tokenData.cardholder_name,
+                                      cardholder_cpf: tokenData.cardholder_cpf,
+                                      installments: metodoPagamentoOnline === 'credit_card' ? dadosCartao.parcelas : 1
+                                    }
+                                  });
+                                  if (data.success) {
+                                    navigate(createPageUrl('AcompanharPedido') + `?id=${pedidoCriado.id}&pizzaria_id=${pizzariaId}`);
+                                  } else {
+                                    const errDetail = data.details ? `\n\n${data.details}` : '';
+                                    alert('Erro ao processar pagamento: ' + (data.error || 'Tente novamente') + errDetail);
+                                    try { await base44.entities.Pedido.delete(pedidoCriado.id); } catch(e) {}
+                                    setPedidoCriado(null);
+                                    setCheckoutStep(3);
+                                  }
+                                } catch (error) {
+                                  alert('Erro ao processar pagamento: ' + (error.message || 'Verifique os dados do cartão'));
+                                } finally {
+                                  setProcessandoPagamento(false);
+                                }
+                              }}
+                              disabled={processandoPagamento || !mpLoaded}
+                              className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
+                            >
+                              {processandoPagamento ? 'Processando...' : !mpLoaded ? 'Carregando...' : 'Pagar Agora'}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </>
                     )}
                     </>
