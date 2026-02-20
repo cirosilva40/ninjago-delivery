@@ -3,9 +3,12 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const url = new URL(req.url);
+    const pizzariaId = url.searchParams.get('pizzaria_id');
+
     const payload = await req.json();
 
-    console.log('Webhook MP recebido:', JSON.stringify(payload));
+    console.log('Webhook MP recebido:', JSON.stringify(payload), 'pizzaria_id:', pizzariaId);
 
     // Mercado Pago envia notificações com type=payment
     if (payload.type !== 'payment') {
@@ -17,7 +20,16 @@ Deno.serve(async (req) => {
       return Response.json({ received: true });
     }
 
-    const accessToken = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN');
+    // Buscar o access token da pizzaria específica, ou fallback para a variável de ambiente global
+    let accessToken = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN');
+    if (pizzariaId) {
+      const pizzaria = await base44.asServiceRole.entities.Pizzaria.get(pizzariaId);
+      const tokenDaPizzaria = pizzaria?.configuracoes?.mp_access_token;
+      if (tokenDaPizzaria) {
+        accessToken = tokenDaPizzaria;
+      }
+    }
+
     if (!accessToken) {
       return Response.json({ error: 'Token não configurado' }, { status: 500 });
     }
