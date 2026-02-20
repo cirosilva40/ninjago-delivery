@@ -1159,7 +1159,16 @@ export default function CardapioCliente() {
                 <h3 className="font-semibold text-lg text-white">Como deseja continuar?</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <button
-                    onClick={() => setTipoCliente('cadastrado')}
+                    onClick={() => {
+                      setTipoCliente('cadastrado');
+                      // Limpar formulário para novo cadastro (ignorar dados do cliente logado)
+                      setFormCliente({
+                        nome: '', telefone: '', email: '', cep: '', endereco: '',
+                        numero: '', complemento: '', bairro: '', cidade: '', estado: '',
+                        observacoes: '', forma_pagamento: '', troco_para: 0,
+                      });
+                      setClienteLogado(null);
+                    }}
                     className="p-6 rounded-xl border-2 border-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all"
                   >
                     <User className="w-8 h-8 mx-auto mb-3 text-emerald-400" />
