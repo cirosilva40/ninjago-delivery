@@ -27,6 +27,7 @@ import moment from 'moment';
 export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [pizzariaId, setPizzariaId] = useState(null);
+  const [userLoaded, setUserLoaded] = useState(false);
   const [showAtribuirModal, setShowAtribuirModal] = useState(false);
   const [selectedPedido, setSelectedPedido] = useState(null);
 
