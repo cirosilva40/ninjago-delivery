@@ -46,19 +46,22 @@ export default function Dashboard() {
   };
 
   const { data: entregas = [], refetch: refetchEntregas } = useQuery({
-    queryKey: ['entregas'],
-    queryFn: () => base44.entities.Entrega.list('-created_date', 50),
+    queryKey: ['entregas', pizzariaId],
+    queryFn: () => pizzariaId ? base44.entities.Entrega.filter({ pizzaria_id: pizzariaId }, '-created_date', 50) : [],
+    enabled: !!pizzariaId,
     refetchInterval: 10000,
   });
 
   const { data: pedidos = [], refetch: refetchPedidos } = useQuery({
-    queryKey: ['pedidos'],
-    queryFn: () => base44.entities.Pedido.list('-created_date', 50),
+    queryKey: ['pedidos', pizzariaId],
+    queryFn: () => pizzariaId ? base44.entities.Pedido.filter({ pizzaria_id: pizzariaId }, '-created_date', 50) : [],
+    enabled: !!pizzariaId,
     refetchInterval: 10000,
   });
 
   // Auto-mudar status de "novo" para "em_preparo" após 2 minutos
   useEffect(() => {
+    if (!pizzariaId) return;
     const interval = setInterval(async () => {
       const agora = new Date();
       const pedidosNovos = pedidos.filter(p => p.status === 'novo');
@@ -79,14 +82,15 @@ export default function Dashboard() {
       if (pedidosNovos.length > 0) {
         refetchPedidos();
       }
-    }, 30000); // Verifica a cada 30 segundos
+    }, 30000);
     
     return () => clearInterval(interval);
-  }, [pedidos, refetchPedidos]);
+  }, [pedidos, refetchPedidos, pizzariaId]);
 
   const { data: entregadores = [] } = useQuery({
-    queryKey: ['entregadores'],
-    queryFn: () => base44.entities.Entregador.list('-created_date', 50),
+    queryKey: ['entregadores', pizzariaId],
+    queryFn: () => pizzariaId ? base44.entities.Entregador.filter({ pizzaria_id: pizzariaId }, '-created_date', 50) : [],
+    enabled: !!pizzariaId,
     refetchInterval: 15000,
   });
 
