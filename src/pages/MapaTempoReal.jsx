@@ -162,7 +162,7 @@ export default function MapaTempoReal() {
 
   const { data: entregas = [], refetch } = useQuery({
     queryKey: ['entregas-mapa', pizzariaId],
-    queryFn: () => base44.entities.Entrega.filter({
+    queryFn: () => !pizzariaId ? [] : base44.entities.Entrega.filter({
       pizzaria_id: pizzariaId,
       status: { $in: ['pendente', 'aceita', 'em_rota'] }
     }, '-created_date', 50),
@@ -172,7 +172,7 @@ export default function MapaTempoReal() {
 
   const { data: entregadores = [] } = useQuery({
     queryKey: ['entregadores-mapa', pizzariaId],
-    queryFn: () => base44.entities.Entregador.filter({
+    queryFn: () => !pizzariaId ? [] : base44.entities.Entregador.filter({
       pizzaria_id: pizzariaId,
       status: { $in: ['disponivel', 'em_entrega'] }
     }),
@@ -182,14 +182,14 @@ export default function MapaTempoReal() {
 
   const { data: pedidosProntos = [] } = useQuery({
     queryKey: ['pedidos-prontos-rota', pizzariaId],
-    queryFn: () => base44.entities.Pedido.filter({ pizzaria_id: pizzariaId, status: 'pronto' }, '-created_date', 50),
+    queryFn: () => !pizzariaId ? [] : base44.entities.Pedido.filter({ pizzaria_id: pizzariaId, status: 'pronto' }, '-created_date', 50),
     enabled: !!pizzariaId,
     refetchInterval: 10000,
   });
 
   const { data: pedidosAtivos = [] } = useQuery({
     queryKey: ['pedidos-ativos-mapa', pizzariaId],
-    queryFn: () => base44.entities.Pedido.filter({ pizzaria_id: pizzariaId, status: { $in: ['novo', 'em_preparo', 'pronto'] } }, '-created_date', 50),
+    queryFn: () => !pizzariaId ? [] : base44.entities.Pedido.filter({ pizzaria_id: pizzariaId, status: { $in: ['novo', 'em_preparo', 'pronto'] } }, '-created_date', 50),
     enabled: !!pizzariaId,
     refetchInterval: 10000,
   });
