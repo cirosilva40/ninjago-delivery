@@ -38,8 +38,7 @@ export default function Dashboard() {
     try {
       const userData = await base44.auth.me();
       setUser(userData);
-      // Por simplicidade, usar o primeiro pizzaria_id ou criar um default
-      setPizzariaId(userData.pizzaria_id || 'default');
+      setPizzariaId(userData.pizzaria_id || null);
     } catch (e) {
       console.log('Usuário não logado');
     }
