@@ -55,7 +55,7 @@ export default function CardapioCliente() {
   const getInitialPizzariaId = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const pizzariaParam = urlParams.get('pizzariaId');
-    if (pizzariaParam) return pizzariaParam;
+    if (pizzariaParam) return pizzariaParam.split('?')[0].split('&')[0].trim();
     
     const savedPizzariaId = localStorage.getItem('pizzaria_id_atual');
     return savedPizzariaId || '697ea8faa6ffe9fc35c32a91'; // Lanchonete 91 como padrão
