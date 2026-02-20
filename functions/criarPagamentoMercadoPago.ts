@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
       },
       auto_return: 'approved',
       external_reference: pedidoId,
-      notification_url: `${origin}/webhookMercadoPago`,
+      notification_url: `${origin}/webhookMercadoPago?pizzaria_id=${pizzariaId}`,
       statement_descriptor: (pizzaria.nome_exibicao_cliente || pizzaria.nome || 'Delivery').substring(0, 22),
       expires: true,
       expiration_date_to: new Date(Date.now() + 30 * 60 * 1000).toISOString() // expira em 30min
