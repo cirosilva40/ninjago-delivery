@@ -50,10 +50,11 @@ export default function PixCheckout({ pedidoId, valorTotal, pizzariaId, clienteE
           setStatusPagamento('pago');
           setPollingAtivo(false);
           clearInterval(interval);
-          // Redirecionar para acompanhamento após 2 segundos
+          toast.success('🎉 Pagamento confirmado! Seu pedido está sendo preparado!', { duration: 4000 });
+          // Redirecionar para acompanhamento após 2.5 segundos
           setTimeout(() => {
             navigate(createPageUrl('AcompanharPedido') + `?id=${pedidoId}&pizzaria_id=${pizzariaId}`);
-          }, 2000);
+          }, 2500);
         }
       } catch (e) {
         console.error('Erro ao verificar status PIX:', e);
