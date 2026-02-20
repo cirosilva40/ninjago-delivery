@@ -1218,7 +1218,7 @@ export default function Configuracoes() {
                           configuracoes: configAtualizada,
                         };
                         // Salvar diretamente no banco usando o ID da pizzaria carregada
-                        const idParaSalvar = pizzarias[0]?.id;
+                        const idParaSalvar = pizzaria.id || pizzarias[0]?.id;
                         if (!idParaSalvar) {
                           throw new Error('ID da pizzaria não encontrado');
                         }
