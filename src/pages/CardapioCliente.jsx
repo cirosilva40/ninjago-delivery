@@ -2101,7 +2101,10 @@ export default function CardapioCliente() {
                                    if (data.success) {
                                      navigate(createPageUrl('AcompanharPedido') + `?id=${novoPedido.id}&pizzaria_id=${pizzariaId}`);
                                    } else {
-                                     alert('Erro ao processar pagamento: ' + (data.error || 'Tente novamente'));
+                                     const errDetail = data.details ? `\n\n${data.details}` : '';
+                                     alert('Erro ao processar pagamento: ' + (data.error || 'Tente novamente') + errDetail);
+                                     // Deletar pedido criado com erro para não poluir o banco
+                                     try { await base44.entities.Pedido.delete(novoPedido.id); } catch(e) {}
                                    }
                                  } catch (error) {
                                    alert('Erro ao processar pagamento: ' + (error.message || 'Verifique os dados do cartão'));
