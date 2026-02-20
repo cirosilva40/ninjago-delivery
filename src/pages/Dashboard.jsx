@@ -215,7 +215,7 @@ export default function Dashboard() {
           </div>
 
           <AnimatePresence mode="wait">
-            {pedidos.length === 0 ? (
+            {loadingPedidos && !userLoaded ? (
               <motion.div
                 key="loading"
                 initial={{ opacity: 0 }}
