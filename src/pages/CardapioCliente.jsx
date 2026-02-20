@@ -44,7 +44,7 @@ import { createPageUrl } from '@/utils';
 import ProductDetailModal from '../components/cliente/ProductDetailModal';
 import ProdutoCard from '../components/cliente/ProdutoCard';
 import { enviarNotificacaoStatusPedido } from '../components/pedidos/NotificacaoHelper';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
 import { useMercadoPago, criarTokenCartao } from '../components/cliente/MercadoPagoHelper';
 import PixCheckout from '../components/cliente/PixCheckout';
 
