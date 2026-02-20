@@ -482,7 +482,7 @@ export default function CardapioCliente() {
     }
 
     try {
-      const clientes = await base44.entities.Cliente.filter({ telefone: loginData.telefone });
+      const clientes = await base44.entities.Cliente.filter({ telefone: loginData.telefone, pizzaria_id: pizzariaId });
       if (clientes.length === 0 || clientes[0].senha !== loginData.senha) {
         setLoginError('Telefone ou senha incorretos');
         return;
