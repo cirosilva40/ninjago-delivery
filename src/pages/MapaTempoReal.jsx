@@ -172,10 +172,7 @@ export default function MapaTempoReal() {
 
   const { data: entregadores = [] } = useQuery({
     queryKey: ['entregadores-mapa', pizzariaId],
-    queryFn: () => base44.entities.Entregador.filter({
-      pizzaria_id: pizzariaId,
-      status: { $in: ['disponivel', 'em_entrega'] }
-    }),
+    queryFn: () => base44.entities.Entregador.filter({ pizzaria_id: pizzariaId, ativo: true }),
     enabled: !!pizzariaId,
     refetchInterval: 5000,
   });
