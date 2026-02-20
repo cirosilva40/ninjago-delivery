@@ -114,10 +114,13 @@ export default function Configuracoes() {
     queryKey: ['pizzarias', pizzariaId],
     queryFn: async () => {
       if (!pizzariaId) return [];
-      if (user?.role === 'admin') {
-        return base44.entities.Pizzaria.list('-created_date', 1);
+      try {
+        const p = await base44.entities.Pizzaria.get(pizzariaId);
+        return p ? [p] : [];
+      } catch (e) {
+        console.error('Erro ao buscar pizzaria:', e);
+        return [];
       }
-      return base44.entities.Pizzaria.filter({ id: pizzariaId }, '-created_date', 1);
     },
     enabled: !!pizzariaId,
   });
