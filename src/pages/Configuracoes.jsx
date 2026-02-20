@@ -140,7 +140,8 @@ export default function Configuracoes() {
   useEffect(() => {
     if (pizzarias.length > 0) {
       const p = pizzarias[0];
-      // Garantir que configuracoes nunca seja null/undefined
+      // Mesclar defaults apenas para chaves que não existem, preservando TUDO que está no banco
+      const configSalva = p.configuracoes || {};
       setPizzaria({
         ...p,
         configuracoes: {
@@ -148,7 +149,7 @@ export default function Configuracoes() {
           aceitar_cartao: true,
           aceitar_dinheiro: true,
           tempo_medio_preparo: 30,
-          ...(p.configuracoes || {}),
+          ...configSalva, // configSalva por último para não sobrescrever valores do banco
         },
       });
     }
