@@ -92,7 +92,7 @@ export default function Dashboard() {
   const { data: entregadores = [] } = useQuery({
     queryKey: ['entregadores', pizzariaId],
     queryFn: () => pizzariaId ? base44.entities.Entregador.filter({ pizzaria_id: pizzariaId }, '-created_date', 50) : [],
-    enabled: !!pizzariaId,
+    enabled: userLoaded,
     refetchInterval: 15000,
   });
 
