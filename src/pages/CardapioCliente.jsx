@@ -1439,44 +1439,68 @@ export default function CardapioCliente() {
 
                 {checkoutStep === 2 && (
                   <>
+                    {/* Pagamento Online - Opções */}
                     <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
                       <h3 className="font-semibold text-white">Forma de Pagamento</h3>
-                      <div>
-                        <Label>Forma de Pagamento</Label>
-                        <Select value={formCliente.forma_pagamento} onValueChange={(v) => setFormCliente({ ...formCliente, forma_pagamento: v })}>
-                          <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-slate-800 border-slate-700">
-                            <SelectItem value="online">💳 Pagamento Online</SelectItem>
-                            {formasPagamento
-                              .filter(forma => !['pix', 'cartao_credito', 'cartao_debito', 'online', 'vale_refeicao'].includes(forma.tipo))
-                              .map((forma) => (
-                                <SelectItem key={forma.id} value={forma.tipo}>
-                                  {forma.nome}
-                                </SelectItem>
-                              ))}
-                            <SelectItem value="pagar_na_entrega">Pagar na Entrega</SelectItem>
-                          </SelectContent>
-                        </Select>
+
+                      {/* Opções de pagamento online em cards */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { id: 'pix', emoji: '🔳', label: 'PIX', sub: 'Aprovação instantânea' },
+                          { id: 'credit_card', emoji: '💳', label: 'Crédito', sub: 'Parcelamento disponível' },
+                          { id: 'debit_card', emoji: '💳', label: 'Débito', sub: 'À vista' },
+                          { id: 'vale_refeicao', emoji: '🎫', label: 'Vale Refeição', sub: 'À vista' },
+                        ].map(({ id, emoji, label, sub }) => (
+                          <button
+                            key={id}
+                            onClick={() => { setMetodoPagamentoOnline(id); setFormCliente({ ...formCliente, forma_pagamento: 'online' }); }}
+                            className={`p-4 rounded-xl border-2 transition-all text-center ${
+                              metodoPagamentoOnline === id
+                                ? 'border-orange-500 bg-orange-500/20'
+                                : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
+                            }`}
+                          >
+                            <div className="text-3xl mb-1">{emoji}</div>
+                            <p className="font-bold text-white text-sm">{label}</p>
+                            <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
+                          </button>
+                        ))}
                       </div>
-                      
-                      {formCliente.forma_pagamento === 'dinheiro' && (
+
+                      {/* Opções de pagamento na entrega */}
+                      <div className="border-t border-slate-700 pt-4">
+                        <p className="text-xs text-slate-500 mb-3 uppercase tracking-wide">Ou pagar na entrega</p>
+                        <div className="flex gap-2 flex-wrap">
+                          {[
+                            { id: 'pagar_na_entrega', label: '💵 Pagar na Entrega' },
+                            ...formasPagamento
+                              .filter(f => !['pix','cartao_credito','cartao_debito','online','vale_refeicao'].includes(f.tipo))
+                              .map(f => ({ id: f.tipo, label: f.nome }))
+                          ].map(({ id, label }) => (
+                            <button
+                              key={id}
+                              onClick={() => { setFormCliente({ ...formCliente, forma_pagamento: id }); setMetodoPagamentoOnline(''); }}
+                              className={`px-4 py-2 rounded-xl border-2 text-sm font-medium transition-all ${
+                                formCliente.forma_pagamento === id && !metodoPagamentoOnline
+                                  ? 'border-orange-500 bg-orange-500/20 text-white'
+                                  : 'border-slate-600 bg-slate-800/50 text-slate-300 hover:border-slate-500'
+                              }`}
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Troco se pagar na entrega com dinheiro */}
+                      {formCliente.forma_pagamento === 'pagar_na_entrega' && !metodoPagamentoOnline && (
                         <div className="space-y-3 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
                           <Label className="text-white">Precisa de troco?</Label>
-                          <Select 
-                            value={formCliente.troco_para > 0 ? 'sim' : 'nao'} 
-                            onValueChange={(v) => {
-                              if (v === 'nao') {
-                                setFormCliente({ ...formCliente, troco_para: 0 });
-                              } else {
-                                setFormCliente({ ...formCliente, troco_para: 0.01 });
-                              }
-                            }}
+                          <Select
+                            value={formCliente.troco_para > 0 ? 'sim' : 'nao'}
+                            onValueChange={(v) => setFormCliente({ ...formCliente, troco_para: v === 'sim' ? 0.01 : 0 })}
                           >
-                            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                              <SelectValue />
-                            </SelectTrigger>
+                            <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue /></SelectTrigger>
                             <SelectContent className="bg-slate-800 border-slate-700">
                               <SelectItem value="nao">Não preciso de troco</SelectItem>
                               <SelectItem value="sim">Sim, preciso de troco</SelectItem>
@@ -1485,86 +1509,17 @@ export default function CardapioCliente() {
                           {formCliente.troco_para > 0 && (
                             <div>
                               <Label>Troco para quanto?</Label>
-                              <Input
-                                type="number"
-                                value={formCliente.troco_para}
-                                onChange={(e) => setFormCliente({ ...formCliente, troco_para: parseFloat(e.target.value) })}
-                                className="bg-slate-800 border-slate-700 text-white"
-                                placeholder="Ex: 50.00"
-                              />
+                              <Input type="number" value={formCliente.troco_para} onChange={(e) => setFormCliente({ ...formCliente, troco_para: parseFloat(e.target.value) })} className="bg-slate-800 border-slate-700 text-white" placeholder="Ex: 50.00" />
                             </div>
                           )}
-                        </div>
-                      )}
-
-                      {formCliente.forma_pagamento === 'pagar_na_entrega' && (
-                        <div className="space-y-3 p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
-                          <Label className="text-white">Como vai pagar na entrega?</Label>
-                          <Select 
-                            value={formCliente.metodo_entrega || ''} 
-                            onValueChange={(v) => setFormCliente({ ...formCliente, metodo_entrega: v })}
-                          >
-                            <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                              <SelectValue placeholder="Selecione o método" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-slate-800 border-slate-700">
-                              <SelectItem value="dinheiro">💵 Dinheiro</SelectItem>
-                              <SelectItem value="pix">🔳 PIX</SelectItem>
-                              <SelectItem value="cartao">💳 Cartão (Crédito/Débito)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          {formCliente.metodo_entrega === 'dinheiro' && (
-                            <div className="space-y-3">
-                              <Label className="text-white">Precisa de troco?</Label>
-                              <Select 
-                                value={formCliente.troco_para > 0 ? 'sim' : 'nao'} 
-                                onValueChange={(v) => {
-                                  if (v === 'nao') {
-                                    setFormCliente({ ...formCliente, troco_para: 0 });
-                                  } else {
-                                    setFormCliente({ ...formCliente, troco_para: 0.01 });
-                                  }
-                                }}
-                              >
-                                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="bg-slate-800 border-slate-700">
-                                  <SelectItem value="nao">Não preciso de troco</SelectItem>
-                                  <SelectItem value="sim">Sim, preciso de troco</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              {formCliente.troco_para > 0 && (
-                                <div>
-                                  <Label>Troco para quanto?</Label>
-                                  <Input
-                                    type="number"
-                                    value={formCliente.troco_para}
-                                    onChange={(e) => setFormCliente({ ...formCliente, troco_para: parseFloat(e.target.value) })}
-                                    className="bg-slate-800 border-slate-700 text-white"
-                                    placeholder="Ex: 50.00"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {formCliente.forma_pagamento === 'online' && (
-                        <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/30">
-                          <p className="text-sm text-blue-300">
-                            💳 Você escolherá a forma de pagamento online (PIX ou cartão de crédito/débito) na próxima etapa, sem sair do site.
-                          </p>
                         </div>
                       )}
                     </div>
 
-                    {/* Cupom de Desconto */}
-                    <div className="space-y-4 p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/30">
+                    {/* Cupom */}
+                    <div className="space-y-3 p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/30">
                       <h3 className="font-semibold text-white flex items-center gap-2">
-                        <Tag className="w-5 h-5 text-emerald-400" />
-                        Cupom de Desconto
+                        <Tag className="w-5 h-5 text-emerald-400" /> Cupom de Desconto
                       </h3>
                       {cupomAplicado ? (
                         <div className="flex items-center justify-between p-3 rounded-lg bg-emerald-500/20 border border-emerald-500/50">
@@ -1572,63 +1527,27 @@ export default function CardapioCliente() {
                             <p className="font-bold text-emerald-300">{cupomAplicado.titulo}</p>
                             <p className="text-sm text-emerald-400">Desconto: R$ {calcularDesconto().toFixed(2)}</p>
                           </div>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              setCupomAplicado(null);
-                              setCupomCodigo('');
-                            }}
-                            className="text-red-400"
-                          >
-                            Remover
-                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => { setCupomAplicado(null); setCupomCodigo(''); }} className="text-red-400">Remover</Button>
                         </div>
                       ) : (
                         <div className="flex gap-2">
-                          <Input
-                            value={cupomCodigo}
-                            onChange={(e) => setCupomCodigo(e.target.value.toUpperCase())}
-                            className="bg-slate-800 border-slate-700 text-white"
-                            placeholder="Digite o código do cupom"
-                          />
-                          <Button
-                            onClick={aplicarCupom}
-                            variant="outline"
-                            className="border-emerald-500/50 text-emerald-400"
-                          >
-                            Aplicar
-                          </Button>
+                          <Input value={cupomCodigo} onChange={(e) => setCupomCodigo(e.target.value.toUpperCase())} className="bg-slate-800 border-slate-700 text-white" placeholder="Código do cupom" />
+                          <Button onClick={aplicarCupom} variant="outline" className="border-emerald-500/50 text-emerald-400">Aplicar</Button>
                         </div>
                       )}
                     </div>
 
                     <div>
                       <Label>Observações (opcional)</Label>
-                      <Textarea
-                        value={formCliente.observacoes}
-                        onChange={(e) => setFormCliente({ ...formCliente, observacoes: e.target.value })}
-                        className="bg-slate-800 border-slate-700 text-white"
-                        placeholder="Alguma observação sobre o pedido?"
-                        rows={3}
-                      />
+                      <Textarea value={formCliente.observacoes} onChange={(e) => setFormCliente({ ...formCliente, observacoes: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="Alguma observação sobre o pedido?" rows={2} />
                     </div>
 
                     <div className="flex gap-3">
-                      <Button
-                        onClick={() => setCheckoutStep(1)}
-                        variant="outline"
-                        className="flex-1 border-slate-600"
-                      >
-                        Voltar
-                      </Button>
+                      <Button onClick={() => setCheckoutStep(1)} variant="outline" className="flex-1 border-slate-600">Voltar</Button>
                       <Button
                         onClick={() => {
-                          if (!formCliente.forma_pagamento) {
-                            alert('Selecione uma forma de pagamento');
-                            return;
-                          }
-
+                          const temPagamento = metodoPagamentoOnline || formCliente.forma_pagamento;
+                          if (!temPagamento) { alert('Selecione uma forma de pagamento'); return; }
                           setCheckoutStep(3);
                         }}
                         className="flex-1 bg-gradient-to-r from-orange-500 to-red-600"
