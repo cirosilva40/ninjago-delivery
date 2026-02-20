@@ -36,7 +36,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Pedido não encontrado' }, { status: 404 });
     }
 
-    const email = clienteEmail || `cliente_${pedidoId}@ninjago.delivery`;
+    // MP exige email válido no payer; fallback com domínio real
+    const emailRaw = clienteEmail || '';
+    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRaw) ? emailRaw : `pedido${pedidoId.slice(-6)}@ninjago.delivery`;
+    const email = emailValido;
     const idempotencyKey = `${pedidoId}-${metodoPagamento}-${Date.now()}`;
 
     const headers = {
