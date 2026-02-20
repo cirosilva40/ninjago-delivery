@@ -79,11 +79,13 @@ export default function PixCheckout({ pedidoId, valorTotal, pizzariaId, clienteE
         setPixData(data);
         setPollingAtivo(true);
       } else {
-        alert('Erro ao gerar PIX: ' + (data.error || 'Tente novamente'));
+        const detalhe = data.details ? `\n\nDetalhe: ${data.details}` : '';
+        alert('Erro ao gerar PIX: ' + (data.error || 'Tente novamente') + detalhe);
+        console.error('Erro PIX:', data);
       }
     } catch (error) {
-      alert('Erro ao gerar PIX. Tente novamente.');
-      console.error(error);
+      alert('Erro ao gerar PIX: ' + (error.message || 'Tente novamente'));
+      console.error('Erro PIX catch:', error);
     } finally {
       setGerando(false);
     }
