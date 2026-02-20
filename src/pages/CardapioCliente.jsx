@@ -532,7 +532,7 @@ export default function CardapioCliente() {
           pontos_fidelidade: (clienteLogado.pontos_fidelidade || 0) + Math.floor(calcularSubtotal()),
         });
       } else {
-        const clientesExistentes = await base44.entities.Cliente.filter({ telefone: formCliente.telefone });
+        const clientesExistentes = await base44.entities.Cliente.filter({ telefone: formCliente.telefone, pizzaria_id: pizzariaId });
         if (clientesExistentes.length > 0) {
           alert('Já existe uma conta com este telefone. Faça login.');
           return false;
