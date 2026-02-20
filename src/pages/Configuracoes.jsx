@@ -1194,18 +1194,22 @@ export default function Configuracoes() {
                     <TestarMercadoPago
                       accessToken={pizzaria.configuracoes.mp_access_token}
                       onSalvarCredenciais={async () => {
+                        const configAtualizada = {
+                          ...pizzaria.configuracoes,
+                          mp_credenciais_salvas: true,
+                        };
                         const updated = {
                           ...pizzaria,
-                          configuracoes: {
-                            ...pizzaria.configuracoes,
-                            mp_credenciais_salvas: true,
-                          },
+                          configuracoes: configAtualizada,
                         };
-                        setPizzaria(updated);
-                        if (pizzarias.length > 0) {
-                          await base44.entities.Pizzaria.update(pizzarias[0].id, updated);
-                          refetch();
+                        // Salvar diretamente no banco usando o ID da pizzaria carregada
+                        const idParaSalvar = pizzarias[0]?.id;
+                        if (!idParaSalvar) {
+                          throw new Error('ID da pizzaria não encontrado');
                         }
+                        await base44.entities.Pizzaria.update(idParaSalvar, updated);
+                        setPizzaria(updated);
+                        await refetch();
                       }}
                     />
                   )}
