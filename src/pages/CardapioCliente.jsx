@@ -1560,38 +1560,25 @@ export default function CardapioCliente() {
 
                 {checkoutStep === 3 && (
                   <>
-                    {/* Revisão Final */}
                     <div className="space-y-4">
                       <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
                         <h3 className="font-semibold text-white mb-3">📍 Endereço de Entrega</h3>
-                        <p className="text-slate-300">
-                          {formCliente.endereco}, {formCliente.numero}
-                          {formCliente.complemento && ` - ${formCliente.complemento}`}
-                        </p>
-                        <p className="text-slate-300">
-                          {formCliente.bairro} - {formCliente.cidade}/{formCliente.estado}
-                        </p>
+                        <p className="text-slate-300">{formCliente.endereco}, {formCliente.numero}{formCliente.complemento && ` - ${formCliente.complemento}`}</p>
+                        <p className="text-slate-300">{formCliente.bairro} - {formCliente.cidade}/{formCliente.estado}</p>
                         <p className="text-slate-400 text-sm">CEP: {formCliente.cep}</p>
                       </div>
 
                       <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
                         <h3 className="font-semibold text-white mb-3">💳 Pagamento</h3>
-                        <p className="text-slate-300 capitalize">
-                          {formCliente.forma_pagamento === 'online' ? (
-                            <>
-                              Pagamento Online - {
-                                metodoPagamentoOnline === 'pix' ? 'PIX' :
-                                metodoPagamentoOnline === 'credit_card' ? 'Cartão de Crédito' :
-                                metodoPagamentoOnline === 'debit_card' ? 'Cartão de Débito' : ''
-                              }
-                            </>
-                          ) : (
-                            formCliente.forma_pagamento.replace('_', ' ')
-                          )}
+                        <p className="text-slate-300">
+                          {metodoPagamentoOnline === 'pix' ? '🔳 PIX (online)' :
+                           metodoPagamentoOnline === 'credit_card' ? '💳 Cartão de Crédito (online)' :
+                           metodoPagamentoOnline === 'debit_card' ? '💳 Cartão de Débito (online)' :
+                           metodoPagamentoOnline === 'vale_refeicao' ? '🎫 Vale Refeição (online)' :
+                           formCliente.forma_pagamento === 'pagar_na_entrega' ? '💵 Pagar na Entrega' :
+                           formCliente.forma_pagamento}
                         </p>
-                        {formCliente.troco_para > 0 && (
-                          <p className="text-slate-400 text-sm">Troco para: R$ {formCliente.troco_para.toFixed(2)}</p>
-                        )}
+                        {formCliente.troco_para > 0 && <p className="text-slate-400 text-sm">Troco para: R$ {formCliente.troco_para.toFixed(2)}</p>}
                       </div>
 
                       {formCliente.observacoes && (
@@ -1604,31 +1591,22 @@ export default function CardapioCliente() {
 
                     {tipoCliente === 'convidado' && (
                       <div className="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/30">
-                        <p className="text-sm text-yellow-300">
-                          ⚠️ Comprando como convidado, você não acumula pontos no programa de fidelidade.
-                        </p>
+                        <p className="text-sm text-yellow-300">⚠️ Comprando como convidado, você não acumula pontos no programa de fidelidade.</p>
                       </div>
                     )}
 
                     <div className="flex gap-3">
+                      <Button onClick={() => setCheckoutStep(2)} variant="outline" className="flex-1 border-slate-600">Voltar</Button>
                       <Button
-                        onClick={() => setCheckoutStep(2)}
-                        variant="outline"
-                        className="flex-1 border-slate-600"
-                      >
-                        Voltar
-                      </Button>
-                      <Button
-                        onClick={finalizarPedido}
+                        onClick={confirmarPedido}
                         disabled={processandoPagamento}
                         className="flex-1 h-14 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-bold"
                       >
-                        {processandoPagamento ? 'Processando...' : 
-                         formCliente.forma_pagamento === 'online' ? 'Escolher Pagamento Online' : 'Confirmar Pedido'}
+                        {processandoPagamento ? 'Processando...' : metodoPagamentoOnline ? 'Confirmar e Pagar' : 'Confirmar Pedido'}
                       </Button>
                     </div>
-                    </>
-                    )}
+                  </>
+                )}
 
                     {checkoutStep === 4 && (
                     <>
