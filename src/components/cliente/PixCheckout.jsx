@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { toast } from 'sonner';
 
 export default function PixCheckout({ pedidoId, valorTotal, pizzariaId, clienteEmail, onVoltar }) {
   const navigate = useNavigate();
