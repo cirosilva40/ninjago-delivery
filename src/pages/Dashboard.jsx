@@ -42,6 +42,8 @@ export default function Dashboard() {
       setPizzariaId(userData.pizzaria_id || null);
     } catch (e) {
       console.log('Usuário não logado');
+    } finally {
+      setUserLoaded(true);
     }
   };
 
