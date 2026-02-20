@@ -82,9 +82,9 @@ export default function CardapioCliente() {
   const [cupomCodigo, setCupomCodigo] = useState('');
   const [cupomAplicado, setCupomAplicado] = useState(null);
   const [taxaEntrega, setTaxaEntrega] = useState(0);
-  const [checkoutStep, setCheckoutStep] = useState(1); // 1: endereço, 2: pagamento, 3: revisão, 4: dados pagamento
+  const [checkoutStep, setCheckoutStep] = useState(1); // 1: dados+endereço, 2: pagamento, 3: revisão, 4: pagar
   const [processandoPagamento, setProcessandoPagamento] = useState(false);
-  const [metodoPagamentoOnline, setMetodoPagamentoOnline] = useState(''); // 'pix', 'credit_card', 'debit_card'
+  const [metodoPagamentoOnline, setMetodoPagamentoOnline] = useState(''); // 'pix', 'credit_card', 'debit_card', 'vale_refeicao'
   const [dadosCartao, setDadosCartao] = useState({
     numero: '',
     nome: '',
@@ -93,9 +93,7 @@ export default function CardapioCliente() {
     cpf: '',
     parcelas: 1
   });
-  const [pixData, setPixData] = useState(null);
-  const [aguardandoPix, setAguardandoPix] = useState(false);
-  const [pixPedidoId, setPixPedidoId] = useState(null);
+  const [pedidoCriado, setPedidoCriado] = useState(null); // pedido criado antes de pagar
 
   // Obter pizzaria_id da URL se fornecido
   useEffect(() => {
