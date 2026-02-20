@@ -47,17 +47,17 @@ export default function Dashboard() {
     }
   };
 
-  const { data: entregas = [], refetch: refetchEntregas } = useQuery({
+  const { data: entregas = [], refetch: refetchEntregas, isLoading: loadingEntregas } = useQuery({
     queryKey: ['entregas', pizzariaId],
     queryFn: () => pizzariaId ? base44.entities.Entrega.filter({ pizzaria_id: pizzariaId }, '-created_date', 50) : [],
-    enabled: !!pizzariaId,
+    enabled: userLoaded,
     refetchInterval: 10000,
   });
 
-  const { data: pedidos = [], refetch: refetchPedidos } = useQuery({
+  const { data: pedidos = [], refetch: refetchPedidos, isLoading: loadingPedidos } = useQuery({
     queryKey: ['pedidos', pizzariaId],
     queryFn: () => pizzariaId ? base44.entities.Pedido.filter({ pizzaria_id: pizzariaId }, '-created_date', 50) : [],
-    enabled: !!pizzariaId,
+    enabled: userLoaded,
     refetchInterval: 10000,
   });
 
