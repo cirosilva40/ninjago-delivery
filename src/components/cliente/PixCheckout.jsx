@@ -50,7 +50,7 @@ export default function PixCheckout({ pedidoId, valorTotal, pizzariaId, clienteE
           setStatusPagamento('pago');
           setPollingAtivo(false);
           clearInterval(interval);
-          toast.success('🎉 Pagamento confirmado! Seu pedido está sendo preparado!', { duration: 4000 });
+          toast.success('🎉 Pagamento confirmado! Seu pedido está sendo preparado!', { duration: 10000 });
           // Redirecionar para acompanhamento após 2.5 segundos
           setTimeout(() => {
             navigate(createPageUrl('AcompanharPedido') + `?id=${pedidoId}&pizzaria_id=${pizzariaId}`);
