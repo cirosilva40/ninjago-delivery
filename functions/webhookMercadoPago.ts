@@ -31,7 +31,8 @@ Deno.serve(async (req) => {
     }
 
     if (!accessToken) {
-      return Response.json({ error: 'Token não configurado' }, { status: 500 });
+      console.error('Token não configurado para pizzaria:', pizzariaId);
+      return Response.json({ received: true, message: 'Token não configurado' });
     }
 
     // Buscar dados do pagamento na API do Mercado Pago
@@ -40,14 +41,17 @@ Deno.serve(async (req) => {
     });
 
     if (!mpResponse.ok) {
-      console.error('Erro ao buscar pagamento no MP:', await mpResponse.text());
-      return Response.json({ error: 'Erro ao consultar MP' }, { status: 500 });
+      const errorText = await mpResponse.text();
+      console.error('Erro ao buscar pagamento no MP:', mpResponse.status, errorText);
+      // Retornar 200 para evitar reenvios do MP (pode ser ID de teste ou inválido)
+      return Response.json({ received: true, message: 'Pagamento não encontrado no MP' });
     }
 
     const payment = await mpResponse.json();
     const pedidoId = payment.external_reference;
 
     if (!pedidoId) {
+      console.log('Pagamento sem external_reference, ignorando:', paymentId);
       return Response.json({ received: true });
     }
 
@@ -105,10 +109,12 @@ Deno.serve(async (req) => {
       });
     }
 
+    console.log('Webhook processado com sucesso. Payment:', paymentId, 'Status:', payment.status);
     return Response.json({ received: true, status: payment.status });
 
   } catch (error) {
     console.error('Erro no webhook MP:', error);
-    return Response.json({ error: error.message }, { status: 500 });
+    // Retornar 200 para evitar reenvios infinitos do MP
+    return Response.json({ received: true, error: error.message });
   }
 });
