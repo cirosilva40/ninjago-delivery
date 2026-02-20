@@ -1110,6 +1110,39 @@ export default function Configuracoes() {
                 </div>
               </div>
 
+              {/* URL do Webhook */}
+              {pizzarias[0]?.id && (
+                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-3">
+                  <div>
+                    <p className="font-semibold text-amber-400 flex items-center gap-2 mb-1">
+                      🔗 URL do Webhook (Notificações)
+                    </p>
+                    <p className="text-xs text-slate-400 mb-3">
+                      Configure esta URL no painel do Mercado Pago em <strong>Seu negócio → Configurações → Notificações</strong> para receber confirmações de pagamento automáticas.
+                    </p>
+                    <div className="flex gap-2">
+                      <Input
+                        value={`https://delivery-pro-pizzaria-844799ad.base44.app/api/functions/webhookMercadoPago?pizzariaId=${pizzarias[0].id}`}
+                        readOnly
+                        className="bg-slate-900 border-slate-700 text-amber-300 font-mono text-xs"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          navigator.clipboard.writeText(`https://delivery-pro-pizzaria-844799ad.base44.app/api/functions/webhookMercadoPago?pizzariaId=${pizzarias[0].id}`);
+                          alert('✅ URL copiada!');
+                        }}
+                        className="border-slate-600 text-slate-300 hover:bg-white/10 shrink-0"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {pizzaria.configuracoes?.mp_credenciais_salvas ? (
                 <div className="space-y-3">
                   <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
