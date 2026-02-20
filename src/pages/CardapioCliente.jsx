@@ -513,146 +513,128 @@ export default function CardapioCliente() {
     }
   };
 
-  const finalizarPedido = async () => {
-    if (!formCliente.nome || !formCliente.telefone || !formCliente.endereco) {
-      alert('Por favor, preencha todos os campos obrigatórios.');
-      return;
-    }
-
-    if (!formCliente.forma_pagamento) {
-      alert('Por favor, selecione uma forma de pagamento.');
-      return;
-    }
-
-    if (tipoCliente === 'cadastrado' && !clienteLogado && (!cadastroSenha || cadastroSenha !== confirmarSenha)) {
-      alert('Por favor, crie uma senha válida (as senhas devem ser iguais).');
-      return;
-    }
-
-    // Se for pagamento online, ir para o step 4 (checkout transparente)
-    if (formCliente.forma_pagamento === 'online') {
-      setCheckoutStep(4);
-      return;
-    }
-
-    // Se não for pagamento online, criar pedido normalmente
-    setProcessandoPagamento(true);
-    
-    try {
-      // Se for cliente cadastrado, salvar/atualizar dados
-      let clienteId = null;
-      if (tipoCliente === 'cadastrado') {
-        if (clienteLogado) {
-          await base44.entities.Cliente.update(clienteLogado.id, {
-            nome: formCliente.nome,
-            telefone: formCliente.telefone,
-            email: formCliente.email,
-            cep: formCliente.cep,
-            endereco: formCliente.endereco,
-            numero: formCliente.numero,
-            complemento: formCliente.complemento,
-            bairro: formCliente.bairro,
-            cidade: formCliente.cidade,
-            estado: formCliente.estado,
-            total_pedidos: (clienteLogado.total_pedidos || 0) + 1,
-            pontos_fidelidade: (clienteLogado.pontos_fidelidade || 0) + Math.floor(calcularSubtotal()),
-          });
-          clienteId = clienteLogado.id;
-        } else {
-          const clientesExistentes = await base44.entities.Cliente.filter({ telefone: formCliente.telefone });
-          
-          if (clientesExistentes.length > 0) {
-            alert('Já existe uma conta com este telefone. Faça login.');
-            setProcessandoPagamento(false);
-            return;
-          }
-
-          const novoCliente = await base44.entities.Cliente.create({
-            pizzaria_id: pizzariaId,
-            nome: formCliente.nome,
-            telefone: formCliente.telefone,
-            senha: cadastroSenha,
-            email: formCliente.email,
-            cep: formCliente.cep,
-            endereco: formCliente.endereco,
-            numero: formCliente.numero,
-            complemento: formCliente.complemento,
-            bairro: formCliente.bairro,
-            cidade: formCliente.cidade,
-            estado: formCliente.estado,
-            latitude: formCliente.latitude,
-            longitude: formCliente.longitude,
-            total_pedidos: 1,
-            pontos_fidelidade: Math.floor(calcularSubtotal()),
-          });
-          clienteId = novoCliente.id;
-          const clienteComPizzaria = { ...novoCliente, pizzaria_id_atual: pizzariaId };
-          localStorage.setItem('cliente_logado', JSON.stringify(clienteComPizzaria));
+  // Cria o cliente se necessário e retorna
+  const salvarCliente = async () => {
+    if (tipoCliente === 'cadastrado') {
+      if (clienteLogado) {
+        await base44.entities.Cliente.update(clienteLogado.id, {
+          nome: formCliente.nome,
+          telefone: formCliente.telefone,
+          email: formCliente.email,
+          cep: formCliente.cep,
+          endereco: formCliente.endereco,
+          numero: formCliente.numero,
+          complemento: formCliente.complemento,
+          bairro: formCliente.bairro,
+          cidade: formCliente.cidade,
+          estado: formCliente.estado,
+          total_pedidos: (clienteLogado.total_pedidos || 0) + 1,
+          pontos_fidelidade: (clienteLogado.pontos_fidelidade || 0) + Math.floor(calcularSubtotal()),
+        });
+      } else {
+        const clientesExistentes = await base44.entities.Cliente.filter({ telefone: formCliente.telefone });
+        if (clientesExistentes.length > 0) {
+          alert('Já existe uma conta com este telefone. Faça login.');
+          return false;
         }
+        const novoCliente = await base44.entities.Cliente.create({
+          pizzaria_id: pizzariaId,
+          nome: formCliente.nome,
+          telefone: formCliente.telefone,
+          senha: cadastroSenha,
+          email: formCliente.email,
+          cep: formCliente.cep,
+          endereco: formCliente.endereco,
+          numero: formCliente.numero,
+          complemento: formCliente.complemento,
+          bairro: formCliente.bairro,
+          cidade: formCliente.cidade,
+          estado: formCliente.estado,
+          latitude: formCliente.latitude,
+          longitude: formCliente.longitude,
+          total_pedidos: 1,
+          pontos_fidelidade: Math.floor(calcularSubtotal()),
+        });
+        localStorage.setItem('cliente_logado', JSON.stringify({ ...novoCliente, pizzaria_id_atual: pizzariaId }));
       }
+    }
+    return true;
+  };
 
-      // Criar o pedido
-      const pedidoData = {
-        pizzaria_id: pizzariaId,
-        numero_pedido: `PED${Date.now()}`,
-        tipo_pedido: 'delivery',
-        cliente_nome: formCliente.nome,
-        cliente_telefone: formCliente.telefone,
-        cliente_cep: formCliente.cep,
-        cliente_endereco: formCliente.endereco,
-        cliente_numero: formCliente.numero,
-        cliente_bairro: formCliente.bairro,
-        cliente_cidade: formCliente.cidade,
-        cliente_estado: formCliente.estado,
-        cliente_complemento: formCliente.complemento,
-        latitude: formCliente.latitude,
-        longitude: formCliente.longitude,
-        itens: carrinho.map(item => {
-          let observacaoItem = item.observacao_item || '';
-          
-          if (item.personalizacoes) {
-            const detalhes = [];
-            Object.keys(item.personalizacoes).forEach(grupoKey => {
-              const grupoIndex = parseInt(grupoKey.split('_')[1]);
-              const grupo = item.opcoes_personalizacao?.[grupoIndex];
-              if (grupo && item.personalizacoes[grupoKey].length > 0) {
-                const itensGrupo = item.personalizacoes[grupoKey]
-                  .map(sel => sel.item.nome)
-                  .join(', ');
-                detalhes.push(`${grupo.nome_grupo}: ${itensGrupo}`);
-              }
-            });
-            const personalizacoesTxt = detalhes.join(' | ');
-            observacaoItem = [personalizacoesTxt, observacaoItem].filter(Boolean).join(' • ');
+  // Cria o pedido no banco e retorna o objeto
+  const criarPedido = async (formaPagamento) => {
+    const itensMapeados = carrinho.map(item => {
+      let observacaoItem = item.observacao_item || '';
+      if (item.personalizacoes) {
+        const detalhes = [];
+        Object.keys(item.personalizacoes).forEach(grupoKey => {
+          const grupoIndex = parseInt(grupoKey.split('_')[1]);
+          const grupo = item.opcoes_personalizacao?.[grupoIndex];
+          if (grupo && item.personalizacoes[grupoKey].length > 0) {
+            detalhes.push(`${grupo.nome_grupo}: ${item.personalizacoes[grupoKey].map(s => s.item.nome).join(', ')}`);
           }
-          
-          return {
-            produto_id: item.id,
-            nome: item.nome,
-            quantidade: item.quantidade,
-            preco_unitario: item.preco_final || item.preco,
-            observacao: observacaoItem,
-          };
-        }),
-        valor_produtos: calcularSubtotal(),
-        taxa_entrega: taxaEntrega,
-        desconto: calcularDesconto(),
-        valor_total: calcularTotal(),
-        forma_pagamento: formCliente.forma_pagamento,
-        troco_para: formCliente.troco_para || 0,
-        status: 'novo',
-        observacoes: formCliente.observacoes,
-        horario_pedido: new Date().toISOString(),
-        origem: 'site',
-      };
+        });
+        observacaoItem = [detalhes.join(' | '), observacaoItem].filter(Boolean).join(' • ');
+      }
+      return { produto_id: item.id, nome: item.nome, quantidade: item.quantidade, preco_unitario: item.preco_final || item.preco, observacao: observacaoItem };
+    });
 
-      const novoPedido = await base44.entities.Pedido.create(pedidoData);
-      await enviarNotificacaoStatusPedido(novoPedido, 'novo');
-      navigate(createPageUrl('AcompanharPedido') + `?id=${novoPedido.id}&pizzaria_id=${pizzariaId}`);
-      
+    return await base44.entities.Pedido.create({
+      pizzaria_id: pizzariaId,
+      numero_pedido: `PED${Date.now()}`,
+      tipo_pedido: 'delivery',
+      cliente_nome: formCliente.nome,
+      cliente_telefone: formCliente.telefone,
+      cliente_cep: formCliente.cep,
+      cliente_endereco: formCliente.endereco,
+      cliente_numero: formCliente.numero,
+      cliente_bairro: formCliente.bairro,
+      cliente_cidade: formCliente.cidade,
+      cliente_estado: formCliente.estado,
+      cliente_complemento: formCliente.complemento,
+      latitude: formCliente.latitude,
+      longitude: formCliente.longitude,
+      itens: itensMapeados,
+      valor_produtos: calcularSubtotal(),
+      taxa_entrega: taxaEntrega,
+      desconto: calcularDesconto(),
+      valor_total: calcularTotal(),
+      forma_pagamento: formaPagamento,
+      troco_para: formCliente.troco_para || 0,
+      status: 'novo',
+      status_pagamento: 'pendente',
+      observacoes: formCliente.observacoes,
+      horario_pedido: new Date().toISOString(),
+      origem: 'site',
+    });
+  };
+
+  // Confirmar pedido na tela de revisão — cria pedido e avança para pagamento ou redireciona
+  const confirmarPedido = async () => {
+    setProcessandoPagamento(true);
+    try {
+      const clienteOk = await salvarCliente();
+      if (!clienteOk) { setProcessandoPagamento(false); return; }
+
+      const isOnline = formCliente.forma_pagamento === 'online';
+      const formaPagFinal = isOnline
+        ? (metodoPagamentoOnline === 'pix' ? 'pix' : metodoPagamentoOnline === 'credit_card' ? 'cartao_credito' : metodoPagamentoOnline === 'debit_card' ? 'cartao_debito' : 'online')
+        : formCliente.forma_pagamento;
+
+      const novoPedido = await criarPedido(formaPagFinal);
+      setPedidoCriado(novoPedido);
+
+      if (isOnline) {
+        // Avança para tela de pagamento
+        setCheckoutStep(4);
+      } else {
+        await enviarNotificacaoStatusPedido(novoPedido, 'novo');
+        navigate(createPageUrl('AcompanharPedido') + `?id=${novoPedido.id}&pizzaria_id=${pizzariaId}`);
+      }
     } catch (error) {
-      console.error('Erro ao finalizar pedido:', error);
-      alert('Erro ao finalizar pedido. Tente novamente.');
+      console.error('Erro ao confirmar pedido:', error);
+      alert('Erro ao confirmar pedido. Tente novamente.');
+    } finally {
       setProcessandoPagamento(false);
     }
   };
