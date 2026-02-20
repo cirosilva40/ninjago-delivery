@@ -105,7 +105,22 @@ export default function Configuracoes() {
       // Se não, verificar autenticação normal
       const userData = await base44.auth.me();
       setUser(userData);
-      setPizzariaId(userData.pizzaria_id || 'default');
+      // Para admin, buscar a primeira pizzaria disponível se não tiver pizzaria_id
+      if (userData.pizzaria_id) {
+        setPizzariaId(userData.pizzaria_id);
+      } else if (userData.role === 'admin') {
+        // Admin: buscar todas as pizzarias e usar a URL param se disponível
+        const urlParams = new URLSearchParams(window.location.search);
+        const pizzariaParam = urlParams.get('pizzariaId');
+        if (pizzariaParam) {
+          setPizzariaId(pizzariaParam);
+        } else {
+          const todasPizzarias = await base44.entities.Pizzaria.list('-created_date', 1);
+          if (todasPizzarias.length > 0) {
+            setPizzariaId(todasPizzarias[0].id);
+          }
+        }
+      }
     };
     loadUser();
   }, []);
