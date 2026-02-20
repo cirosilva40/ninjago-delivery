@@ -11,60 +11,74 @@ export const useMercadoPago = (publicKey) => {
   const [mp, setMp] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Usar a chave da pizzaria ou o fallback global
   const keyToUse = publicKey || FALLBACK_PUBLIC_KEY;
 
-  useEffect(() => {
-    if (!keyToUse) {
-      // Sem chave alguma, marcar como "carregado" para não travar o botão
-      setMp(null);
-      setIsLoaded(true);
-      return;
-    }
-
-    const initMP = () => {
-      try {
-        const mpInstance = new window.MercadoPago(keyToUse);
-        setMp(mpInstance);
-        setIsLoaded(true);
-      } catch (e) {
-        console.error('Erro ao inicializar MP SDK:', e);
-        setIsLoaded(true);
+  const initMP = (key) => {
+    try {
+      // Remover instância anterior se existir
+      if (window._mpInstance) {
+        try { window._mpInstance = null; } catch(e) {}
       }
-    };
+      const mpInstance = new window.MercadoPago(key, { locale: 'pt-BR' });
+      window._mpInstance = mpInstance;
+      setMp(mpInstance);
+      setIsLoaded(true);
+      console.log('✅ MercadoPago SDK inicializado com sucesso');
+    } catch (e) {
+      console.error('Erro ao inicializar MP SDK:', e);
+      setIsLoaded(true);
+    }
+  };
 
+  const loadScript = (key) => {
+    // Script já carregado
     if (window.MercadoPago) {
-      initMP();
+      initMP(key);
       return;
     }
 
-    // Evitar adicionar o script duas vezes
+    // Script já sendo carregado - aguardar
     if (document.querySelector('script[src="https://sdk.mercadopago.com/js/v2"]')) {
       const interval = setInterval(() => {
         if (window.MercadoPago) {
           clearInterval(interval);
-          initMP();
+          initMP(key);
         }
       }, 200);
       return () => clearInterval(interval);
     }
 
+    // Carregar script
     const script = document.createElement('script');
     script.src = 'https://sdk.mercadopago.com/js/v2';
     script.async = true;
     script.onload = () => {
-      if (window.MercadoPago) initMP();
-      else setIsLoaded(true);
+      if (window.MercadoPago) initMP(key);
+      else {
+        console.error('MercadoPago não disponível após carregar script');
+        setIsLoaded(true);
+      }
     };
     script.onerror = () => {
       console.error('Falha ao carregar SDK do Mercado Pago');
       setIsLoaded(true);
     };
-
     document.body.appendChild(script);
+  };
+
+  useEffect(() => {
+    if (!keyToUse) {
+      setMp(null);
+      setIsLoaded(false); // Manter false até a chave chegar
+      return;
+    }
+
+    setIsLoaded(false);
+    setMp(null);
+    loadScript(keyToUse);
   }, [keyToUse]);
 
-  return { mp, isLoaded };
+  return { mp, isLoaded: isLoaded && !!mp };
 };
 
 /**
