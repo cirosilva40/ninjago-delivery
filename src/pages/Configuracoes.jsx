@@ -590,6 +590,7 @@ export default function Configuracoes() {
                       Clique no mapa para fixar a localização exata
                     </p>
                   </div>
+                  <ErrorBoundary>
                   <MapaRaioEntrega
                     latitude={pizzaria.latitude}
                     longitude={pizzaria.longitude}
@@ -604,6 +605,7 @@ export default function Configuracoes() {
                       });
                     }}
                   />
+                </ErrorBoundary>
                   {pizzaria.latitude && pizzaria.longitude && (
                     <div className="bg-emerald-500/10 border-t-2 border-emerald-500/30 p-3">
                       <p className="text-sm text-emerald-400 flex items-center gap-2">
