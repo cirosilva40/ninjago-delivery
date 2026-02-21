@@ -141,15 +141,20 @@ export default function Configuracoes() {
   });
 
   const { data: recompensas = [], refetch: refetchRecompensas } = useQuery({
-    queryKey: ['recompensas-admin', pizzariaId],
+    queryKey: ['recompensas-admin', pizzariaId, user?.role],
     queryFn: async () => {
-      if (!pizzariaId) return [];
-      if (user?.role === 'admin') {
-        return base44.entities.Recompensa.list('-created_date');
+      if (!pizzariaId || !user) return [];
+      try {
+        if (user?.role === 'admin') {
+          return base44.entities.Recompensa.list('-created_date');
+        }
+        return base44.entities.Recompensa.filter({ pizzaria_id: pizzariaId }, '-created_date');
+      } catch (e) {
+        console.error('Erro ao buscar recompensas:', e);
+        return [];
       }
-      return base44.entities.Recompensa.filter({ pizzaria_id: pizzariaId }, '-created_date');
     },
-    enabled: !!pizzariaId,
+    enabled: !!pizzariaId && !!user,
   });
 
   useEffect(() => {
