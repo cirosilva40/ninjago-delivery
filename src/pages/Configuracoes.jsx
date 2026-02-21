@@ -178,10 +178,13 @@ export default function Configuracoes() {
     enabled: !!pizzariaId && !!user,
   });
 
+  const pizzariaLoadedRef = React.useRef(false);
+
   useEffect(() => {
-    if (pizzarias.length > 0) {
+    // Só carrega do banco na primeira vez (evita loop quando refetch é chamado após salvar)
+    if (pizzarias.length > 0 && !pizzariaLoadedRef.current) {
+      pizzariaLoadedRef.current = true;
       const p = pizzarias[0];
-      // Mesclar defaults apenas para chaves que não existem, preservando TUDO que está no banco
       const configSalva = p.configuracoes || {};
       setPizzaria({
         ...p,
@@ -190,7 +193,7 @@ export default function Configuracoes() {
           aceitar_cartao: true,
           aceitar_dinheiro: true,
           tempo_medio_preparo: 30,
-          ...configSalva, // configSalva por último para não sobrescrever valores do banco
+          ...configSalva,
         },
       });
     }
