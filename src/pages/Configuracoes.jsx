@@ -1057,13 +1057,15 @@ export default function Configuracoes() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <MapaRaioEntrega
-                latitude={pizzaria.latitude}
-                longitude={pizzaria.longitude}
-                raioKm={pizzaria.raio_entrega_km || 10}
-                taxaBase={pizzaria.taxa_entrega_base || 0}
-                taxaAdicional={pizzaria.taxa_adicional_por_km || 0}
-              />
+              <ErrorBoundary>
+                <MapaRaioEntrega
+                  latitude={pizzaria.latitude}
+                  longitude={pizzaria.longitude}
+                  raioKm={pizzaria.raio_entrega_km || 10}
+                  taxaBase={pizzaria.taxa_entrega_base || 0}
+                  taxaAdicional={pizzaria.taxa_adicional_por_km || 0}
+                />
+              </ErrorBoundary>
             </CardContent>
           </Card>
         </TabsContent>
