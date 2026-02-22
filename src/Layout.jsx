@@ -59,6 +59,7 @@ export default function Layout({ children, currentPageName }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+  const { authorized, checking } = useRouteGuard(currentPageName);
 
   useEffect(() => {
     loadUser();
