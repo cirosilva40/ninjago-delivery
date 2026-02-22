@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Toaster } from 'sonner';
+import { useRouteGuard } from '@/components/RouteGuard';
 
 const menuItems = [
   { name: 'Novo Pedido', icon: ClipboardList, page: 'NovoPedido' },
