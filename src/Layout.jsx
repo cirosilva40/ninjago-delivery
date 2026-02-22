@@ -107,8 +107,20 @@ export default function Layout({ children, currentPageName }) {
     base44.auth.logout();
   };
 
+  // Enquanto verifica autenticação, mostra loading
+  if (checking) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Não autorizado: RouteGuard já redirecionou
+  if (!authorized) return null;
+
   // Páginas que não usam o layout padrão
-  if (currentPageName === 'Home' || currentPageName === 'AppEntregador' || currentPageName === 'AdminUsers' || currentPageName === 'CardapioCliente' || currentPageName === 'AcompanharPedido' || currentPageName === 'AcessoCliente' || currentPageName === 'PerfilCliente' || currentPageName === 'AcessoUsuario' || currentPageName === 'PagamentoSucesso' || currentPageName === 'PagamentoFalha' || currentPageName === 'AcessoAdmin') {
+  if (currentPageName === 'Home' || currentPageName === 'AppEntregador' || currentPageName === 'AdminUsers' || currentPageName === 'CardapioCliente' || currentPageName === 'AcompanharPedido' || currentPageName === 'AcessoCliente' || currentPageName === 'PerfilCliente' || currentPageName === 'AcessoUsuario' || currentPageName === 'PagamentoSucesso' || currentPageName === 'PagamentoFalha' || currentPageName === 'AcessoAdmin' || currentPageName === 'NotificacoesCliente' || currentPageName === 'CriarNovaSenha') {
     return <>{children}</>;
   }
 
