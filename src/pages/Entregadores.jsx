@@ -57,6 +57,7 @@ export default function Entregadores() {
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showModal, setShowModal] = useState(false);
   const [editingEntregador, setEditingEntregador] = useState(null);
+  const [saving, setSaving] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
   const [user, setUser] = useState(null);
