@@ -42,12 +42,14 @@ const ESTABELECIMENTO_PAGES = [
 
 export function useRouteGuard(currentPageName) {
   const navigate = useNavigate();
-  const [authorized, setAuthorized] = useState(false);
-  const [checking, setChecking] = useState(true);
+  // Páginas públicas e sem layout: sempre autorizadas, sem verificação
+  const isPublic = PUBLIC_PAGES.includes(currentPageName);
+  const [authorized, setAuthorized] = useState(isPublic);
+  const [checking, setChecking] = useState(!isPublic);
 
   useEffect(() => {
     const check = () => {
-      // Páginas públicas: sempre libera
+      // Páginas públicas: sempre libera sem redirecionar
       if (PUBLIC_PAGES.includes(currentPageName)) {
         setAuthorized(true);
         setChecking(false);
