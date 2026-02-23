@@ -25,7 +25,8 @@ export default function AcessoAdmin() {
 
   const handleLogin = () => {
     setRedirecting(true);
-    base44.auth.redirectToLogin(createPageUrl('AdminUsers'));
+    const nextUrl = window.location.origin + createPageUrl('AcessoAdmin');
+    base44.auth.redirectToLogin(nextUrl);
   };
 
   return (
