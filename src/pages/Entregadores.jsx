@@ -519,9 +519,10 @@ export default function Entregadores() {
               </Button>
               <Button 
                 onClick={handleSave}
-                className="bg-gradient-to-r from-emerald-500 to-green-600"
+                disabled={saving}
+                className="bg-gradient-to-r from-emerald-500 to-green-600 disabled:opacity-60"
               >
-                {editingEntregador ? 'Salvar' : 'Cadastrar'}
+                {saving ? 'Salvando...' : (editingEntregador ? 'Salvar' : 'Cadastrar')}
               </Button>
             </div>
           </div>
