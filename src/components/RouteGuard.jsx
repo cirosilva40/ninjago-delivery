@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
+import { base44 } from '@/api/base44Client';
+
 // Páginas totalmente públicas (sem nenhuma autenticação)
 const PUBLIC_PAGES = [
   'CardapioCliente',
@@ -10,13 +12,17 @@ const PUBLIC_PAGES = [
   'AcessoUsuario',
   'AcessoAdmin',
   'AppEntregador',
-  'AdminUsers',
   'Home',
   'PagamentoSucesso',
   'PagamentoFalha',
   'NotificacoesCliente',
   'PerfilCliente',
   'CriarNovaSenha',
+];
+
+// Páginas que requerem autenticação base44 (admin)
+const ADMIN_PAGES = [
+  'AdminUsers',
 ];
 
 // Páginas exclusivas do painel do estabelecimento (requer estabelecimento_logado)
@@ -43,15 +49,26 @@ const ESTABELECIMENTO_PAGES = [
 
 export function useRouteGuard(currentPageName) {
   const navigate = useNavigate();
-  // Páginas públicas e sem layout: sempre autorizadas, sem verificação
   const isPublic = PUBLIC_PAGES.includes(currentPageName);
   const [authorized, setAuthorized] = useState(isPublic);
   const [checking, setChecking] = useState(!isPublic);
 
   useEffect(() => {
-    const check = () => {
+    const check = async () => {
       // Páginas públicas: sempre libera sem redirecionar
       if (PUBLIC_PAGES.includes(currentPageName)) {
+        setAuthorized(true);
+        setChecking(false);
+        return;
+      }
+
+      // Páginas admin: requer autenticação base44
+      if (ADMIN_PAGES.includes(currentPageName)) {
+        const isAuth = await base44.auth.isAuthenticated();
+        if (!isAuth) {
+          navigate(createPageUrl('AcessoAdmin'));
+          return;
+        }
         setAuthorized(true);
         setChecking(false);
         return;
