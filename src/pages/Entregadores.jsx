@@ -155,6 +155,9 @@ export default function Entregadores() {
       resetForm();
     } catch (error) {
       console.error('Erro ao salvar:', error);
+      alert('Erro ao cadastrar entregador: ' + error.message);
+    } finally {
+      setSaving(false);
     }
   };
 
