@@ -77,13 +77,31 @@ export default function Entregadores() {
       const userData = await base44.auth.me();
       setUser(userData);
       
-      // Obter pizzaria_id do localStorage se disponível
+      // 1. Tentar localStorage (estabelecimento logado)
       const estabelecimentoLogado = localStorage.getItem('estabelecimento_logado');
       if (estabelecimentoLogado) {
-        const estab = JSON.parse(estabelecimentoLogado);
-        setPizzariaId(estab.id);
-      } else {
-        setPizzariaId(userData.pizzaria_id || 'default');
+        try {
+          const estab = JSON.parse(estabelecimentoLogado);
+          if (estab.id) { setPizzariaId(estab.id); return; }
+        } catch(e) {}
+      }
+      
+      // 2. Tentar pizzaria_id do perfil do usuário
+      if (userData?.pizzaria_id) {
+        setPizzariaId(userData.pizzaria_id);
+        return;
+      }
+
+      // 3. Admin sem pizzaria vinculada: buscar primeira pizzaria disponível
+      if (userData?.role === 'admin') {
+        try {
+          const pizzarias = await base44.entities.Pizzaria.list('-created_date', 1);
+          if (pizzarias?.length > 0) {
+            setPizzariaId(pizzarias[0].id);
+          }
+        } catch(e) {
+          console.error('Erro ao buscar pizzaria:', e);
+        }
       }
     };
     loadUser();
