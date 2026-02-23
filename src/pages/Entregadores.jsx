@@ -120,6 +120,12 @@ export default function Entregadores() {
   };
 
   const handleSave = async () => {
+    if (saving) return;
+    if (!pizzariaId) {
+      alert('Erro: ID da pizzaria não encontrado. Tente recarregar a página.');
+      return;
+    }
+    setSaving(true);
     try {
       if (editingEntregador) {
         await base44.entities.Entregador.update(editingEntregador.id, {
