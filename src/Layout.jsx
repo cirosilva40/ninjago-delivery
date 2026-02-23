@@ -107,6 +107,13 @@ export default function Layout({ children, currentPageName }) {
     base44.auth.logout();
   };
 
+  // Páginas sem layout padrão (públicas ou com layout próprio)
+  const NO_LAYOUT_PAGES = ['Home', 'AppEntregador', 'AdminUsers', 'CardapioCliente', 'AcompanharPedido', 'AcessoCliente', 'PerfilCliente', 'AcessoUsuario', 'PagamentoSucesso', 'PagamentoFalha', 'AcessoAdmin', 'NotificacoesCliente', 'CriarNovaSenha'];
+
+  if (NO_LAYOUT_PAGES.includes(currentPageName)) {
+    return <>{children}</>;
+  }
+
   // Enquanto verifica autenticação, mostra loading
   if (checking) {
     return (
@@ -118,11 +125,6 @@ export default function Layout({ children, currentPageName }) {
 
   // Não autorizado: RouteGuard já redirecionou
   if (!authorized) return null;
-
-  // Páginas que não usam o layout padrão
-  if (currentPageName === 'Home' || currentPageName === 'AppEntregador' || currentPageName === 'AdminUsers' || currentPageName === 'CardapioCliente' || currentPageName === 'AcompanharPedido' || currentPageName === 'AcessoCliente' || currentPageName === 'PerfilCliente' || currentPageName === 'AcessoUsuario' || currentPageName === 'PagamentoSucesso' || currentPageName === 'PagamentoFalha' || currentPageName === 'AcessoAdmin' || currentPageName === 'NotificacoesCliente' || currentPageName === 'CriarNovaSenha') {
-    return <>{children}</>;
-  }
 
   const isLight = theme === 'light';
 
