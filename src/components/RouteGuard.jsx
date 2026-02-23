@@ -10,6 +10,7 @@ const PUBLIC_PAGES = [
   'AcessoUsuario',
   'AcessoAdmin',
   'AppEntregador',
+  'AdminUsers',
   'Home',
   'PagamentoSucesso',
   'PagamentoFalha',
