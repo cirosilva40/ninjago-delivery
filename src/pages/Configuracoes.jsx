@@ -115,14 +115,7 @@ export default function Configuracoes() {
   });
 
   React.useEffect(() => {
-    // Extrair app_id da URL atual (formato base44)
-    const hostname = window.location.hostname;
-    const match = hostname.match(/([a-f0-9]+)\.base44\.app/);
-    if (match) {
-      // Tenta extrair do URL ou usa variável de ambiente
-    }
-    // Pegar app_id do base44 client
-    setAppId(base44.app_id || Deno?.env?.get?.('BASE44_APP_ID') || '6925e1fdd6376091844799ad');
+    setAppId(base44.app_id || '6925e1fdd6376091844799ad');
 
     const loadUser = async () => {
       // Verificar se é estabelecimento logado via localStorage
