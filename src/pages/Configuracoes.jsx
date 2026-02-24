@@ -49,6 +49,7 @@ import {
 } from '@/components/ui/dialog';
 import MapaRaioEntrega from '@/components/configuracoes/MapaRaioEntrega';
 import TestarMercadoPago from '@/components/configuracoes/TestarMercadoPago';
+import TestarWebhookMercadoPago from '@/components/configuracoes/TestarWebhookMercadoPago';
 import { createPageUrl } from '@/utils';
 
 class ErrorBoundary extends React.Component {
@@ -75,6 +76,7 @@ class ErrorBoundary extends React.Component {
 export default function Configuracoes() {
   const [user, setUser] = useState(null);
   const [pizzariaId, setPizzariaId] = useState(null);
+  const [appId, setAppId] = useState('');
   const [pizzaria, setPizzaria] = useState({
     nome: 'Minha Pizzaria',
     cnpj: '',
@@ -113,6 +115,15 @@ export default function Configuracoes() {
   });
 
   React.useEffect(() => {
+    // Extrair app_id da URL atual (formato base44)
+    const hostname = window.location.hostname;
+    const match = hostname.match(/([a-f0-9]+)\.base44\.app/);
+    if (match) {
+      // Tenta extrair do URL ou usa variável de ambiente
+    }
+    // Pegar app_id do base44 client
+    setAppId(base44.app_id || Deno?.env?.get?.('BASE44_APP_ID') || '6925e1fdd6376091844799ad');
+
     const loadUser = async () => {
       // Verificar se é estabelecimento logado via localStorage
       const estabelecimentoLogado = localStorage.getItem('estabelecimento_logado');
@@ -181,7 +192,6 @@ export default function Configuracoes() {
   const pizzariaLoadedRef = React.useRef(false);
 
   useEffect(() => {
-    // Só carrega do banco na primeira vez (evita loop quando refetch é chamado após salvar)
     if (pizzarias.length > 0 && !pizzariaLoadedRef.current) {
       pizzariaLoadedRef.current = true;
       const p = pizzarias[0];
@@ -213,7 +223,6 @@ export default function Configuracoes() {
     setLoading(true);
     try {
       const configAtual = pizzaria.configuracoes || {};
-      // Preservar flag mp_credenciais_salvas se as chaves estiverem preenchidas
       if (configAtual.mp_public_key && configAtual.mp_access_token) {
         configAtual.mp_credenciais_salvas = true;
       }
@@ -285,6 +294,11 @@ export default function Configuracoes() {
     } catch (error) {
       console.error('Erro ao excluir recompensa:', error);
     }
+  };
+
+  const getWebhookUrl = () => {
+    const resolvedAppId = base44.app_id || '6925e1fdd6376091844799ad';
+    return `https://app.base44.app/api/apps/${resolvedAppId}/functions/webhookMercadoPago?pizzaria_id=${pizzarias[0]?.id || ''}`;
   };
 
   return (
@@ -388,7 +402,7 @@ export default function Configuracoes() {
                   </div>
                 </div>
 
-                {/* Horário de Funcionamento — junto aos Meus Dados */}
+                {/* Horário de Funcionamento */}
                 <div className="pt-4 border-t border-white/10">
                   <div className="flex items-center gap-2 mb-3">
                     <Clock className="w-4 h-4 text-blue-400" />
@@ -455,7 +469,6 @@ export default function Configuracoes() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* CEP primeiro — preenche o restante automaticamente */}
                 <div>
                   <Label className="text-slate-400">CEP</Label>
                   <CepInput
@@ -594,21 +607,21 @@ export default function Configuracoes() {
                     </p>
                   </div>
                   <ErrorBoundary>
-                  <MapaRaioEntrega
-                    latitude={pizzaria.latitude}
-                    longitude={pizzaria.longitude}
-                    raioKm={1}
-                    taxaBase={0}
-                    taxaAdicional={0}
-                    onLocationChange={(lat, lng) => {
-                      setPizzaria({
-                        ...pizzaria,
-                        latitude: lat,
-                        longitude: lng,
-                      });
-                    }}
-                  />
-                </ErrorBoundary>
+                    <MapaRaioEntrega
+                      latitude={pizzaria.latitude}
+                      longitude={pizzaria.longitude}
+                      raioKm={1}
+                      taxaBase={0}
+                      taxaAdicional={0}
+                      onLocationChange={(lat, lng) => {
+                        setPizzaria({
+                          ...pizzaria,
+                          latitude: lat,
+                          longitude: lng,
+                        });
+                      }}
+                    />
+                  </ErrorBoundary>
                   {pizzaria.latitude && pizzaria.longitude && (
                     <div className="bg-emerald-500/10 border-t-2 border-emerald-500/30 p-3">
                       <p className="text-sm text-emerald-400 flex items-center gap-2">
@@ -620,11 +633,8 @@ export default function Configuracoes() {
                     </div>
                   )}
                 </div>
-
               </CardContent>
             </Card>
-
-
           </div>
         </TabsContent>
 
@@ -680,7 +690,6 @@ export default function Configuracoes() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
-              {/* Como funciona */}
               <div className="p-4 rounded-xl bg-purple-500/10 border border-purple-500/20 text-sm text-purple-200 space-y-2">
                 <p className="font-semibold flex items-center gap-2">
                   <Globe className="w-4 h-4" /> Como configurar seu domínio próprio:
@@ -692,7 +701,6 @@ export default function Configuracoes() {
                 </ol>
               </div>
 
-              {/* Endereço CNAME */}
               <div>
                 <Label className="text-slate-400">Aponte seu CNAME para:</Label>
                 <div className="flex gap-2 mt-1">
@@ -715,7 +723,6 @@ export default function Configuracoes() {
                 </div>
               </div>
 
-              {/* Campo do domínio personalizado */}
               <div>
                 <Label className="text-slate-400">Seu Domínio Personalizado</Label>
                 <div className="flex gap-2 mt-1">
@@ -891,7 +898,6 @@ export default function Configuracoes() {
                 </p>
               </div>
 
-              {/* Preview */}
               <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
                 <p className="text-sm text-blue-300 mb-2">💡 Prévia</p>
                 <p className="text-xs text-slate-400">
@@ -904,7 +910,6 @@ export default function Configuracoes() {
 
         {/* Tab Entrega */}
         <TabsContent value="entrega" className="space-y-6">
-          {/* Configurações de Taxa */}
           <Card className="bg-white/5 border-white/10">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
@@ -978,7 +983,6 @@ export default function Configuracoes() {
                 <h4 className="font-medium text-white mb-4 flex items-center gap-2">
                   🎁 Entrega Grátis
                 </h4>
-                
                 <div className="space-y-4">
                   <div>
                     <Label className="text-slate-400 mb-2 block">Valor Mínimo para Entrega Grátis (R$)</Label>
@@ -1170,7 +1174,7 @@ export default function Configuracoes() {
                     </p>
                     <div className="flex gap-2">
                       <Input
-                        value={`https://delivery-pro-pizzaria-844799ad.base44.app/api/functions/webhookMercadoPago?pizzariaId=${pizzarias[0].id}`}
+                        value={getWebhookUrl()}
                         readOnly
                         className="bg-slate-900 border-slate-700 text-amber-300 font-mono text-xs"
                       />
@@ -1179,7 +1183,7 @@ export default function Configuracoes() {
                         variant="outline"
                         size="icon"
                         onClick={() => {
-                          navigator.clipboard.writeText(`https://delivery-pro-pizzaria-844799ad.base44.app/api/functions/webhookMercadoPago?pizzariaId=${pizzarias[0].id}`);
+                          navigator.clipboard.writeText(getWebhookUrl());
                           alert('✅ URL copiada!');
                         }}
                         className="border-slate-600 text-slate-300 hover:bg-white/10 shrink-0"
@@ -1188,6 +1192,11 @@ export default function Configuracoes() {
                       </Button>
                     </div>
                   </div>
+
+                  <TestarWebhookMercadoPago
+                    webhookUrl={getWebhookUrl()}
+                    pizzariaId={pizzarias[0].id}
+                  />
                 </div>
               )}
 
@@ -1250,7 +1259,6 @@ export default function Configuracoes() {
                           ...pizzaria,
                           configuracoes: configAtualizada,
                         };
-                        // Salvar diretamente no banco usando o ID da pizzaria carregada
                         const idParaSalvar = pizzaria.id || pizzarias[0]?.id;
                         if (!idParaSalvar) {
                           throw new Error('ID da pizzaria não encontrado');
@@ -1373,7 +1381,6 @@ export default function Configuracoes() {
 
         {/* Tab Programa de Fidelidade */}
         <TabsContent value="fidelidade" className="space-y-6">
-          {/* Regras de Pontuação */}
           <Card className="bg-white/5 border-white/10">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
@@ -1389,15 +1396,9 @@ export default function Configuracoes() {
                 <h4 className="font-medium text-white mb-2 flex items-center gap-2">
                   ⭐ Sistema de Pontos Atual
                 </h4>
-                <p className="text-sm text-slate-300">
-                  • 1 ponto = R$ 1,00 gasto no pedido
-                </p>
-                <p className="text-sm text-slate-300">
-                  • Pontos são acumulados automaticamente em cada pedido finalizado
-                </p>
-                <p className="text-sm text-slate-300">
-                  • Válido apenas para clientes cadastrados
-                </p>
+                <p className="text-sm text-slate-300">• 1 ponto = R$ 1,00 gasto no pedido</p>
+                <p className="text-sm text-slate-300">• Pontos são acumulados automaticamente em cada pedido finalizado</p>
+                <p className="text-sm text-slate-300">• Válido apenas para clientes cadastrados</p>
               </div>
 
               <div className="grid grid-cols-3 gap-4 p-4 rounded-xl bg-white/5">
