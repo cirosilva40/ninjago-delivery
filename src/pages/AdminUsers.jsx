@@ -541,12 +541,6 @@ export default function AdminUsers() {
             </div>
             <div className="flex items-center gap-3">
               <ExportarEstrutura usuarios={usuarios} estabelecimentos={estabelecimentos} />
-              <Link to={createPageUrl('Dashboard')}>
-                <Button variant="outline" className="border-slate-600 text-slate-900 dark:text-slate-100">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Voltar ao App
-                </Button>
-              </Link>
               <Button 
                 variant="outline" 
                 onClick={handleLogout}
