@@ -4,62 +4,19 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import {
-  Users,
-  Plus,
-  Search,
-  Filter,
-  Shield,
-  Mail,
-  Calendar,
-  MoreVertical,
-  Edit,
-  UserCheck,
-  AlertCircle,
-  ArrowLeft,
-  LogOut,
-  Building2,
-  User,
-  Phone,
-  CreditCard,
-  DollarSign,
-  Trash2,
-  X,
-  Key,
-  Copy,
-  Loader2,
-  TrendingUp,
-  TrendingDown,
-  Wallet,
-  ShoppingCart,
-  Receipt,
-} from 'lucide-react';
+import { Users, Plus, Search, Filter, Shield, Mail, Calendar, MoreVertical, Edit, UserCheck, AlertCircle, ArrowLeft, LogOut, Building2, User, Phone, DollarSign, Trash2, X, Key, Loader2, TrendingUp, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { CepInput, TelefoneInput, CnpjInput, CpfInput, CurrencyInput } from '@/components/ui/masked-input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Card } from '@/components/ui/card';
 import moment from 'moment';
+import ExportarEstrutura from '@/components/admin/ExportarEstrutura';
+import ModalCadastroUsuario from '@/components/admin/ModalCadastroUsuario';
 
 export default function AdminUsers() {
   const [currentUser, setCurrentUser] = useState(null);
