@@ -1752,231 +1752,62 @@ export default function AdminUsers() {
             </DialogContent>
             </Dialog>
 
-            {/* Modal Editar Estabelecimento (conteúdo duplicado do cadastro) */}
-            <Dialog open={showEditEstabelecimento} onOpenChange={setShowEditEstabelecimento}>
-            <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
+            {/* Modal Editar Estabelecimento */}
+      <Dialog open={showEditEstabelecimento} onOpenChange={setShowEditEstabelecimento}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <Edit className="w-6 h-6 text-orange-500" />
               Editar Estabelecimento
             </DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-6 mt-4">
-            {/* Dados Básicos */}
+          </DialogHeader>
+          <div className="space-y-6 mt-4">
             <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
               <h3 className="font-semibold text-white flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-orange-400" />
                 Dados do Estabelecimento
               </h3>
-
-              {/* Upload de Logo */}
-              <div className="col-span-2">
-                <Label className="text-slate-400 mb-3 block">Logotipo do Estabelecimento</Label>
-                <div className="flex items-center gap-4">
-                  {estabelecimentoForm.logo_url ? (
-                    <div className="relative">
-                      <img 
-                        src={estabelecimentoForm.logo_url} 
-                        alt="Logo" 
-                        className="w-24 h-24 rounded-xl object-cover border-2 border-slate-700"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setEstabelecimentoForm({ ...estabelecimentoForm, logo_url: '' })}
-                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white hover:bg-red-600"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="w-24 h-24 rounded-xl bg-slate-800 border-2 border-dashed border-slate-600 flex items-center justify-center">
-                      <Building2 className="w-8 h-8 text-slate-600" />
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <input
-                      type="file"
-                      id="logo-upload-edit"
-                      accept="image/*"
-                      onChange={handleLogoUpload}
-                      className="hidden"
-                      disabled={uploadingLogo}
-                    />
-                    <label htmlFor="logo-upload-edit">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="border-slate-600 text-slate-300 cursor-pointer"
-                        disabled={uploadingLogo}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          document.getElementById('logo-upload-edit').click();
-                        }}
-                      >
-                        {uploadingLogo ? 'Enviando...' : estabelecimentoForm.logo_url ? 'Alterar Logo' : 'Fazer Upload do Logo'}
-                      </Button>
-                    </label>
-                    <p className="text-xs text-slate-500 mt-2">
-                      PNG, JPG ou JPEG (máx. 5MB)
-                    </p>
-                  </div>
-                </div>
-              </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <Label className="text-slate-400">Nome do Estabelecimento *</Label>
-                  <Input
-                    value={estabelecimentoForm.nome}
-                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, nome: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="Pizzaria do João"
-                  />
+                  <Input value={estabelecimentoForm.nome} onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, nome: e.target.value })} className="bg-slate-800 border-slate-700 text-white" />
                 </div>
-
-                <div className="col-span-2">
-                  <Label className="text-slate-400">Nome de Exibição para o Cliente</Label>
-                  <Input
-                    value={estabelecimentoForm.nome_exibicao_cliente}
-                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, nome_exibicao_cliente: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="Nome que aparece no cardápio"
-                  />
-                </div>
-
                 <div>
                   <Label className="text-slate-400">CNPJ</Label>
-                  <CnpjInput
-                    value={estabelecimentoForm.cnpj}
-                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cnpj: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                  />
+                  <CnpjInput value={estabelecimentoForm.cnpj} onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cnpj: e.target.value })} className="bg-slate-800 border-slate-700 text-white" />
                 </div>
-
                 <div>
                   <Label className="text-slate-400">Telefone *</Label>
-                  <TelefoneInput
-                    value={estabelecimentoForm.telefone}
-                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, telefone: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                  />
+                  <TelefoneInput value={estabelecimentoForm.telefone} onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, telefone: e.target.value })} className="bg-slate-800 border-slate-700 text-white" />
                 </div>
-
                 <div className="col-span-2">
                   <Label className="text-slate-400">Email</Label>
-                  <Input
-                    type="email"
-                    value={estabelecimentoForm.email}
-                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, email: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="contato@estabelecimento.com"
-                  />
+                  <Input type="email" value={estabelecimentoForm.email} onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, email: e.target.value })} className="bg-slate-800 border-slate-700 text-white" />
                 </div>
-              </div>
-            </div>
-
-            {/* Endereço */}
-            <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
-              <h3 className="font-semibold text-white">Endereço</h3>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <Label className="text-slate-400">Endereço Completo *</Label>
-                  <Input
-                    value={estabelecimentoForm.endereco}
-                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, endereco: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="Rua, número, bairro"
-                  />
+                  <Input value={estabelecimentoForm.endereco} onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, endereco: e.target.value })} className="bg-slate-800 border-slate-700 text-white" />
                 </div>
-
                 <div>
                   <Label className="text-slate-400">Cidade</Label>
-                  <Input
-                    value={estabelecimentoForm.cidade}
-                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cidade: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="São Paulo"
-                  />
+                  <Input value={estabelecimentoForm.cidade} onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cidade: e.target.value })} className="bg-slate-800 border-slate-700 text-white" />
                 </div>
-
                 <div>
                   <Label className="text-slate-400">Estado</Label>
-                  <Input
-                    value={estabelecimentoForm.estado}
-                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, estado: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                    placeholder="SP"
-                    maxLength={2}
-                  />
+                  <Input value={estabelecimentoForm.estado} onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, estado: e.target.value })} className="bg-slate-800 border-slate-700 text-white" maxLength={2} />
                 </div>
-
-                <div>
-                  <Label className="text-slate-400">CEP</Label>
-                  <CepInput
-                    value={estabelecimentoForm.cep}
-                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, cep: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Configurações */}
-            <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
-              <h3 className="font-semibold text-white">Configurações</h3>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-slate-400">Horário de Abertura</Label>
-                  <Input
-                    type="time"
-                    value={estabelecimentoForm.horario_abertura}
-                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, horario_abertura: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                  />
+                  <Input type="time" value={estabelecimentoForm.horario_abertura} onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, horario_abertura: e.target.value })} className="bg-slate-800 border-slate-700 text-white" />
                 </div>
-
                 <div>
                   <Label className="text-slate-400">Horário de Fechamento</Label>
-                  <Input
-                    type="time"
-                    value={estabelecimentoForm.horario_fechamento}
-                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, horario_fechamento: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                  />
+                  <Input type="time" value={estabelecimentoForm.horario_fechamento} onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, horario_fechamento: e.target.value })} className="bg-slate-800 border-slate-700 text-white" />
                 </div>
-
-                <div>
-                  <Label className="text-slate-400">Taxa de Entrega Base (R$)</Label>
-                  <CurrencyInput
-                    value={estabelecimentoForm.taxa_entrega_base}
-                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, taxa_entrega_base: e.target.value })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-slate-400">Raio de Entrega (km)</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={estabelecimentoForm.raio_entrega_km}
-                    onChange={(e) => setEstabelecimentoForm({ ...estabelecimentoForm, raio_entrega_km: parseFloat(e.target.value) })}
-                    className="bg-slate-800 border-slate-700 text-white"
-                  />
-                </div>
-
                 <div>
                   <Label className="text-slate-400">Plano</Label>
-                  <Select 
-                    value={estabelecimentoForm.plano} 
-                    onValueChange={(v) => setEstabelecimentoForm({ ...estabelecimentoForm, plano: v })}
-                  >
-                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
+                  <Select value={estabelecimentoForm.plano} onValueChange={(v) => setEstabelecimentoForm({ ...estabelecimentoForm, plano: v })}>
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue /></SelectTrigger>
                     <SelectContent className="bg-slate-800 border-slate-700">
                       <SelectItem value="basico">Básico</SelectItem>
                       <SelectItem value="profissional">Profissional</SelectItem>
@@ -1984,16 +1815,10 @@ export default function AdminUsers() {
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div>
                   <Label className="text-slate-400">Status</Label>
-                  <Select 
-                    value={estabelecimentoForm.status} 
-                    onValueChange={(v) => setEstabelecimentoForm({ ...estabelecimentoForm, status: v })}
-                  >
-                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
+                  <Select value={estabelecimentoForm.status} onValueChange={(v) => setEstabelecimentoForm({ ...estabelecimentoForm, status: v })}>
+                    <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue /></SelectTrigger>
                     <SelectContent className="bg-slate-800 border-slate-700">
                       <SelectItem value="ativa">Ativo</SelectItem>
                       <SelectItem value="inativa">Inativo</SelectItem>
@@ -2003,67 +1828,31 @@ export default function AdminUsers() {
                 </div>
               </div>
             </div>
-
-            {/* Gerenciar Senha do Cliente */}
             {editingEstabelecimento && (
               <div className="space-y-4 p-4 rounded-xl bg-blue-900/30 border border-blue-700">
                 <h3 className="font-semibold text-white flex items-center gap-2">
                   <Key className="w-5 h-5 text-blue-400" />
                   Gerenciar Acesso do Cliente
                 </h3>
-                <p className="text-xs text-slate-400">Gere uma nova senha temporária para o cliente</p>
-                
-                <Button
-                  type="button"
-                  onClick={() => handleGenerarSenhaTemporaria(editingEstabelecimento.id)}
-                  disabled={generatingPassword}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                >
-                  {generatingPassword ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Gerando...
-                    </>
-                  ) : (
-                    <>
-                      <Key className="w-4 h-4 mr-2" />
-                      Gerar Nova Senha Temporária
-                    </>
-                  )}
+                <Button type="button" onClick={() => handleGenerarSenhaTemporaria(editingEstabelecimento.id)} disabled={generatingPassword} className="w-full bg-blue-600 hover:bg-blue-700">
+                  {generatingPassword ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Gerando...</> : <><Key className="w-4 h-4 mr-2" />Gerar Nova Senha Temporária</>}
                 </Button>
               </div>
             )}
-
             {cadastroSuccess && (
               <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
-                <p className="text-sm text-emerald-300 font-medium">
-                  ✅ Estabelecimento atualizado com sucesso!
-                </p>
+                <p className="text-sm text-emerald-300 font-medium">✅ Estabelecimento atualizado com sucesso!</p>
               </div>
             )}
-
             <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setShowEditEstabelecimento(false);
-                  setEditingEstabelecimento(null);
-                }}
-                className="border-slate-600 text-slate-300"
-              >
-                Cancelar
-              </Button>
-              <Button 
-                onClick={handleCadastroEstabelecimento}
-                disabled={!estabelecimentoForm.nome || !estabelecimentoForm.telefone || !estabelecimentoForm.endereco || cadastrandoEstabelecimento || cadastroSuccess}
-                className="bg-gradient-to-r from-orange-500 to-red-600"
-              >
+              <Button variant="outline" onClick={() => { setShowEditEstabelecimento(false); setEditingEstabelecimento(null); }} className="border-slate-600 text-slate-300">Cancelar</Button>
+              <Button onClick={handleCadastroEstabelecimento} disabled={!estabelecimentoForm.nome || !estabelecimentoForm.telefone || !estabelecimentoForm.endereco || cadastrandoEstabelecimento || cadastroSuccess} className="bg-gradient-to-r from-orange-500 to-red-600">
                 {cadastrandoEstabelecimento ? 'Salvando...' : cadastroSuccess ? 'Salvo!' : 'Salvar Alterações'}
               </Button>
             </div>
-            </div>
-            </DialogContent>
-            </Dialog>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal Cadastrar Usuário */}
       <Dialog open={showCadastroModal} onOpenChange={setShowCadastroModal}>
