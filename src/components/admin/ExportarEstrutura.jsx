@@ -517,8 +517,7 @@ ${usuarios.map(u => `- **${u.full_name || 'Sem nome'}** | ${u.email} | Role: ${u
   return (
     <Button
       onClick={handleExportar}
-      variant="outline"
-      className="border-slate-600 text-slate-100 hover:bg-slate-700 gap-2"
+      className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white font-semibold shadow-lg shadow-orange-500/25 gap-2"
     >
       <Download className="w-4 h-4" />
       Exportar Estrutura
