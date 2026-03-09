@@ -722,10 +722,17 @@ export default function Configuracoes() {
                   <div className="flex-1 relative">
                     <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                     <Input
-                      value={pizzaria.configuracoes?.dominio_personalizado || ''}
-                      onChange={(e) => updateConfig('dominio_personalizado', e.target.value.toLowerCase().trim())}
-                      className="bg-slate-800 border-slate-700 text-white pl-9 font-mono"
-                      placeholder="cardapio.suapizzaria.com.br"
+                     value={pizzaria.configuracoes?.dominio_personalizado || ''}
+                     onChange={(e) => {
+                       let val = e.target.value.toLowerCase().trim();
+                       // Remove protocolo (https:// ou http://)
+                       val = val.replace(/^https?:\/\//i, '');
+                       // Remove qualquer path (tudo após a primeira /)
+                       val = val.split('/')[0];
+                       updateConfig('dominio_personalizado', val);
+                     }}
+                     className="bg-slate-800 border-slate-700 text-white pl-9 font-mono"
+                     placeholder="cardapio.suapizzaria.com.br"
                     />
                   </div>
                 </div>
