@@ -512,11 +512,14 @@ export default function AppEntregador() {
       <main className="p-4 pb-28">
         {/* Rota Otimizada */}
         <AnimatePresence>
-          {rotaNotificacao && entregas.filter(e => ['pendente','aceita','em_rota'].includes(e.status)).length > 0 && (
+          {rotaNotificacao && !rotaDismissed && entregas.filter(e => ['pendente','aceita','em_rota'].includes(e.status)).length > 0 && (
             <RotaOtimizadaCard
               rotaNotificacao={rotaNotificacao}
               entregasAtivas={entregas.filter(e => ['pendente','aceita','em_rota'].includes(e.status))}
-              onDismiss={() => base44.entities.Notificacao.update(rotaNotificacao.id, { lida: true })}
+              onDismiss={() => {
+                setRotaDismissed(true);
+                base44.entities.Notificacao.update(rotaNotificacao.id, { lida: true });
+              }}
             />
           )}
         </AnimatePresence>
