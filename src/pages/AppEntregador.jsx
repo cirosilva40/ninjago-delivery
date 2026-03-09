@@ -891,40 +891,138 @@ export default function AppEntregador() {
               </Card>
             </div>
 
-            {/* Últimos Ganhos */}
+            {/* Movimentações */}
             <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-emerald-500" />
-              Últimos Ganhos
+              Movimentações
             </h3>
             <div className="space-y-2">
-              {historicoCompleto.slice(0, 15).map((entrega) => (
-                <Card key={entrega.id} className="bg-white/5 border-white/10 p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-lg ${pagamentoConfig[entrega.forma_pagamento]?.bgColor || 'bg-emerald-500/20'} flex items-center justify-center`}>
-                        {pagamentoConfig[entrega.forma_pagamento] 
-                          ? React.createElement(pagamentoConfig[entrega.forma_pagamento].icon, {
-                              className: `w-5 h-5 ${pagamentoConfig[entrega.forma_pagamento].color}`
-                            })
-                          : <DollarSign className="w-5 h-5 text-emerald-400" />
-                        }
+              {(() => {
+                // Montar lista unificada de movimentações
+                const movimentacoes = [];
+
+                // Entregas concluídas
+                historicoCompleto.forEach(entrega => {
+                  movimentacoes.push({
+                    id: `entrega-${entrega.id}`,
+                    tipo: 'entrega',
+                    data: entrega.horario_entrega || entrega.created_date,
+                    titulo: `Entrega #${entrega.numero_pedido}`,
+                    subtitulo: entrega.bairro || pagamentoConfig[entrega.forma_pagamento]?.label,
+                    valor: entrega.taxa_entregador || 0,
+                    sinal: '+',
+                    forma_pagamento: entrega.forma_pagamento,
+                    valor_pedido: entrega.valor_pedido,
+                  });
+                });
+
+                // Ajustes do admin (RegistroEntrega com taxa_ajuste)
+                registrosAjuste.forEach(reg => {
+                  movimentacoes.push({
+                    id: `ajuste-${reg.id}`,
+                    tipo: 'ajuste',
+                    data: reg.data_entrega || reg.created_date,
+                    titulo: reg.taxa_ajuste > 0 ? 'Bônus / Ajuste' : 'Desconto / Ajuste',
+                    subtitulo: reg.motivo_ajuste || 'Ajuste realizado pela pizzaria',
+                    valor: Math.abs(reg.taxa_ajuste),
+                    sinal: reg.taxa_ajuste > 0 ? '+' : '-',
+                  });
+                });
+
+                // Pagamentos recebidos
+                pagamentos.forEach(pag => {
+                  if (pag.status === 'pago') {
+                    movimentacoes.push({
+                      id: `pagamento-${pag.id}`,
+                      tipo: 'pagamento',
+                      data: pag.data_pagamento || pag.created_date,
+                      titulo: 'Pagamento Recebido',
+                      subtitulo: pag.observacoes || `${pag.quantidade_entregas || 0} entrega(s) • Período ${pag.periodo_inicio ? moment(pag.periodo_inicio).format('DD/MM') : ''} - ${pag.periodo_fim ? moment(pag.periodo_fim).format('DD/MM') : ''}`,
+                      valor: pag.valor,
+                      sinal: '+',
+                    });
+                  }
+                });
+
+                // Ordenar por data decrescente
+                movimentacoes.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+                if (movimentacoes.length === 0) {
+                  return (
+                    <Card className="bg-white/5 border-white/10 p-8 text-center">
+                      <Wallet className="w-12 h-12 mx-auto text-slate-600 mb-3" />
+                      <p className="text-slate-400">Nenhuma movimentação ainda</p>
+                    </Card>
+                  );
+                }
+
+                return movimentacoes.slice(0, 30).map(mov => (
+                  <Card key={mov.id} className={`border p-4 ${
+                    mov.tipo === 'ajuste' 
+                      ? mov.sinal === '+' 
+                        ? 'bg-blue-500/10 border-blue-500/30' 
+                        : 'bg-red-500/10 border-red-500/30'
+                      : mov.tipo === 'pagamento'
+                        ? 'bg-emerald-500/10 border-emerald-500/30'
+                        : 'bg-white/5 border-white/10'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                          mov.tipo === 'ajuste' 
+                            ? mov.sinal === '+' ? 'bg-blue-500/20' : 'bg-red-500/20'
+                            : mov.tipo === 'pagamento' 
+                              ? 'bg-emerald-500/20'
+                              : pagamentoConfig[mov.forma_pagamento]?.bgColor || 'bg-orange-500/20'
+                        }`}>
+                          {mov.tipo === 'ajuste' ? (
+                            mov.sinal === '+' 
+                              ? <TrendingUp className="w-5 h-5 text-blue-400" />
+                              : <AlertTriangle className="w-5 h-5 text-red-400" />
+                          ) : mov.tipo === 'pagamento' ? (
+                            <Wallet className="w-5 h-5 text-emerald-400" />
+                          ) : (
+                            pagamentoConfig[mov.forma_pagamento] 
+                              ? React.createElement(pagamentoConfig[mov.forma_pagamento].icon, {
+                                  className: `w-5 h-5 ${pagamentoConfig[mov.forma_pagamento].color}`
+                                })
+                              : <DollarSign className="w-5 h-5 text-orange-400" />
+                          )}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-white text-sm">{mov.titulo}</p>
+                            {mov.tipo === 'ajuste' && (
+                              <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                                mov.sinal === '+' ? 'bg-blue-500/20 text-blue-300' : 'bg-red-500/20 text-red-300'
+                              }`}>
+                                {mov.sinal === '+' ? 'Bônus' : 'Desconto'}
+                              </span>
+                            )}
+                            {mov.tipo === 'pagamento' && (
+                              <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-emerald-500/20 text-emerald-300">
+                                Pago
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-400">{mov.subtitulo}</p>
+                          <p className="text-xs text-slate-500">{moment(mov.data).format('DD/MM [às] HH:mm')}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-white">Pedido #{entrega.numero_pedido}</p>
-                        <p className="text-xs text-slate-400">
-                          {moment(entrega.horario_entrega || entrega.created_date).format('DD/MM [às] HH:mm')}
+                      <div className="text-right">
+                        <p className={`font-bold text-base ${
+                          mov.sinal === '+' ? 'text-emerald-400' : 'text-red-400'
+                        }`}>
+                          {mov.sinal}R$ {mov.valor?.toFixed(2)}
                         </p>
+                        {mov.tipo === 'entrega' && mov.forma_pagamento === 'dinheiro' && (
+                          <p className="text-xs text-yellow-400">R$ {mov.valor_pedido?.toFixed(2)} coletado</p>
+                        )}
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-emerald-400">+R$ {entrega.taxa_entregador?.toFixed(2)}</p>
-                      {entrega.forma_pagamento === 'dinheiro' && (
-                        <p className="text-xs text-yellow-400">R$ {entrega.valor_pedido?.toFixed(2)} coletado</p>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              ))}
+                  </Card>
+                ));
+              })()}
             </div>
           </div>
         )}
