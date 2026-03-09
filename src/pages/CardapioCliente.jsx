@@ -579,9 +579,25 @@ export default function CardapioCliente() {
       return { produto_id: item.id, nome: item.nome, quantidade: item.quantidade, preco_unitario: item.preco_final || item.preco, observacao: observacaoItem };
     });
 
+    // Gerar número sequencial do dia para esta pizzaria
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const pedidosHoje = await base44.entities.Pedido.filter({ pizzaria_id: pizzariaId }, '-created_date', 500);
+    const pedidosHojeFiltrados = pedidosHoje.filter(p => {
+      const dataPedido = new Date(p.created_date);
+      dataPedido.setHours(0, 0, 0, 0);
+      return dataPedido.getTime() === hoje.getTime();
+    });
+    let proximoNumero = 1;
+    if (pedidosHojeFiltrados.length > 0) {
+      const numeros = pedidosHojeFiltrados.map(p => parseInt(p.numero_pedido) || 0);
+      proximoNumero = Math.max(...numeros) + 1;
+    }
+    const numeroPedido = proximoNumero.toString().padStart(2, '0');
+
     return await base44.entities.Pedido.create({
       pizzaria_id: pizzariaId,
-      numero_pedido: `PED${Date.now()}`,
+      numero_pedido: numeroPedido,
       tipo_pedido: 'delivery',
       cliente_nome: formCliente.nome,
       cliente_telefone: formCliente.telefone,

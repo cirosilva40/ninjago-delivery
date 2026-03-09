@@ -454,10 +454,10 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
       // Buscar pedidos de hoje para gerar número sequencial
       const hoje = new Date();
       hoje.setHours(0, 0, 0, 0);
-      const pedidosHoje = await base44.entities.Pedido.list('-created_date', 500);
+      const pedidosHojeTodos = await base44.entities.Pedido.filter({ pizzaria_id: pizzariaId }, '-created_date', 500);
       
       // Filtrar pedidos de hoje e pegar o maior número
-      const pedidosHojeFiltrados = pedidosHoje.filter(p => {
+      const pedidosHojeFiltrados = pedidosHojeTodos.filter(p => {
         const dataPedido = new Date(p.created_date);
         dataPedido.setHours(0, 0, 0, 0);
         return dataPedido.getTime() === hoje.getTime();
