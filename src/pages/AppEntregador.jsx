@@ -89,6 +89,7 @@ export default function AppEntregador() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [telefoneLogin, setTelefoneLogin] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [rotaDismissed, setRotaDismissed] = useState(false);
   const queryClient = useQueryClient();
   const entregasPendentesAnterioresRef = React.useRef([]);
 
