@@ -178,6 +178,17 @@ export default function AppEntregador() {
     enabled: !!entregador?.id,
   });
 
+  const { data: registrosAjuste = [] } = useQuery({
+    queryKey: ['registros-ajuste', entregador?.id],
+    queryFn: async () => {
+      if (!entregador?.id) return [];
+      const todos = await base44.entities.RegistroEntrega.filter({ entregador_id: entregador.id }, '-created_date', 100);
+      return todos.filter(r => r.taxa_ajuste && r.taxa_ajuste !== 0);
+    },
+    enabled: !!entregador?.id,
+    refetchInterval: 10000,
+  });
+
   const { data: pizzaria } = useQuery({
     queryKey: ['pizzaria', entregador?.pizzaria_id],
     queryFn: () => entregador?.pizzaria_id 
