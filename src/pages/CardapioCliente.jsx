@@ -436,20 +436,17 @@ export default function CardapioCliente() {
             });
 
             if (data.success && data.endereco) {
-              setFormCliente({
-                ...formCliente,
-                cep: data.endereco.cep || '',
-                endereco: data.endereco.logradouro || '',
-                numero: data.endereco.numero || '',
-                bairro: data.endereco.bairro || '',
-                cidade: data.endereco.cidade || '',
-                estado: data.endereco.estado || '',
+              setFormCliente(prev => ({
+                ...prev,
+                cep: data.endereco.cep || prev.cep,
+                endereco: data.endereco.logradouro || prev.endereco,
+                numero: data.endereco.numero || prev.numero,
+                bairro: data.endereco.bairro || prev.bairro,
+                cidade: data.endereco.cidade || prev.cidade,
+                estado: data.endereco.estado || prev.estado,
                 latitude,
                 longitude,
-              });
-              
-              // Recalcular taxa de entrega após preencher o endereço
-              calcularTaxaEntrega();
+              }));
               
               alert('✅ Localização capturada e endereço preenchido automaticamente!');
             } else {
