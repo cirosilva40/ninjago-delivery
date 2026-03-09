@@ -615,7 +615,7 @@ export default function AppEntregador() {
               </div>
 
               {/* Info de Pagamento */}
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 mb-4">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 mb-3">
                 {pagamentoConfig[entregaAtiva.forma_pagamento] && (
                   <>
                     <div className={`w-10 h-10 rounded-lg ${pagamentoConfig[entregaAtiva.forma_pagamento].bgColor} flex items-center justify-center`}>
@@ -632,6 +632,17 @@ export default function AppEntregador() {
                   </>
                 )}
               </div>
+
+              {/* Alerta de Troco */}
+              {entregaAtiva.troco_para > 0 && (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-yellow-500/20 border border-yellow-500/50 mb-4 animate-pulse">
+                  <AlertTriangle className="w-6 h-6 text-yellow-400 flex-shrink-0" />
+                  <div>
+                    <p className="text-yellow-300 font-bold text-sm">⚠️ Lembre-se do Troco!</p>
+                    <p className="text-yellow-200 text-xs">Pague com R$ {entregaAtiva.troco_para?.toFixed(2)} — Troco: R$ {(entregaAtiva.troco_para - entregaAtiva.valor_pedido)?.toFixed(2)}</p>
+                  </div>
+                </div>
+              )}
 
               <div className="flex gap-2">
                 <Button 
