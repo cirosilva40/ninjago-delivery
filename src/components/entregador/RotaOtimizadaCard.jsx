@@ -63,7 +63,7 @@ export default function RotaOtimizadaCard({ rotaNotificacao, entregasAtivas, onD
     <motion.div
       initial={{ opacity: 0, y: -16 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -16 }}
+      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0 } }}
       className="mb-5"
     >
       <div className="rounded-2xl bg-gradient-to-br from-blue-600/20 to-purple-600/20 border-2 border-blue-500/40 overflow-hidden">
