@@ -411,12 +411,15 @@ export default function CardapioCliente() {
     }
   };
 
-  // Recalcular taxa quando CEP mudar
+  // Recalcular taxa sempre que a config da pizzaria ou localização do cliente mudar
   useEffect(() => {
-    if (formCliente.cep && formCliente.cep.length >= 8) {
+    if (pizzariaConfig?.id) {
       calcularTaxaEntrega();
     }
-  }, [formCliente.cep, pizzariaConfig]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pizzariaConfig?.id, pizzariaConfig?.taxa_entrega_base, pizzariaConfig?.entrega_gratis_dentro_raio_base,
+      pizzariaConfig?.valor_minimo_entrega_gratis, pizzariaConfig?.raio_entrega_km,
+      formCliente.latitude, formCliente.longitude, carrinho.length]);
 
   const usarLocalizacao = () => {
     setBuscandoLocalizacao(true);
