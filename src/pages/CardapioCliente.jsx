@@ -298,53 +298,56 @@ export default function CardapioCliente() {
     return subtotal + taxaEntrega - desconto;
   };
 
-  // Calcular taxa de entrega dinamicamente
-  const calcularTaxaEntrega = async () => {
-    if (!formCliente.cep || !pizzariaConfig.latitude || !pizzariaConfig.longitude) {
-      setTaxaEntrega(pizzariaConfig.taxa_entrega_base || 5);
+  // Calcular distância em km entre dois pontos (fórmula Haversine)
+  const calcularDistanciaKm = (lat1, lon1, lat2, lon2) => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+
+  // Calcular taxa de entrega respeitando as configurações da pizzaria
+  const calcularTaxaEntrega = () => {
+    const config = pizzariaConfig;
+    if (!config?.id) return;
+
+    const subtotal = calcularSubtotal();
+
+    // 1. Verificar entrega grátis por valor mínimo do pedido
+    if (config.valor_minimo_entrega_gratis > 0 && subtotal >= config.valor_minimo_entrega_gratis) {
+      setTaxaEntrega(0);
       return;
     }
 
-    try {
-      // Buscar coordenadas do CEP do cliente
-      const response = await fetch(`https://viacep.com.br/ws/${formCliente.cep.replace(/\D/g, '')}/json/`);
-      const data = await response.json();
-      
-      if (data.erro) {
-        setTaxaEntrega(pizzariaConfig.taxa_entrega_base || 5);
-        return;
-      }
+    // 2. Se tem coordenadas do cliente e da pizzaria, calcular distância real
+    if (config.latitude && config.longitude && formCliente.latitude && formCliente.longitude) {
+      const distanciaKm = calcularDistanciaKm(
+        config.latitude, config.longitude,
+        formCliente.latitude, formCliente.longitude
+      );
 
-      // Calcular distância (simplificado - em produção usar API de distância real)
-      // Aqui estamos usando uma aproximação básica
-      const subtotal = calcularSubtotal();
-      
-      // Verificar entrega grátis
-      if (pizzariaConfig.valor_minimo_entrega_gratis > 0 && 
-          subtotal >= pizzariaConfig.valor_minimo_entrega_gratis) {
-        setTaxaEntrega(0);
-        return;
-      }
+      const raioBase = config.raio_entrega_km || 0;
 
-      // Simular distância (5-20km)
-      const distanciaKm = Math.random() * 15 + 5;
-      
-      if (distanciaKm <= pizzariaConfig.raio_entrega_km) {
+      if (raioBase === 0 || distanciaKm <= raioBase) {
         // Dentro do raio base
-        if (pizzariaConfig.entrega_gratis_dentro_raio_base) {
-          setTaxaEntrega(0);
-        } else {
-          setTaxaEntrega(pizzariaConfig.taxa_entrega_base || 5);
-        }
+        setTaxaEntrega(config.entrega_gratis_dentro_raio_base ? 0 : (config.taxa_entrega_base || 0));
       } else {
         // Fora do raio base
-        const kmExtra = distanciaKm - pizzariaConfig.raio_entrega_km;
-        const taxaExtra = kmExtra * (pizzariaConfig.taxa_adicional_por_km || 0);
-        setTaxaEntrega((pizzariaConfig.taxa_entrega_base || 5) + taxaExtra);
+        const kmExtra = distanciaKm - raioBase;
+        const taxaExtra = kmExtra * (config.taxa_adicional_por_km || 0);
+        setTaxaEntrega((config.taxa_entrega_base || 0) + taxaExtra);
       }
-    } catch (error) {
-      console.error('Erro ao calcular taxa:', error);
-      setTaxaEntrega(pizzariaConfig.taxa_entrega_base || 5);
+      return;
+    }
+
+    // 3. Sem coordenadas do cliente: usar regras básicas da configuração
+    if (config.entrega_gratis_dentro_raio_base) {
+      setTaxaEntrega(0);
+    } else {
+      setTaxaEntrega(config.taxa_entrega_base || 0);
     }
   };
 
