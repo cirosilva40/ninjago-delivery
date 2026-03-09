@@ -454,11 +454,11 @@ export default function CardapioCliente() {
             }
           } catch (error) {
             console.error('Erro ao geocodificar:', error);
-            setFormCliente({
-              ...formCliente,
+            setFormCliente(prev => ({
+              ...prev,
               latitude,
               longitude,
-            });
+            }));
             alert('⚠️ Localização capturada, mas não foi possível obter o endereço automaticamente. Por favor, preencha manualmente.');
           } finally {
             setBuscandoLocalizacao(false);
