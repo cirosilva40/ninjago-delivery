@@ -545,12 +545,30 @@ export default function AppEntregador() {
                       <p className="text-sm text-orange-200">{entregasPendentes.length} entrega(s) aguardando você</p>
                     </div>
                   </div>
-                  <Button 
-                    onClick={() => setSelectedEntrega(entregasPendentes[0])}
-                    className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-semibold"
-                  >
-                    Ver Entrega <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => setSelectedEntrega(entregasPendentes[0])}
+                      className="flex-1 h-12 bg-gradient-to-r from-orange-500 to-red-600 text-base font-semibold"
+                    >
+                      Ver Entrega <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
+                    {entregasPendentes.length > 1 && (
+                      <Button 
+                        onClick={async () => {
+                          setLoading(true);
+                          for (const entrega of entregasPendentes) {
+                            await updateStatus(entrega.id, 'aceita');
+                          }
+                          setLoading(false);
+                        }}
+                        disabled={loading}
+                        className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-700 text-base font-semibold"
+                      >
+                        <Check className="w-5 h-5 mr-1" />
+                        Aceitar Todas
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>
