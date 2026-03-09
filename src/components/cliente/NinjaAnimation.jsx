@@ -195,7 +195,7 @@ export default function NinjaAnimation({ status }) {
   const [sceneIndex, setSceneIndex] = useState(0);
 
   // Alternar cenas a cada 3 segundos
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isActive) return;
     const interval = setInterval(() => {
       setSceneIndex(prev => (prev + 1) % 3);
