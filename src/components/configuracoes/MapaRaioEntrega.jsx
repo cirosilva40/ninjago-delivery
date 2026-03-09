@@ -85,99 +85,108 @@ export default function MapaRaioEntrega({ latitude, longitude, raioKm, taxaBase,
 
   return (
     <div className="relative w-full h-[400px] rounded-xl overflow-hidden border-2 border-white/10">
-      {hasLocation ? (
-        <MapContainer
-          center={markerPosition}
-          zoom={15}
-          className="w-full h-full"
-          zoomControl={true}
-          whenReady={(map) => {
-            setTimeout(() => map.target.invalidateSize(), 100);
+      <MapContainer
+        center={markerPosition}
+        zoom={hasLocation ? 13 : 11}
+        className="w-full h-full"
+        zoomControl={true}
+        whenReady={(map) => {
+          setTimeout(() => map.target.invalidateSize(), 100);
+        }}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        
+        {hasLocation && <MapUpdater center={markerPosition} raio={raioKm} />}
+        <LocationMarker />
+        
+        {/* Marcador da Pizzaria */}
+        <Marker 
+          position={markerPosition} 
+          icon={pizzariaIcon}
+          draggable={!!onLocationChange}
+          eventHandlers={{
+            dragend: (e) => {
+              if (onLocationChange) {
+                const { lat, lng } = e.target.getLatLng();
+                setMarkerPosition([lat, lng]);
+                onLocationChange(lat, lng);
+              }
+            },
           }}
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          
-          <MapUpdater center={markerPosition} raio={raioKm} />
-          <LocationMarker />
-          
-          {/* Marcador da Pizzaria - Arrastável e Clicável */}
-          <Marker 
-            position={markerPosition} 
-            icon={pizzariaIcon}
-            draggable={!!onLocationChange}
-            eventHandlers={{
-              dragend: (e) => {
-                if (onLocationChange) {
-                  const { lat, lng } = e.target.getLatLng();
-                  setMarkerPosition([lat, lng]);
-                  onLocationChange(lat, lng);
-                }
-              },
+          <Popup>
+            <div className="text-center">
+              <div className="text-lg font-bold text-gray-900">📍 Sua Pizzaria</div>
+              <p className="text-sm text-gray-600 mt-1">
+                {onLocationChange ? 'Arraste para ajustar' : 'Centro de distribuição'}
+              </p>
+            </div>
+          </Popup>
+        </Marker>
+        
+        {/* Círculo do Raio Base */}
+        {raioKm > 0 && (
+          <Circle
+            center={markerPosition}
+            radius={raioKm * 1000}
+            pathOptions={{
+              color: '#10b981',
+              fillColor: '#10b981',
+              fillOpacity: 0.15,
+              weight: 2,
+              dashArray: hasLocation ? null : '8 4',
             }}
           >
             <Popup>
               <div className="text-center">
-                <div className="text-lg font-bold text-gray-900">📍 Sua Pizzaria</div>
-                <p className="text-sm text-gray-600 mt-1">
-                  {onLocationChange ? 'Arraste para ajustar' : 'Centro de distribuição'}
-                </p>
+                <div className="text-sm font-bold text-gray-900">Raio Base: {raioKm} km</div>
+                <p className="text-xs text-gray-600">Taxa: R$ {(parseFloat(taxaBase) || 0).toFixed(2)}</p>
+                {parseFloat(taxaAdicional) > 0 && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    Além deste raio: +R$ {(parseFloat(taxaAdicional) || 0).toFixed(2)}/km
+                  </p>
+                )}
               </div>
             </Popup>
-          </Marker>
-          
-          {/* Círculo do Raio Base */}
-          {raioKm > 0 && (
-            <Circle
-              center={markerPosition}
-              radius={raioKm * 1000}
-              pathOptions={{
-                color: '#10b981',
-                fillColor: '#10b981',
-                fillOpacity: 0.2,
-                weight: 2,
-              }}
-            >
-              <Popup>
-                <div className="text-center">
-                  <div className="text-sm font-bold text-gray-900">Raio Base: {raioKm} km</div>
-                  <p className="text-xs text-gray-600">Taxa: R$ {(parseFloat(taxaBase) || 0).toFixed(2)}</p>
-                  {parseFloat(taxaAdicional) > 0 && (
-                    <p className="text-xs text-amber-600 mt-1">
-                      Além deste raio: +R$ {(parseFloat(taxaAdicional) || 0).toFixed(2)}/km
-                    </p>
-                  )}
-                </div>
-              </Popup>
-            </Circle>
-          )}
-        </MapContainer>
-      ) : (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-800/50 text-slate-400">
-          <Store className="w-16 h-16 mb-4" />
-          <p className="text-center px-4">
-            Configure o endereço da sua pizzaria na aba <strong>Geral</strong><br />
-            para visualizar o mapa de cobertura
-          </p>
+          </Circle>
+        )}
+      </MapContainer>
+
+      {/* Aviso quando localização não está definida */}
+      {!hasLocation && onLocationChange && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[999] bg-amber-500 text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-lg pointer-events-none">
+          📍 Clique no mapa para fixar a localização da sua pizzaria
+        </div>
+      )}
+      {!hasLocation && !onLocationChange && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[999] bg-slate-800/90 text-slate-300 text-xs px-3 py-1.5 rounded-full shadow-lg pointer-events-none">
+          ⚠️ Configure o endereço na aba Geral para fixar a localização
         </div>
       )}
       
       {/* Legenda */}
-      {hasLocation && (
-        <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg z-[999]">
-          <div className="text-xs font-bold text-gray-900 mb-2">Legenda</div>
+      <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg z-[999]">
+        <div className="text-xs font-bold text-gray-900 mb-2">Legenda</div>
+        {raioKm > 0 && (
           <div className="flex items-center gap-2 mb-1">
-            <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-            <span className="text-xs text-gray-700">Raio base ({raioKm} km)</span>
+            <div className="w-3 h-3 rounded-full bg-emerald-500 opacity-70"></div>
+            <span className="text-xs text-gray-700">Raio base ({raioKm} km) · R$ {(parseFloat(taxaBase)||0).toFixed(2)}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="text-lg">🍕</div>
-            <span className="text-xs text-gray-700">Sua pizzaria</span>
+        )}
+        {parseFloat(taxaAdicional) > 0 && (
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-3 h-3 rounded-full bg-amber-400"></div>
+            <span className="text-xs text-gray-700">+R$ {(parseFloat(taxaAdicional)||0).toFixed(2)}/km fora do raio</span>
           </div>
+        )}
+        <div className="flex items-center gap-2">
+          <div className="text-base">🍕</div>
+          <span className="text-xs text-gray-700">{hasLocation ? 'Sua pizzaria' : 'Posição estimada'}</span>
         </div>
-      )}
+      </div>
     </div>
   );
 }
