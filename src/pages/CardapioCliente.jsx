@@ -396,15 +396,13 @@ export default function CardapioCliente() {
       const data = await response.json();
       
       if (!data.erro) {
-        setFormCliente({
-          ...formCliente,
-          endereco: data.logradouro,
-          bairro: data.bairro,
-          cidade: data.localidade,
-          estado: data.uf,
-        });
-        // Recalcular taxa após preencher CEP
-        calcularTaxaEntrega();
+        setFormCliente(prev => ({
+          ...prev,
+          endereco: data.logradouro || prev.endereco,
+          bairro: data.bairro || prev.bairro,
+          cidade: data.localidade || prev.cidade,
+          estado: data.uf || prev.estado,
+        }));
       }
     } catch (error) {
       console.error('Erro ao buscar CEP:', error);
