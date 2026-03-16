@@ -388,6 +388,12 @@ export default function Pedidos() {
                             <StatusIcon className="w-3 h-3 mr-1" />
                             {status.label}
                           </Badge>
+                          {pedido.origem === 'ifood' && (
+                            <Badge className="bg-red-500/20 text-red-400 border border-red-500/30">iFood</Badge>
+                          )}
+                          {pedido.origem === '99food' && (
+                            <Badge className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">99Food</Badge>
+                          )}
                         </div>
                         <p className="text-white font-medium">{pedido.cliente_nome}</p>
                         <p className="text-sm text-slate-400">{pedido.cliente_endereco}</p>
