@@ -41,6 +41,12 @@ export default function Integracoes() {
     loadUser();
   }, []);
 
+  const { data: pizzaria, refetch: refetchPizzaria } = useQuery({
+    queryKey: ['pizzaria-integracoes', pizzariaId],
+    queryFn: () => pizzariaId ? base44.entities.Pizzaria.get(pizzariaId) : null,
+    enabled: !!pizzariaId,
+  });
+
   const webhookIfood = pizzariaId
     ? `${WEBHOOK_BASE_URL}`
     : 'Carregando...';
