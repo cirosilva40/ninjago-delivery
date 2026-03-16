@@ -123,6 +123,25 @@ export default function NovoPedido() {
 
   const pizzaria = pizzarias[0] || {};
 
+  const toggleIntegracao = async (plataforma) => {
+    if (!pizzaria.id) return;
+    setSalvandoIntegracao(plataforma);
+    const campo = plataforma === 'ifood' ? 'ifood_ativo' : '99food_ativo';
+    const valorAtual = pizzaria.configuracoes?.[campo] ?? false;
+    try {
+      await base44.entities.Pizzaria.update(pizzaria.id, {
+        configuracoes: {
+          ...pizzaria.configuracoes,
+          [campo]: !valorAtual,
+        }
+      });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSalvandoIntegracao(null);
+    }
+  };
+
   // Atualiza a taxa de entrega padrão quando a pizzaria for carregada
   useEffect(() => {
     if (pizzaria.taxa_entrega_base !== undefined) {
