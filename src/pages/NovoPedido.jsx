@@ -526,7 +526,7 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
         forma_pagamento: 'dinheiro',
         status_pagamento: 'pendente',
         troco_para: '',
-        taxa_entrega: '5',
+        taxa_entrega: String(pizzaria.taxa_entrega_base ?? 0),
         desconto: '0',
         observacoes: '',
       });
