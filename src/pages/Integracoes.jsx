@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,12 +13,12 @@ import {
   Info,
   Zap,
   ShoppingBag,
-  ExternalLink,
   ChevronDown,
   ChevronUp,
   AlertCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import IfoodConfig from '@/components/integracoes/IfoodConfig';
 
 const WEBHOOK_BASE_URL = 'https://api.base44.com/api/apps/6925e1fdd6376091844799ad/functions/webhookPedidoExterno';
 
