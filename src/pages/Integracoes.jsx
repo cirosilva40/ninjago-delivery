@@ -191,13 +191,17 @@ export default function Integracoes() {
 
         {ifoodOpen && (
           <div className="px-5 pb-5 border-t border-white/10 pt-5 space-y-6">
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
-              <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-              <p className="text-amber-200 text-sm">
-                No painel do iFood (Portal do Parceiro), acesse <strong>Configurações → Integrações → Webhook</strong> e cadastre a URL abaixo com os headers indicados.
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+              <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+              <p className="text-blue-200 text-sm">
+                Integração via <strong>API Oficial iFood</strong> com polling automático. Configure suas credenciais abaixo para receber pedidos automaticamente a cada 30 segundos.
               </p>
             </div>
-            <EndpointBlock source="ifood" />
+            {pizzaria ? (
+              <IfoodConfig pizzaria={pizzaria} onSaved={refetchPizzaria} />
+            ) : (
+              <p className="text-slate-400 text-sm">Carregando...</p>
+            )}
           </div>
         )}
       </Card>
