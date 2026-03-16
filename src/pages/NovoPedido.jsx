@@ -107,6 +107,7 @@ export default function NovoPedido() {
 
   const [calculandoTaxa, setCalculandoTaxa] = useState(false);
   const [distanciaCalculada, setDistanciaCalculada] = useState(null);
+  const [salvandoIntegracao, setSalvandoIntegracao] = useState(null);
 
   const { data: produtos = [] } = useQuery({
     queryKey: ['produtos-disponiveis', pizzariaId],
