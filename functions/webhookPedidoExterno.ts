@@ -117,6 +117,18 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Webhook secret inválido' }, { status: 401 });
     }
 
+    // Verificar se a integração está ativa para esta pizzaria
+    const pizzarias = await base44.asServiceRole.entities.Pizzaria.filter({ id: pizzariaIdHeader }, '-created_date', 1);
+    const pizzaria = pizzarias[0];
+    if (!pizzaria) {
+      return Response.json({ error: 'Pizzaria não encontrada' }, { status: 404 });
+    }
+
+    const campoAtivo = source === 'ifood' ? 'ifood_ativo' : '99food_ativo';
+    if (!pizzaria.configuracoes?.[campoAtivo]) {
+      return Response.json({ error: `Integração com ${source} está desativada para esta loja` }, { status: 403 });
+    }
+
     const body = await req.json();
 
     // Mapear pedido conforme a origem
