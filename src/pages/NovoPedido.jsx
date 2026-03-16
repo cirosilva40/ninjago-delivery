@@ -121,6 +121,16 @@ export default function NovoPedido() {
 
   const pizzaria = pizzarias[0] || {};
 
+  // Atualiza a taxa de entrega padrão quando a pizzaria for carregada
+  useEffect(() => {
+    if (pizzaria.taxa_entrega_base !== undefined) {
+      setForm(prev => ({
+        ...prev,
+        taxa_entrega: String(pizzaria.taxa_entrega_base ?? 0),
+      }));
+    }
+  }, [pizzaria.id]);
+
   const filteredProdutos = produtos.filter(p => {
     const matchSearch = !searchProduto || 
       p.nome?.toLowerCase().includes(searchProduto.toLowerCase());
