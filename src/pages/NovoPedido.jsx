@@ -615,6 +615,42 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
           <h1 className="text-3xl font-bold text-white">Novo Pedido</h1>
           <p className="text-slate-400 mt-1">Cadastre um novo pedido</p>
         </div>
+        <div className="flex items-center gap-3">
+          {/* Toggle iFood */}
+          <button
+            onClick={() => toggleIntegracao('ifood')}
+            disabled={salvandoIntegracao === 'ifood'}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all font-medium text-sm ${
+              pizzaria.configuracoes?.ifood_ativo
+                ? 'bg-red-500/20 border-red-500/50 text-red-400'
+                : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'
+            }`}
+          >
+            {salvandoIntegracao === 'ifood' ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Power className={`w-4 h-4 ${pizzaria.configuracoes?.ifood_ativo ? 'text-red-400' : 'text-slate-500'}`} />
+            )}
+            iFood {pizzaria.configuracoes?.ifood_ativo ? 'ON' : 'OFF'}
+          </button>
+          {/* Toggle 99Food */}
+          <button
+            onClick={() => toggleIntegracao('99food')}
+            disabled={salvandoIntegracao === '99food'}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all font-medium text-sm ${
+              pizzaria.configuracoes?.['99food_ativo']
+                ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400'
+                : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'
+            }`}
+          >
+            {salvandoIntegracao === '99food' ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Power className={`w-4 h-4 ${pizzaria.configuracoes?.['99food_ativo'] ? 'text-yellow-400' : 'text-slate-500'}`} />
+            )}
+            99Food {pizzaria.configuracoes?.['99food_ativo'] ? 'ON' : 'OFF'}
+          </button>
+        </div>
       </div>
 
       {/* Tipo de Pedido */}
