@@ -18,7 +18,8 @@ import {
   Pizza,
   Home,
   Package,
-  ChefHat
+  ChefHat,
+  Plug
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -40,6 +41,7 @@ const menuItems = [
   { name: 'Entregadores', icon: Bike, page: 'Entregadores' },
   { name: 'Financeiro', icon: BarChart3, page: 'Financeiro' },
   { name: 'Relatórios', icon: BarChart3, page: 'Relatorios' },
+  { name: 'Integrações', icon: Plug, page: 'Integracoes' },
   { name: 'Configurações', icon: Settings, page: 'Configuracoes' },
 ];
 
