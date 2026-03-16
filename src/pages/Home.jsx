@@ -21,15 +21,41 @@ const fadeIn = {
   visible: { opacity: 1, transition: { duration: 0.7 } }
 };
 
+// Mapa de subdomínios para pizzariaId
+const SUBDOMAIN_MAP = {
+  'acaidathai.ninjagodelivery.com.br': '699a0a8b6d78ff46b56f1cd9',
+  // Adicione mais subdomínios aqui conforme necessário
+};
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
+    // Verificar se o hostname atual é um subdomínio mapeado
+    const hostname = window.location.hostname;
+    const pizzariaId = SUBDOMAIN_MAP[hostname];
+    if (pizzariaId) {
+      setRedirecting(true);
+      // Redirecionar internamente sem mudar a URL na barra de endereço
+      window.history.replaceState({}, '', window.location.href);
+      window.location.replace(`/CardapioCliente?pizzariaId=${pizzariaId}`);
+      return;
+    }
+
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  if (redirecting) {
+    return (
+      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0F172A] text-white font-sans overflow-x-hidden">
