@@ -175,6 +175,7 @@ export default function Produtos() {
       const data = {
         ...form,
         preco: parseFloat(form.preco) || 0,
+        preco_original: form.em_promocao ? (parseFloat(form.preco_original) || 0) : null,
         restaurante_id: pizzariaId,
       };
 
