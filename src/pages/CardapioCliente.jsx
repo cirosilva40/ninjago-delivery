@@ -230,17 +230,17 @@ export default function CardapioCliente() {
   const categorias = [...new Set(produtos.map(p => p.categoria))];
 
   const categoriaLabels = {
-    pizza: { nome: '🍕 Pizzas', icone: '🍕' },
-    esfiha: { nome: '🥟 Esfihas', icone: '🥟' },
-    lanche: { nome: '🍔 Lanches', icone: '🍔' },
-    bebida: { nome: '🥤 Bebidas', icone: '🥤' },
-    acai: { nome: '🍨 Açaí', icone: '🍨' },
-    combo: { nome: '🍽️ Combos', icone: '🍽️' },
-    sobremesa: { nome: '🍰 Sobremesas', icone: '🍰' },
-    porcao: { nome: '🍟 Porções', icone: '🍟' },
-    salgado: { nome: '🥐 Salgados', icone: '🥐' },
-    doce: { nome: '🍩 Doces', icone: '🍩' },
-    outro: { nome: '🍴 Outros', icone: '🍴' }
+    pizza: { nome: 'Pizzas' },
+    esfiha: { nome: 'Esfihas' },
+    lanche: { nome: 'Lanches' },
+    bebida: { nome: 'Bebidas' },
+    acai: { nome: 'Açaí' },
+    combo: { nome: 'Combos' },
+    sobremesa: { nome: 'Sobremesas' },
+    porcao: { nome: 'Porções' },
+    salgado: { nome: 'Salgados' },
+    doce: { nome: 'Doces' },
+    outro: { nome: 'Outros' }
   };
 
   // Agrupar produtos por categoria para exibição em seções
