@@ -646,7 +646,11 @@ export default function CardapioCliente() {
         setCheckoutStep(4);
       } else {
         await enviarNotificacaoStatusPedido(novoPedido, 'novo');
-        navigate(createPageUrl('AcompanharPedido') + `?id=${novoPedido.id}&pizzaria_id=${pizzariaId}`);
+        // Mostra tela de aguarde antes de redirecionar
+        setCheckoutStep(5);
+        setTimeout(() => {
+          navigate(createPageUrl('AcompanharPedido') + `?id=${novoPedido.id}&pizzaria_id=${pizzariaId}`);
+        }, 3000);
       }
     } catch (error) {
       console.error('Erro ao confirmar pedido:', error);
