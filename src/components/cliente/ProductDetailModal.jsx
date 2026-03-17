@@ -207,8 +207,9 @@ export default function ProductDetailModal({ produto, open, onClose, onAddToCart
                         const isSelected = selecoesGrupo.some(s => s.itemIndex === itemOriginalIndex);
                         
                         return (
-                          <label
+                          <div
                             key={itemOriginalIndex}
+                            onClick={() => handleToggleItem(grupoIndex, itemOriginalIndex, item, grupo)}
                             className={`flex items-center justify-between p-2.5 sm:p-3 rounded-lg border cursor-pointer transition-all ${
                               isSelected 
                                 ? isLight 
@@ -222,7 +223,7 @@ export default function ProductDetailModal({ produto, open, onClose, onAddToCart
                             <div className="flex items-center gap-2 sm:gap-3">
                               <Checkbox
                                 checked={isSelected}
-                                onCheckedChange={() => handleToggleItem(grupoIndex, itemOriginalIndex, item, grupo)}
+                                onCheckedChange={() => {}}
                               />
                               <span className={`font-medium text-sm sm:text-base ${isLight ? 'text-gray-900' : 'text-white'}`}>
                                 {item.nome}
@@ -233,7 +234,7 @@ export default function ProductDetailModal({ produto, open, onClose, onAddToCart
                                 + R$ {item.preco_adicional.toFixed(2)}
                               </span>
                             )}
-                          </label>
+                          </div>
                         );
                       })}
                     </div>
