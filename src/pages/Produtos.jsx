@@ -424,9 +424,23 @@ export default function Produtos() {
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
-                          <p className="text-xl font-bold text-emerald-400 mt-3">
-                            R$ {produto.preco?.toFixed(2)}
-                          </p>
+                          <div className="mt-3">
+                            {produto.em_promocao && produto.preco_original > 0 ? (
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm text-slate-500 line-through">
+                                  R$ {produto.preco_original?.toFixed(2)}
+                                </span>
+                                <span className="text-xl font-bold text-emerald-400">
+                                  R$ {produto.preco?.toFixed(2)}
+                                </span>
+                                <Badge className="bg-red-500 text-white text-xs">PROMO</Badge>
+                              </div>
+                            ) : (
+                              <p className="text-xl font-bold text-emerald-400">
+                                R$ {produto.preco?.toFixed(2)}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </motion.div>
                     ))}
