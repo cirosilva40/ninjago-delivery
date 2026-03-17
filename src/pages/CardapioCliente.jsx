@@ -1026,7 +1026,6 @@ export default function CardapioCliente() {
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-3 mb-6"
             >
-              <span className="text-4xl">{categoriaLabels[categoriaAtiva]?.icone}</span>
               <h2 className={`text-3xl font-bold ${isLight ? 'text-gray-900' : 'text-white'}`}>
                 {categoriaLabels[categoriaAtiva]?.nome || categoriaAtiva}
               </h2>
