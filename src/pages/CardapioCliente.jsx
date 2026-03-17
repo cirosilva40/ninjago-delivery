@@ -1145,22 +1145,7 @@ export default function CardapioCliente() {
                   <span className="text-slate-400">Subtotal:</span>
                   <span className="text-white font-semibold">R$ {calcularSubtotal().toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-lg">
-                  <span className="text-slate-400">Taxa de entrega:</span>
-                  <span className={`font-semibold ${taxaEntrega === 0 ? 'text-emerald-400' : 'text-white'}`}>
-                    {taxaEntrega === 0 ? 'GRÁTIS' : `R$ ${taxaEntrega.toFixed(2)}`}
-                  </span>
-                </div>
-                {cupomAplicado && (
-                  <div className="flex justify-between text-lg">
-                    <span className="text-emerald-400">Desconto (cupom):</span>
-                    <span className="text-emerald-400 font-semibold">- R$ {calcularDesconto().toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-2xl font-bold pt-2 border-t border-white/10">
-                  <span className="text-white">Total:</span>
-                  <span className="text-emerald-400">R$ {calcularTotal().toFixed(2)}</span>
-                </div>
+                <p className="text-xs text-slate-500 italic">* Taxa de entrega calculada após confirmar endereço</p>
               </div>
 
               <Button
