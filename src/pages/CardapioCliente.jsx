@@ -1612,7 +1612,6 @@ export default function CardapioCliente() {
                           {metodoPagamentoOnline === 'pix' ? '🔳 PIX (online)' :
                            metodoPagamentoOnline === 'credit_card' ? '💳 Cartão de Crédito (online)' :
                            metodoPagamentoOnline === 'debit_card' ? '💳 Cartão de Débito (online)' :
-                           metodoPagamentoOnline === 'vale_refeicao' ? '🎫 Vale Refeição (online)' :
                            formCliente.forma_pagamento === 'pagar_na_entrega' ? '💵 Pagar na Entrega' :
                            formCliente.forma_pagamento}
                         </p>
