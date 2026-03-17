@@ -1067,12 +1067,38 @@ export default function CardapioCliente() {
             </div>
           ) : (
             <div className="space-y-4">
-              {carrinho.map((item, idx) => (
+              {carrinho.map((item, idx) => {
+                // Montar descrição das personalizações
+                const linhasPersonalizacao = [];
+                if (item.personalizacoes && item.opcoes_personalizacao) {
+                  Object.keys(item.personalizacoes).forEach(grupoKey => {
+                    const grupoIndex = parseInt(grupoKey.split('_')[1]);
+                    const grupo = item.opcoes_personalizacao[grupoIndex];
+                    const sels = item.personalizacoes[grupoKey] || [];
+                    sels.forEach(s => {
+                      linhasPersonalizacao.push({
+                        nome: s.item.nome,
+                        preco: s.item.preco_adicional || 0,
+                        comPreco: grupo?.permite_precificacao && s.item.preco_adicional > 0
+                      });
+                    });
+                  });
+                }
+
+                return (
                 <div key={`${item.id}-${idx}`} className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2">
                   <div className="flex items-center gap-3">
                     <div className="flex-1">
                       <h3 className="font-bold text-white">{item.nome}</h3>
-                      <p className="text-emerald-400 font-semibold">R$ {(item.preco_final || item.preco)?.toFixed(2)}</p>
+                      <p className="text-slate-400 text-xs">R$ {(item.preco)?.toFixed(2)}</p>
+                      {linhasPersonalizacao.map((l, i) => (
+                        <p key={i} className="text-xs text-slate-400">
+                          + {l.nome}{l.comPreco ? ` — R$ ${l.preco.toFixed(2)}` : ' — R$ 0,00'}
+                        </p>
+                      ))}
+                      <p className="text-emerald-400 font-semibold text-sm mt-1">
+                        Subtotal: R$ {(item.preco_final || item.preco)?.toFixed(2)}
+                      </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
