@@ -109,17 +109,10 @@ export default function NovoPedido() {
   const [distanciaCalculada, setDistanciaCalculada] = useState(null);
   const [salvandoIntegracao, setSalvandoIntegracao] = useState(null);
 
-  const { data: produtos = [] } = useQuery({
+  const { data: produtos = [], isLoading: loadingProdutos } = useQuery({
     queryKey: ['produtos-disponiveis', pizzariaId],
-    queryFn: async () => {
-      if (pizzariaId) {
-        return base44.entities.Produto.filter({ disponivel: true, restaurante_id: pizzariaId }, 'categoria', 500);
-      }
-      // Fallback: buscar todos disponíveis
-      return base44.entities.Produto.filter({ disponivel: true }, 'categoria', 500);
-    },
-    enabled: true,
-    refetchOnMount: true,
+    queryFn: () => base44.entities.Produto.filter({ disponivel: true, restaurante_id: pizzariaId }, 'categoria', 500),
+    enabled: !!pizzariaId,
   });
 
   const { data: pizzarias = [] } = useQuery({
