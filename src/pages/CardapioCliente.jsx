@@ -1495,8 +1495,8 @@ export default function CardapioCliente() {
                             setTaxaEntrega(0);
                           } else if (config.latitude && config.longitude && latCliente && lngCliente) {
                             const R = 6371;
-                            const dLat = (lngCliente - config.latitude) * Math.PI / 180;
-                            const dLon = (latCliente - config.longitude) * Math.PI / 180;
+                            const dLat = (latCliente - config.latitude) * Math.PI / 180;
+                            const dLon = (lngCliente - config.longitude) * Math.PI / 180;
                             const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
                                       Math.cos(config.latitude * Math.PI / 180) * Math.cos(latCliente * Math.PI / 180) *
                                       Math.sin(dLon/2) * Math.sin(dLon/2);
