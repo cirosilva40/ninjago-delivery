@@ -1765,6 +1765,25 @@ export default function CardapioCliente() {
                       )}
                     </>
                     )}
+
+                    {checkoutStep === 5 && (
+                      <div className="flex flex-col items-center justify-center py-12 space-y-6">
+                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center animate-pulse">
+                          <span className="text-4xl">🥷</span>
+                        </div>
+                        <div className="text-center space-y-2">
+                          <h3 className="text-2xl font-bold text-white">Pedido Confirmado!</h3>
+                          <p className="text-slate-400">Seu pedido foi recebido com sucesso.</p>
+                          <p className="text-slate-400 text-sm">Aguarde, estamos preparando tudo para você...</p>
+                        </div>
+                        <div className="flex gap-1">
+                          <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <div className="w-2 h-2 bg-orange-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                        <p className="text-xs text-slate-500">Redirecionando para acompanhar seu pedido...</p>
+                      </div>
+                    )}
                     </>
                     )}
                     </div>
