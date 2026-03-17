@@ -21,9 +21,9 @@ export default function ProdutoCard({ produto, onAddCart, onClick, tema = 'dark'
           : 'bg-white/5 border border-white/10 backdrop-blur-xl hover:bg-white/10'
       }`}
     >
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-3 sm:p-4">
+      <div className="flex flex-row gap-3 p-3">
         {/* Imagem do Produto */}
-        <div className="relative overflow-hidden rounded-lg flex-shrink-0 w-full sm:w-32 h-32 sm:h-32">
+        <div className="relative overflow-hidden rounded-lg flex-shrink-0 w-28 h-28">
           {produto.imagem_url ? (
             <img 
               src={produto.imagem_url} 
