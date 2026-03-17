@@ -251,7 +251,14 @@ export default function ProductDetailModal({ produto, open, onClose, onAddToCart
                 <p className={`text-xs sm:text-sm ${isLight ? 'text-gray-500' : 'text-slate-400'} mb-1`}>
                   {temOpcoes && precoTotal > produto.preco ? 'Preço Total' : 'Preço'}
                 </p>
-                <div className="flex items-baseline gap-2">
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  {/* Preço original da promoção */}
+                  {produto.em_promocao && produto.preco_original > 0 && precoTotal === produto.preco && (
+                    <p className="text-base sm:text-lg font-medium text-slate-500 line-through">
+                      R$ {produto.preco_original?.toFixed(2)}
+                    </p>
+                  )}
+                  {/* Preço riscado por adicionais */}
                   {temOpcoes && precoTotal > produto.preco && (
                     <p className="text-base sm:text-lg font-medium text-slate-500 line-through">
                       R$ {produto.preco?.toFixed(2)}
@@ -260,6 +267,9 @@ export default function ProductDetailModal({ produto, open, onClose, onAddToCart
                   <p className="text-2xl sm:text-4xl font-bold text-emerald-500">
                     R$ {precoTotal.toFixed(2)}
                   </p>
+                  {produto.em_promocao && produto.preco_original > 0 && precoTotal === produto.preco && (
+                    <Badge className="bg-red-500 text-white text-xs">PROMO</Badge>
+                  )}
                 </div>
               </div>
             </div>
