@@ -634,12 +634,19 @@ export default function AppEntregador() {
                         className: `w-5 h-5 ${pagamentoConfig[entregaAtiva.forma_pagamento].color}`
                       })}
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <p className="text-white font-medium">{pagamentoConfig[entregaAtiva.forma_pagamento].label}</p>
                       {entregaAtiva.troco_para > 0 && (
                         <p className="text-sm text-yellow-400">Troco para R$ {entregaAtiva.troco_para?.toFixed(2)}</p>
                       )}
                     </div>
+                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                      entregaAtiva.forma_pagamento !== 'dinheiro'
+                        ? 'bg-emerald-500/20 text-emerald-300'
+                        : 'bg-yellow-500/20 text-yellow-300'
+                    }`}>
+                      {entregaAtiva.forma_pagamento !== 'dinheiro' ? '✓ PAGO' : '⚠ COBRAR'}
+                    </span>
                   </>
                 )}
               </div>
