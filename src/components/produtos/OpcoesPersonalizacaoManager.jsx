@@ -44,6 +44,22 @@ export default function OpcoesPersonalizacaoManager({ opcoes = [], onChange }) {
     onChange(novasOpcoes);
   };
 
+  const moverGrupo = (index, direcao) => {
+    const novasOpcoes = [...opcoes];
+    const novoIndex = index + direcao;
+    if (novoIndex < 0 || novoIndex >= novasOpcoes.length) return;
+    [novasOpcoes[index], novasOpcoes[novoIndex]] = [novasOpcoes[novoIndex], novasOpcoes[index]];
+    onChange(novasOpcoes);
+  };
+
+  const duplicarGrupo = (index) => {
+    const novasOpcoes = [...opcoes];
+    const copia = JSON.parse(JSON.stringify(novasOpcoes[index]));
+    copia.nome_grupo = copia.nome_grupo ? `${copia.nome_grupo} (cópia)` : 'Cópia do grupo';
+    novasOpcoes.splice(index + 1, 0, copia);
+    onChange(novasOpcoes);
+  };
+
   const updateItem = (grupoIndex, itemIndex, campo, valor) => {
     const novasOpcoes = [...opcoes];
     novasOpcoes[grupoIndex].itens[itemIndex] = {
