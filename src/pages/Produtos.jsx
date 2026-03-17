@@ -77,6 +77,8 @@ export default function Produtos() {
     descricao: '',
     categoria: 'outro',
     preco: '',
+    preco_original: '',
+    em_promocao: false,
     imagem_url: '',
     disponivel: true,
     destaque: false,
