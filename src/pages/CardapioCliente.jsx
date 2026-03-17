@@ -1679,7 +1679,7 @@ export default function CardapioCliente() {
                         disabled={processandoPagamento}
                         className="flex-1 h-14 bg-gradient-to-r from-orange-500 to-red-600 text-lg font-bold"
                       >
-                        {processandoPagamento ? 'Processando...' : metodoPagamentoOnline ? 'Confirmar e Pagar' : 'Confirmar Pedido'}
+                        {processandoPagamento ? 'Processando...' : metodoPagamentoOnline === 'pix' ? 'Confirmar e Pagar' : 'Confirmar Pedido'}
                       </Button>
                     </div>
                   </>
