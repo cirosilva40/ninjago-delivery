@@ -1085,8 +1085,7 @@ export default function CardapioCliente() {
                   });
                 }
 
-                return (
-                <div key={`${item.id}-${idx}`} className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2">
+                return <div key={`${item.id}-${idx}`} className="p-4 rounded-xl bg-white/5 border border-white/10 space-y-2">
                   <div className="flex items-center gap-3">
                     <div className="flex-1">
                       <h3 className="font-bold text-white">{item.nome}</h3>
