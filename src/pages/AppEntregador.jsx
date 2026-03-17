@@ -1329,6 +1329,8 @@ export default function AppEntregador() {
                     </div>
                   )}
                 </Card>
+                  );
+                })()}
 
                 {/* Botões de Navegação */}
                 <div className="grid grid-cols-2 gap-3 mb-6">
