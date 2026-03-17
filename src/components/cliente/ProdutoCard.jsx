@@ -52,9 +52,19 @@ export default function ProdutoCard({ produto, onAddCart, onClick, tema = 'dark'
               <h3 className={`text-base sm:text-lg font-bold line-clamp-2 ${isLight ? 'text-gray-900' : 'text-white'}`}>
                 {produto.nome}
               </h3>
-              <p className="text-lg sm:text-xl font-bold text-emerald-500 flex-shrink-0">
-                R$ {produto.preco?.toFixed(2)}
-              </p>
+              <div className="flex flex-col items-end flex-shrink-0">
+                {produto.em_promocao && produto.preco_original > 0 && (
+                  <span className="text-xs text-slate-400 line-through leading-none mb-0.5">
+                    R$ {produto.preco_original?.toFixed(2)}
+                  </span>
+                )}
+                <p className="text-lg sm:text-xl font-bold text-emerald-500 leading-none">
+                  R$ {produto.preco?.toFixed(2)}
+                </p>
+                {produto.em_promocao && produto.preco_original > 0 && (
+                  <Badge className="bg-red-500 text-white text-xs mt-1 py-0 px-1.5">PROMO</Badge>
+                )}
+              </div>
             </div>
             
             {/* Ingredientes */}
