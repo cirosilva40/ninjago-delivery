@@ -203,6 +203,8 @@ export default function Produtos() {
       descricao: produto.descricao || '',
       categoria: produto.categoria || 'outro',
       preco: produto.preco?.toString() || '',
+      preco_original: produto.preco_original?.toString() || '',
+      em_promocao: produto.em_promocao || false,
       imagem_url: produto.imagem_url || '',
       disponivel: produto.disponivel !== false,
       destaque: produto.destaque || false,
