@@ -714,7 +714,7 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
             </div>
 
             {/* Lista de Produtos */}
-            <div className="max-h-96 overflow-y-auto space-y-4 pr-2">
+            <div className="max-h-[500px] overflow-y-auto space-y-4 pr-2">
               {Object.entries(produtosPorCategoria).map(([categoria, items]) => {
                 const config = categoriaConfig[categoria] || categoriaConfig.outro;
                 return (
