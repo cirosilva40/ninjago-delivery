@@ -73,14 +73,26 @@ export default function NovoPedido() {
 
   React.useEffect(() => {
     const loadUser = async () => {
-      const userData = await base44.auth.me();
-      setUser(userData);
+      // 1. Prioridade: estabelecimento logado via localStorage
       const estabelecimentoLogado = localStorage.getItem('estabelecimento_logado');
       if (estabelecimentoLogado) {
-        const estab = JSON.parse(estabelecimentoLogado);
-        setPizzariaId(estab.id);
-      } else {
-        setPizzariaId(userData.pizzaria_id || null);
+        try {
+          const estab = JSON.parse(estabelecimentoLogado);
+          if (estab?.id) {
+            setPizzariaId(estab.id);
+            return;
+          }
+        } catch (e) {}
+      }
+      // 2. Fallback: usuário base44 autenticado
+      try {
+        const userData = await base44.auth.me();
+        setUser(userData);
+        if (userData?.pizzaria_id) {
+          setPizzariaId(userData.pizzaria_id);
+        }
+      } catch (e) {
+        console.error('Erro ao carregar usuário:', e);
       }
     };
     loadUser();
