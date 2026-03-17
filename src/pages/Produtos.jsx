@@ -621,8 +621,40 @@ export default function Produtos() {
               />
             </div>
 
-            {/* Opções de Personalização */}
+            {/* Copiar opções de outro produto */}
             <div className="pt-4 border-t border-slate-700">
+              {produtos.filter(p => p.id !== editingProduto?.id && p.opcoes_personalizacao?.length > 0).length > 0 && (
+                <div className="mb-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-blue-300">📋 Copiar opções de outro produto</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Selecione um produto para importar suas opções de personalização</p>
+                  </div>
+                  <Select
+                    onValueChange={(produtoId) => {
+                      const origem = produtos.find(p => p.id === produtoId);
+                      if (origem?.opcoes_personalizacao) {
+                        setForm(prev => ({ ...prev, opcoes_personalizacao: JSON.parse(JSON.stringify(origem.opcoes_personalizacao)) }));
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full sm:w-56 bg-slate-800 border-slate-600 text-white text-sm">
+                      <SelectValue placeholder="Selecionar produto..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      {produtos
+                        .filter(p => p.id !== editingProduto?.id && p.opcoes_personalizacao?.length > 0)
+                        .map(p => (
+                          <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>
+                        ))
+                      }
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+
+            {/* Opções de Personalização */}
+            <div>
               <OpcoesPersonalizacaoManager
                 opcoes={form.opcoes_personalizacao}
                 onChange={(opcoes) => setForm({ ...form, opcoes_personalizacao: opcoes })}
