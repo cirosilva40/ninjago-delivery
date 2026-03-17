@@ -229,7 +229,7 @@ export default function ProductDetailModal({ produto, open, onClose, onAddToCart
                                 {item.nome}
                               </span>
                             </div>
-                            {grupo.permite_precificacao && item.preco_adicional > 0 && (
+                            {item.preco_adicional > 0 && (
                               <span className="text-xs sm:text-sm font-semibold text-emerald-500">
                                 + R$ {item.preco_adicional.toFixed(2)}
                               </span>
