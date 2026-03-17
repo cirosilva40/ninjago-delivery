@@ -834,7 +834,7 @@ export default function CardapioCliente() {
               }`}
               style={categoriaAtiva === 'todos' ? { backgroundColor: corPrimaria } : {}}
             >
-              🍽️ <span className="hidden xs:inline">Todos</span>
+              Todos
             </button>
             
             {produtosDestaque.length > 0 && (
