@@ -117,8 +117,12 @@ export default function Entregadores() {
   });
 
   const { data: entregas = [] } = useQuery({
-    queryKey: ['entregas-stats'],
-    queryFn: () => base44.entities.Entrega.list('-created_date', 500),
+    queryKey: ['entregas-stats', pizzariaId],
+    queryFn: () => {
+      if (!pizzariaId) return [];
+      return base44.entities.Entrega.filter({ pizzaria_id: pizzariaId }, '-created_date', 500);
+    },
+    enabled: !!pizzariaId,
   });
 
   const filteredEntregadores = entregadores.filter(e => {
