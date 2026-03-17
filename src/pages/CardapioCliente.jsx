@@ -1650,9 +1650,9 @@ export default function CardapioCliente() {
                         <h3 className="font-semibold text-white mb-3">💳 Pagamento</h3>
                         <p className="text-slate-300">
                           {metodoPagamentoOnline === 'pix' ? '🔳 PIX (online)' :
-                           metodoPagamentoOnline === 'credit_card' ? '💳 Cartão de Crédito (online)' :
-                           metodoPagamentoOnline === 'debit_card' ? '💳 Cartão de Débito (online)' :
-                           formCliente.forma_pagamento === 'pagar_na_entrega' ? '💵 Pagar na Entrega' :
+                           formCliente.forma_pagamento === 'pagar_na_entrega' ? '💵 Dinheiro na entrega' :
+                           formCliente.forma_pagamento === 'cartao_credito' ? '💳 Crédito na entrega (maquininha)' :
+                           formCliente.forma_pagamento === 'cartao_debito' ? '💳 Débito na entrega (maquininha)' :
                            formCliente.forma_pagamento}
                         </p>
                         {formCliente.troco_para > 0 && <p className="text-slate-400 text-sm">Troco para: R$ {formCliente.troco_para.toFixed(2)}</p>}
