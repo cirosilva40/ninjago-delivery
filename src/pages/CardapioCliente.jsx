@@ -1472,15 +1472,44 @@ export default function CardapioCliente() {
                           return;
                         }
                         // Se não temos coordenadas ainda, tentar geocodificar pelo endereço completo
-                        if (!formCliente.latitude || !formCliente.longitude) {
+                        let latCliente = formCliente.latitude;
+                        let lngCliente = formCliente.longitude;
+                        if (!latCliente || !lngCliente) {
                           try {
                             const enderecoCompleto = `${formCliente.endereco}, ${formCliente.numero}, ${formCliente.bairro}, ${formCliente.cidade}, ${formCliente.estado}, ${formCliente.cep}, Brasil`;
                             const { data } = await base44.functions.invoke('geocodificarEndereco', { endereco: enderecoCompleto });
                             if (data?.success && data?.latitude && data?.longitude) {
+                              latCliente = data.latitude;
+                              lngCliente = data.longitude;
                               setFormCliente(prev => ({ ...prev, latitude: data.latitude, longitude: data.longitude }));
                             }
                           } catch (e) {
                             // falhou geocodificação, segue sem coordenadas
+                          }
+                        }
+                        // Recalcular taxa com coordenadas obtidas
+                        const config = pizzariaConfig;
+                        if (config?.id) {
+                          const subtotal = calcularSubtotal();
+                          if (config.valor_minimo_entrega_gratis > 0 && subtotal >= config.valor_minimo_entrega_gratis) {
+                            setTaxaEntrega(0);
+                          } else if (config.latitude && config.longitude && latCliente && lngCliente) {
+                            const R = 6371;
+                            const dLat = (lngCliente - config.latitude) * Math.PI / 180;
+                            const dLon = (latCliente - config.longitude) * Math.PI / 180;
+                            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                                      Math.cos(config.latitude * Math.PI / 180) * Math.cos(latCliente * Math.PI / 180) *
+                                      Math.sin(dLon/2) * Math.sin(dLon/2);
+                            const distanciaKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                            const raioBase = config.raio_entrega_km || 0;
+                            if (raioBase === 0 || distanciaKm <= raioBase) {
+                              setTaxaEntrega(config.entrega_gratis_dentro_raio_base ? 0 : (config.taxa_entrega_base || 0));
+                            } else {
+                              const kmExtra = distanciaKm - raioBase;
+                              setTaxaEntrega((config.taxa_entrega_base || 0) + kmExtra * (config.taxa_adicional_por_km || 0));
+                            }
+                          } else {
+                            setTaxaEntrega(config.entrega_gratis_dentro_raio_base ? 0 : (config.taxa_entrega_base || 0));
                           }
                         }
                         setCheckoutStep(2);
