@@ -859,7 +859,12 @@ export default function CardapioCliente() {
             {categorias.map((cat) => (
               <button
                 key={cat}
-                onClick={() => setCategoriaAtiva(cat)}
+                onClick={() => {
+                  setCategoriaAtiva(cat);
+                  setTimeout(() => {
+                    document.getElementById(`cat-${cat}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 100);
+                }}
                 className={`flex-shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl transition-all whitespace-nowrap font-medium text-sm sm:text-base shadow-sm snap-start ${
                   categoriaAtiva === cat
                     ? 'text-white shadow-md scale-105'
@@ -869,7 +874,7 @@ export default function CardapioCliente() {
                 }`}
                 style={categoriaAtiva === cat ? { backgroundColor: corPrimaria } : {}}
               >
-                {categoriaLabels[cat]?.icone} <span className="hidden xs:inline">{cat}</span>
+                {categoriaLabels[cat]?.nome || cat}
               </button>
             ))}
           </div>
