@@ -1466,10 +1466,22 @@ export default function CardapioCliente() {
                     </div>
 
                     <Button
-                      onClick={() => {
+                      onClick={async () => {
                         if (!formCliente.cep || !formCliente.endereco || !formCliente.numero) {
                           alert('Preencha o endereço completo');
                           return;
+                        }
+                        // Se não temos coordenadas ainda, tentar geocodificar pelo endereço completo
+                        if (!formCliente.latitude || !formCliente.longitude) {
+                          try {
+                            const enderecoCompleto = `${formCliente.endereco}, ${formCliente.numero}, ${formCliente.bairro}, ${formCliente.cidade}, ${formCliente.estado}, ${formCliente.cep}, Brasil`;
+                            const { data } = await base44.functions.invoke('geocodificarEndereco', { endereco: enderecoCompleto });
+                            if (data?.success && data?.latitude && data?.longitude) {
+                              setFormCliente(prev => ({ ...prev, latitude: data.latitude, longitude: data.longitude }));
+                            }
+                          } catch (e) {
+                            // falhou geocodificação, segue sem coordenadas
+                          }
                         }
                         setCheckoutStep(2);
                       }}
