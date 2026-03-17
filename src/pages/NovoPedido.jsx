@@ -747,7 +747,13 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
                   </div>
                 );
               })}
-              {filteredProdutos.length === 0 && (
+              {(!pizzariaId || loadingProdutos) && (
+                <div className="text-center py-8 text-slate-400">
+                  <Loader2 className="w-8 h-8 mx-auto mb-2 animate-spin opacity-50" />
+                  <p>Carregando produtos...</p>
+                </div>
+              )}
+              {pizzariaId && !loadingProdutos && filteredProdutos.length === 0 && (
                 <div className="text-center py-8 text-slate-400">
                   <Package className="w-12 h-12 mx-auto mb-2 opacity-50" />
                   <p>{produtos.length === 0 ? 'Nenhum produto cadastrado' : 'Nenhum produto encontrado'}</p>
