@@ -1004,7 +1004,6 @@ export default function CardapioCliente() {
                   className="scroll-mt-32"
                 >
                   <div className="flex items-center gap-3 mb-6">
-                    <span className="text-4xl">{categoriaLabels[cat]?.icone}</span>
                     <h2 className={`text-3xl font-bold ${isLight ? 'text-gray-900' : 'text-white'}`}>
                       {categoriaLabels[cat]?.nome || cat}
                     </h2>
