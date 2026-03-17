@@ -1483,12 +1483,11 @@ export default function CardapioCliente() {
                       <h3 className="font-semibold text-white">Forma de Pagamento</h3>
 
                       {/* Opções de pagamento online em cards */}
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-3 gap-3">
                         {[
                           { id: 'pix', emoji: '🔳', label: 'PIX', sub: 'Aprovação instantânea' },
                           { id: 'credit_card', emoji: '💳', label: 'Crédito', sub: 'Parcelamento disponível' },
                           { id: 'debit_card', emoji: '💳', label: 'Débito', sub: 'À vista' },
-                          { id: 'vale_refeicao', emoji: '🎫', label: 'Vale Refeição', sub: 'À vista' },
                         ].map(({ id, emoji, label, sub }) => (
                           <button
                             key={id}
