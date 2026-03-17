@@ -1269,9 +1269,22 @@ export default function AppEntregador() {
                 </Card>
 
                 {/* Pagamento - Card Destacado */}
-                <Card className={`${pagamentoConfig[selectedEntrega.forma_pagamento]?.bgColor || 'bg-emerald-500/20'} border-2 ${
-                  selectedEntrega.forma_pagamento === 'dinheiro' ? 'border-green-500/50' : 'border-white/10'
-                } p-4 mb-6`}>
+                {(() => {
+                  const jaPago = selectedEntrega.forma_pagamento !== 'dinheiro';
+                  return (
+                <Card className={`${jaPago ? 'bg-emerald-500/10 border-emerald-500/40' : 'bg-yellow-500/10 border-yellow-500/50'} border-2 p-4 mb-6`}>
+                  {/* Badge PAGO / COBRAR DO CLIENTE */}
+                  <div className={`flex items-center justify-center gap-2 rounded-xl py-2 px-4 mb-4 font-bold text-lg ${
+                    jaPago 
+                      ? 'bg-emerald-500/20 text-emerald-300' 
+                      : 'bg-yellow-500/20 text-yellow-300'
+                  }`}>
+                    {jaPago ? (
+                      <><CheckCircle2 className="w-5 h-5" /> PAGO</>
+                    ) : (
+                      <><AlertTriangle className="w-5 h-5" /> COBRAR DO CLIENTE</>
+                    )}
+                  </div>
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center">
                       {pagamentoConfig[selectedEntrega.forma_pagamento] 
@@ -1287,10 +1300,10 @@ export default function AppEntregador() {
                         {pagamentoConfig[selectedEntrega.forma_pagamento]?.label || selectedEntrega.forma_pagamento}
                       </p>
                     </div>
-                    {selectedEntrega.forma_pagamento === 'dinheiro' && (
+                    {!jaPago && (
                       <div className="text-right">
-                        <p className="text-white/70 text-sm">Receber do Cliente</p>
-                        <p className="text-xl font-bold text-white">R$ {selectedEntrega.valor_pedido?.toFixed(2)}</p>
+                        <p className="text-white/70 text-sm">Valor a Cobrar</p>
+                        <p className="text-xl font-bold text-yellow-300">R$ {selectedEntrega.valor_pedido?.toFixed(2)}</p>
                       </div>
                     )}
                   </div>
