@@ -633,16 +633,14 @@ export default function CardapioCliente() {
       const clienteOk = await salvarCliente();
       if (!clienteOk) { setProcessandoPagamento(false); return; }
 
-      const isOnline = formCliente.forma_pagamento === 'online';
-      const formaPagFinal = isOnline
-        ? (metodoPagamentoOnline === 'pix' ? 'pix' : metodoPagamentoOnline === 'credit_card' ? 'cartao_credito' : metodoPagamentoOnline === 'debit_card' ? 'cartao_debito' : 'online')
-        : formCliente.forma_pagamento;
+      const isPix = metodoPagamentoOnline === 'pix';
+      const formaPagFinal = isPix ? 'pix' : formCliente.forma_pagamento;
 
       const novoPedido = await criarPedido(formaPagFinal);
       setPedidoCriado(novoPedido);
 
-      if (isOnline) {
-        // Avança para tela de pagamento
+      if (isPix) {
+        // Avança para tela de pagamento PIX
         setCheckoutStep(4);
       } else {
         await enviarNotificacaoStatusPedido(novoPedido, 'novo');
