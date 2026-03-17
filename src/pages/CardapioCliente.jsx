@@ -1527,35 +1527,30 @@ export default function CardapioCliente() {
                     <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
                       <h3 className="font-semibold text-white">Forma de Pagamento</h3>
 
-                      {/* Opções de pagamento online em cards */}
-                      <div className="grid grid-cols-3 gap-3">
-                        {[
-                          { id: 'pix', emoji: '🔳', label: 'PIX', sub: 'Aprovação instantânea' },
-                          { id: 'credit_card', emoji: '💳', label: 'Crédito', sub: 'Parcelamento disponível' },
-                          { id: 'debit_card', emoji: '💳', label: 'Débito', sub: 'À vista' },
-                        ].map(({ id, emoji, label, sub }) => (
-                          <button
-                            key={id}
-                            onClick={() => { setMetodoPagamentoOnline(id); setFormCliente({ ...formCliente, forma_pagamento: 'online' }); }}
-                            className={`p-4 rounded-xl border-2 transition-all text-center ${
-                              metodoPagamentoOnline === id
-                                ? 'border-orange-500 bg-orange-500/20'
-                                : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
-                            }`}
-                          >
-                            <div className="text-3xl mb-1">{emoji}</div>
-                            <p className="font-bold text-white text-sm">{label}</p>
-                            <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
-                          </button>
-                        ))}
+                      {/* PIX online */}
+                      <div className="grid grid-cols-1 gap-3">
+                        <button
+                          onClick={() => { setMetodoPagamentoOnline('pix'); setFormCliente({ ...formCliente, forma_pagamento: 'online' }); }}
+                          className={`p-4 rounded-xl border-2 transition-all text-center ${
+                            metodoPagamentoOnline === 'pix'
+                              ? 'border-orange-500 bg-orange-500/20'
+                              : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
+                          }`}
+                        >
+                          <div className="text-3xl mb-1">🔳</div>
+                          <p className="font-bold text-white text-sm">PIX</p>
+                          <p className="text-xs text-slate-400 mt-0.5">Aprovação instantânea • Pague agora</p>
+                        </button>
                       </div>
 
-                      {/* Opções de pagamento na entrega */}
+                      {/* Pagar na entrega */}
                       <div className="border-t border-slate-700 pt-4">
-                        <p className="text-xs text-slate-500 mb-3 uppercase tracking-wide">Ou pagar na entrega</p>
+                        <p className="text-xs text-slate-500 mb-3 uppercase tracking-wide">Pagar na entrega</p>
                         <div className="flex gap-2 flex-wrap">
                           {[
-                            { id: 'pagar_na_entrega', label: '💵 Pagar na Entrega' },
+                            { id: 'pagar_na_entrega', label: '💵 Dinheiro' },
+                            { id: 'cartao_credito', label: '💳 Crédito (maquininha)' },
+                            { id: 'cartao_debito', label: '💳 Débito (maquininha)' },
                             ...formasPagamento
                               .filter(f => !['pix','cartao_credito','cartao_debito','online','vale_refeicao'].includes(f.tipo))
                               .map(f => ({ id: f.tipo, label: f.nome }))
