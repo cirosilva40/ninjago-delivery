@@ -44,12 +44,14 @@ export default function Cozinha() {
   const { data: pedidos = [], refetch } = useQuery({
     queryKey: ['pedidos-cozinha', pizzariaId],
     queryFn: () => {
-      const filtro = pizzariaId
-        ? { pizzaria_id: pizzariaId, status: { $in: ['em_preparo', 'pronto'] } }
-        : { status: { $in: ['em_preparo', 'pronto'] } };
-      return base44.entities.Pedido.filter(filtro, '-created_date', 100);
+      if (!pizzariaId) return [];
+      return base44.entities.Pedido.filter(
+        { pizzaria_id: pizzariaId, status: { $in: ['em_preparo', 'pronto'] } },
+        '-created_date',
+        100
+      );
     },
-    enabled: pizzariaIdCarregado,
+    enabled: pizzariaIdCarregado && !!pizzariaId,
     refetchInterval: 5000,
   });
 
