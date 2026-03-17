@@ -275,7 +275,7 @@ export default function CardapioCliente() {
   };
 
   const calcularSubtotal = () => {
-    return carrinho.reduce((total, item) => total + (item.preco * item.quantidade), 0);
+    return carrinho.reduce((total, item) => total + ((item.preco_final || item.preco) * item.quantidade), 0);
   };
 
   const calcularDesconto = () => {
