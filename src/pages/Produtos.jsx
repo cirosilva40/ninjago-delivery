@@ -354,7 +354,7 @@ export default function Produtos() {
                         }`}
                       >
                         {/* Imagem */}
-                        <div className="aspect-video bg-slate-800 relative overflow-hidden">
+                        <div className="aspect-square bg-slate-800 relative overflow-hidden">
                           {produto.imagem_url ? (
                             <img 
                               src={produto.imagem_url} 
@@ -502,14 +502,14 @@ export default function Produtos() {
                   <div className="flex-1">
                     <p className="text-sm font-medium text-blue-300 mb-2">📐 Dimensões Recomendadas</p>
                     <div className="space-y-1 text-xs text-slate-400">
-                      <p>• <span className="text-blue-300 font-medium">Proporção ideal: 16:9</span> (landscape)</p>
-                      <p>• Resolução mínima: 800x450 pixels</p>
-                      <p>• Resolução recomendada: 1200x675 pixels</p>
+                      <p>• <span className="text-blue-300 font-medium">Proporção ideal: 1:1</span> (quadrada)</p>
+                      <p>• Resolução mínima: 500x500 pixels</p>
+                      <p>• Resolução recomendada: 800x800 pixels</p>
                       <p>• Formato: JPG, PNG ou WEBP</p>
                       <p>• Tamanho máximo: 2MB</p>
                     </div>
                     <p className="text-xs text-slate-500 mt-2">
-                      💡 Imagens com essas dimensões ficam perfeitas em todos os dispositivos
+                      💡 Imagens quadradas ficam perfeitas em todos os dispositivos (como Instagram)
                     </p>
                   </div>
                 </div>
@@ -519,7 +519,7 @@ export default function Produtos() {
                 {/* Preview da Imagem */}
                 {form.imagem_url && (
                   <div className="relative">
-                    <div className="aspect-video rounded-lg overflow-hidden bg-slate-800 border-2 border-blue-500/30">
+                    <div className="aspect-square rounded-lg overflow-hidden bg-slate-800 border-2 border-blue-500/30">
                       <img 
                         src={form.imagem_url} 
                         alt="Preview" 
@@ -540,7 +540,7 @@ export default function Produtos() {
                       <X className="w-4 h-4" />
                     </Button>
                     <div className="absolute bottom-2 left-2 px-2 py-1 rounded bg-black/70 backdrop-blur-sm">
-                      <p className="text-xs text-white">✓ Proporção 16:9</p>
+                      <p className="text-xs text-white">✓ Proporção 1:1</p>
                     </div>
                   </div>
                 )}
@@ -592,7 +592,7 @@ export default function Produtos() {
                   <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
                     <div className="text-amber-400">💡</div>
                     <p className="text-xs text-amber-300/80">
-                      Use imagens horizontais (mais largas que altas) para melhor visualização
+                      Use imagens quadradas (1:1) para melhor visualização, como fotos do Instagram
                     </p>
                   </div>
                 )}
