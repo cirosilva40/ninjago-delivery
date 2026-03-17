@@ -99,7 +99,29 @@ export default function OpcoesPersonalizacaoManager({ opcoes = [], onChange }) {
               <div className="space-y-4">
                 {/* Header do Grupo */}
                 <div className="flex items-start gap-3">
-                  <GripVertical className="w-5 h-5 text-slate-500 mt-2 cursor-move" />
+                  {/* Botões de ordem */}
+                  <div className="flex flex-col gap-1 mt-1">
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => moverGrupo(grupoIndex, -1)}
+                      disabled={grupoIndex === 0}
+                      className="h-6 w-6 text-slate-400 hover:text-white disabled:opacity-20"
+                    >
+                      <ChevronUp className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => moverGrupo(grupoIndex, 1)}
+                      disabled={grupoIndex === opcoes.length - 1}
+                      className="h-6 w-6 text-slate-400 hover:text-white disabled:opacity-20"
+                    >
+                      <ChevronDown className="w-3 h-3" />
+                    </Button>
+                  </div>
                   <div className="flex-1 space-y-3">
                     <div className="flex items-center gap-2">
                       <Input
@@ -108,6 +130,16 @@ export default function OpcoesPersonalizacaoManager({ opcoes = [], onChange }) {
                         className="bg-slate-900 border-slate-600 text-white flex-1"
                         placeholder="Nome do grupo (ex: Complementos Grátis)"
                       />
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => duplicarGrupo(grupoIndex)}
+                        className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                        title="Duplicar grupo"
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
                       <Button
                         type="button"
                         size="icon"
