@@ -500,6 +500,36 @@ export default function Produtos() {
               </div>
             </div>
 
+            {/* Promoção */}
+            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-red-400" />
+                  <span className="text-white font-medium text-sm">Produto em Promoção</span>
+                </div>
+                <Switch
+                  checked={form.em_promocao}
+                  onCheckedChange={(v) => setForm({ ...form, em_promocao: v })}
+                />
+              </div>
+              {form.em_promocao && (
+                <div>
+                  <Label className="text-slate-400 text-xs">Preço Original (De)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={form.preco_original}
+                    onChange={(e) => setForm({ ...form, preco_original: e.target.value })}
+                    className="bg-slate-800 border-slate-700 text-white mt-1"
+                    placeholder="Preço antes da promoção"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    O preço atual (acima) será o preço promocional (Por)
+                  </p>
+                </div>
+              )}
+            </div>
+
             <div>
               <Label className="text-slate-400">Descrição</Label>
               <Textarea
