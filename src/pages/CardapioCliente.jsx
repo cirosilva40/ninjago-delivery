@@ -1137,7 +1137,8 @@ export default function CardapioCliente() {
                     className="w-full text-xs bg-slate-800/80 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-300 placeholder:text-slate-600 focus:outline-none focus:border-orange-500"
                   />
                 </div>
-              ))}
+                );
+              })}
 
               <div className="border-t border-white/10 pt-4 space-y-2">
                 <div className="flex justify-between text-lg">
