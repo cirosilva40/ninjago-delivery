@@ -1022,7 +1022,7 @@ export default function Configuracoes() {
                 </div>
               </div>
 
-              <div className="hidden">{/* placeholder para fechar o grid anterior */}
+
               </div>
 
               {/* Entrega Grátis */}
