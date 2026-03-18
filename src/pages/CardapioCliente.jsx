@@ -1316,6 +1316,12 @@ export default function CardapioCliente() {
                         {checkoutStep === 1 ? 'A calcular após endereço' : taxaEntrega === 0 ? 'GRÁTIS' : `R$ ${taxaEntrega.toFixed(2)}`}
                       </span>
                     </div>
+                    {distanciaEntrega && checkoutStep > 1 && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-500">Distância (rota):</span>
+                        <span className="text-slate-400">{distanciaEntrega} km</span>
+                      </div>
+                    )}
                     {cupomAplicado && (
                       <div className="flex justify-between">
                         <span className="text-emerald-400">Desconto:</span>
