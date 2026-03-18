@@ -1465,76 +1465,115 @@ export default function CardapioCliente() {
                       </div>
                     </div>
 
+                    {erroFrete && (
+                      <div className="p-3 rounded-xl bg-red-500/20 border border-red-500/50 text-red-300 text-sm">
+                        ⚠️ {erroFrete}
+                      </div>
+                    )}
+
+                    {distanciaEntrega && detalhesEntrega && !erroFrete && (
+                      <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-sm space-y-1">
+                        <p className="text-emerald-300 font-semibold">✅ Endereço calculado com sucesso</p>
+                        <p className="text-slate-300">📍 Distância por rota: <strong>{distanciaEntrega} km</strong></p>
+                        {detalhesEntrega.dentro_raio_base ? (
+                          <p className="text-slate-300">Taxa de entrega: <strong className="text-white">R$ {taxaEntrega.toFixed(2)}</strong> (dentro do raio base de {detalhesEntrega.raio_base} km)</p>
+                        ) : (
+                          <p className="text-slate-300">
+                            Taxa: R$ {detalhesEntrega.taxa_base.toFixed(2)} base + {detalhesEntrega.km_excedente.toFixed(2)} km × R$ {detalhesEntrega.taxa_adicional_por_km.toFixed(2)} = <strong className="text-white">R$ {taxaEntrega.toFixed(2)}</strong>
+                          </p>
+                        )}
+                      </div>
+                    )}
+
                     <Button
                       onClick={async () => {
                         if (!formCliente.cep || !formCliente.endereco || !formCliente.numero) {
-                          alert('Preencha o endereço completo');
+                          alert('Preencha o endereço completo (CEP, endereço e número)');
                           return;
                         }
-                        // Se não temos coordenadas ainda, tentar geocodificar pelo endereço completo
-                        let latCliente = formCliente.latitude;
-                        let lngCliente = formCliente.longitude;
-                        if (!latCliente || !lngCliente) {
-                          try {
-                            const enderecoCompleto = `${formCliente.endereco}, ${formCliente.numero}, ${formCliente.bairro}, ${formCliente.cidade}, ${formCliente.estado}, ${formCliente.cep}, Brasil`;
-                            const { data } = await base44.functions.invoke('geocodificarEndereco', { endereco: enderecoCompleto });
-                            if (data?.success && data?.latitude && data?.longitude) {
-                              latCliente = data.latitude;
-                              lngCliente = data.longitude;
-                              setFormCliente(prev => ({ ...prev, latitude: data.latitude, longitude: data.longitude }));
-                            }
-                          } catch (e) {
-                            // falhou geocodificação, segue sem coordenadas
-                          }
-                        }
-                        // Calcular taxa de entrega com base nas configurações da pizzaria
-                        const config = pizzariaConfig;
-                        if (config?.id) {
-                          const subtotal = calcularSubtotal();
-                          const taxaBase = Number(config.taxa_entrega_base) || 0;
-                          const raioBase = Number(config.raio_entrega_km) || 0;
-                          const taxaAdicionalPorKm = Number(config.taxa_adicional_por_km) || 0;
 
-                          // 1. Pedido atingiu valor mínimo para entrega grátis?
+                        setCalculandoFrete(true);
+                        setErroFrete('');
+                        setDistanciaEntrega(null);
+                        setDetalhesEntrega(null);
+
+                        try {
+                          // Passo 1: Geocodificar endereço do cliente
+                          let latCliente = formCliente.latitude;
+                          let lngCliente = formCliente.longitude;
+
+                          if (!latCliente || !lngCliente) {
+                            const enderecoCompleto = `${formCliente.endereco}, ${formCliente.numero}, ${formCliente.bairro}, ${formCliente.cidade}, ${formCliente.estado}, ${formCliente.cep}, Brasil`;
+                            const { data: geoData } = await base44.functions.invoke('geocodificarEndereco', { endereco: enderecoCompleto });
+                            if (geoData?.success && geoData?.latitude && geoData?.longitude) {
+                              latCliente = geoData.latitude;
+                              lngCliente = geoData.longitude;
+                              setFormCliente(prev => ({ ...prev, latitude: geoData.latitude, longitude: geoData.longitude }));
+                            } else {
+                              setErroFrete('Não foi possível localizar seu endereço. Verifique o CEP e número e tente novamente.');
+                              setCalculandoFrete(false);
+                              return;
+                            }
+                          }
+
+                          // Passo 2: Verificar valor mínimo para entrega grátis
+                          const config = pizzariaConfig;
+                          const subtotal = calcularSubtotal();
                           if (config.valor_minimo_entrega_gratis > 0 && subtotal >= Number(config.valor_minimo_entrega_gratis)) {
                             setTaxaEntrega(0);
+                            setDistanciaEntrega(null);
+                            setDetalhesEntrega({ dentro_raio_base: true, raio_base: 0, taxa_base: 0, km_excedente: 0, valor_adicional: 0 });
+                            setCheckoutStep(2);
+                            return;
                           }
-                          // 2. Temos coordenadas? Calcular distância real
-                          else if (config.latitude && config.longitude && latCliente && lngCliente) {
-                            const R = 6371;
-                            const dLat = (latCliente - config.latitude) * Math.PI / 180;
-                            const dLon = (lngCliente - config.longitude) * Math.PI / 180;
-                            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                                      Math.cos(config.latitude * Math.PI / 180) * Math.cos(latCliente * Math.PI / 180) *
-                                      Math.sin(dLon/2) * Math.sin(dLon/2);
-                            const distanciaKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-                            console.log(`📍 Distância calculada: ${distanciaKm.toFixed(2)} km | Raio base: ${raioBase} km | Taxa base: R$${taxaBase} | Taxa adicional: R$${taxaAdicionalPorKm}/km`);
+                          // Passo 3: Se a pizzaria tem coordenadas, calcular rota real
+                          if (config.latitude && config.longitude) {
+                            const { data: rotaData } = await base44.functions.invoke('calcularRotaEntrega', {
+                              origemLat: config.latitude,
+                              origemLng: config.longitude,
+                              destinoLat: latCliente,
+                              destinoLng: lngCliente,
+                              pizzariaId: pizzariaId
+                            });
 
-                            if (config.entrega_gratis_dentro_raio_base && distanciaKm <= raioBase) {
-                              // Dentro do raio base e configurado como grátis
-                              setTaxaEntrega(0);
-                            } else if (raioBase > 0 && distanciaKm > raioBase) {
-                              // Fora do raio base: taxa_base + km_extra * taxa_adicional
-                              const kmExtra = distanciaKm - raioBase;
-                              const taxaFinal = taxaBase + (kmExtra * taxaAdicionalPorKm);
-                              console.log(`💰 Taxa: R$${taxaBase} + ${kmExtra.toFixed(2)}km × R$${taxaAdicionalPorKm} = R$${taxaFinal.toFixed(2)}`);
-                              setTaxaEntrega(taxaFinal);
-                            } else {
-                              // Dentro do raio base, não é grátis: cobra taxa base
-                              setTaxaEntrega(taxaBase);
+                            if (!rotaData?.success) {
+                              setErroFrete(rotaData?.error || 'Erro ao calcular rota. Tente novamente.');
+                              setCalculandoFrete(false);
+                              return;
                             }
+
+                            if (rotaData.foraAreaEntrega) {
+                              setErroFrete(rotaData.erro || 'Endereço fora da área de entrega.');
+                              setCalculandoFrete(false);
+                              return;
+                            }
+
+                            setDistanciaEntrega(rotaData.distanciaKm);
+                            setTaxaEntrega(rotaData.taxaEntrega ?? (Number(config.taxa_entrega_base) || 0));
+                            setDetalhesEntrega(rotaData.detalhes);
+                          } else {
+                            // Pizzaria sem coordenadas: usar taxa base
+                            setTaxaEntrega(Number(config.taxa_entrega_base) || 0);
                           }
-                          // 3. Sem coordenadas: usar taxa base
-                          else {
-                            setTaxaEntrega(taxaBase);
-                          }
+
+                          setCheckoutStep(2);
+                        } catch (e) {
+                          console.error('Erro ao calcular frete:', e);
+                          setErroFrete('Erro ao calcular frete. Verifique o endereço e tente novamente.');
+                        } finally {
+                          setCalculandoFrete(false);
                         }
-                        setCheckoutStep(2);
                       }}
-                      className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600"
+                      disabled={calculandoFrete}
+                      className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-600 disabled:opacity-60"
                     >
-                      Continuar para Pagamento
+                      {calculandoFrete ? (
+                        <span className="flex items-center gap-2">
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Calculando frete...
+                        </span>
+                      ) : 'Continuar para Pagamento'}
                     </Button>
                   </>
                 )}
