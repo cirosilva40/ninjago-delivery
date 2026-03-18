@@ -1573,7 +1573,7 @@ export default function CardapioCliente() {
                         <div className="space-y-3 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
                           <Label className="text-white">Precisa de troco?</Label>
                           <Select
-                            value={formCliente.troco_para > 0 ? 'sim' : 'nao'}
+                            value={formCliente.troco_para !== 0 ? 'sim' : 'nao'}
                             onValueChange={(v) => setFormCliente({ ...formCliente, troco_para: v === 'sim' ? '' : 0 })}
                           >
                             <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue /></SelectTrigger>
