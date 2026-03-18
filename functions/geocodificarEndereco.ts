@@ -1,11 +1,34 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
+// Normaliza CEP para apenas 8 dígitos numéricos
+function normalizarCep(cep) {
+  return (cep || '').replace(/\D/g, '').padStart(8, '0').slice(0, 8);
+}
+
+// Busca no Nominatim com log
+async function buscarNominatim(query, descricao) {
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=br&accept-language=pt-BR`;
+  console.log(`[geocodificar] Tentativa: ${descricao} | query: ${query}`);
+  const resp = await fetch(url, { headers: { 'User-Agent': 'NinjaGO-Delivery-App' } });
+  if (!resp.ok) {
+    console.log(`[geocodificar] Falha HTTP ${resp.status} para: ${descricao}`);
+    return null;
+  }
+  const data = await resp.json();
+  if (data && data.length > 0) {
+    console.log(`[geocodificar] Sucesso em: ${descricao} | lat=${data[0].lat} lng=${data[0].lon}`);
+    return { latitude: parseFloat(data[0].lat), longitude: parseFloat(data[0].lon) };
+  }
+  console.log(`[geocodificar] Sem resultado para: ${descricao}`);
+  return null;
+}
+
 Deno.serve(async (req) => {
   try {
     const payload = await req.json();
     const { latitude, longitude, endereco } = payload;
 
-    // Geocodificação reversa: lat/lng → endereço
+    // ─── GEOCODIFICAÇÃO REVERSA: lat/lng → endereço ───────────────────────────
     if (latitude && longitude) {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=pt-BR&addressdetails=1`,
@@ -22,7 +45,7 @@ Deno.serve(async (req) => {
       return Response.json({
         success: true,
         endereco: {
-          cep: (address.postcode || '').replace(/\D/g, ''),
+          cep: normalizarCep(address.postcode || ''),
           logradouro: address.road || address.street || address.pedestrian || '',
           numero: address.house_number || '',
           bairro: address.suburb || address.neighbourhood || address.district || address.city_district || '',
@@ -34,58 +57,66 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Geocodificação direta: endereço → lat/lng
+    // ─── GEOCODIFICAÇÃO DIRETA: endereço/CEP → lat/lng ────────────────────────
     if (!endereco) {
       return Response.json({ success: false, error: 'Endereço não informado' }, { status: 400 });
     }
 
-    // Tentativa 1: endereço completo
-    const url1 = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}&limit=1&countrycodes=br&accept-language=pt-BR`;
-    const resp1 = await fetch(url1, { headers: { 'User-Agent': 'NinjaGO-Delivery-App' } });
-    const data1 = await resp1.json();
+    console.log(`[geocodificar] Entrada recebida: "${endereco}"`);
 
-    if (data1 && data1.length > 0) {
-      return Response.json({
-        success: true,
-        latitude: parseFloat(data1[0].lat),
-        longitude: parseFloat(data1[0].lon)
-      });
-    }
-
-    // Tentativa 2: remover partes depois de vírgula (simplificar endereço)
-    const enderecoSimples = endereco.split(',').slice(0, 3).join(',').trim();
-    const url2 = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(enderecoSimples)}&limit=1&countrycodes=br&accept-language=pt-BR`;
-    const resp2 = await fetch(url2, { headers: { 'User-Agent': 'NinjaGO-Delivery-App' } });
-    const data2 = await resp2.json();
-
-    if (data2 && data2.length > 0) {
-      return Response.json({
-        success: true,
-        latitude: parseFloat(data2[0].lat),
-        longitude: parseFloat(data2[0].lon)
-      });
-    }
-
-    // Tentativa 3: buscar apenas pelo CEP
+    // Extrair CEP da string de entrada (se houver)
     const cepMatch = endereco.match(/\b(\d{5}-?\d{3})\b/);
-    if (cepMatch) {
-      const cep = cepMatch[1].replace('-', '');
-      const url3 = `https://nominatim.openstreetmap.org/search?format=json&q=${cep}+Brasil&limit=1&countrycodes=br`;
-      const resp3 = await fetch(url3, { headers: { 'User-Agent': 'NinjaGO-Delivery-App' } });
-      const data3 = await resp3.json();
+    const cepNormalizado = cepMatch ? normalizarCep(cepMatch[1]) : null;
 
-      if (data3 && data3.length > 0) {
-        return Response.json({
-          success: true,
-          latitude: parseFloat(data3[0].lat),
-          longitude: parseFloat(data3[0].lon)
-        });
-      }
+    // Extrair cidade/estado da string (heurística: penúltimo e antepenúltimo segmentos)
+    const partes = endereco.split(',').map(s => s.trim()).filter(Boolean);
+    const cidade = partes.find(p => !p.match(/^\d/) && p.length > 3 && !p.match(/^(SP|RJ|MG|RS|PR|SC|BA|CE|PE|GO|AM|PA|MA|PI|RN|PB|SE|AL|TO|MS|MT|RO|RR|AC|AP|DF)$/i)) || '';
+    const estado = partes.find(p => p.match(/^[A-Z]{2}$/)) || '';
+
+    let resultado = null;
+
+    // Tentativa 1: endereço completo como enviado
+    resultado = await buscarNominatim(endereco, 'endereço completo original');
+
+    // Tentativa 2: CEP isolado + Brasil
+    if (!resultado && cepNormalizado) {
+      resultado = await buscarNominatim(`${cepNormalizado} Brasil`, `CEP isolado (${cepNormalizado})`);
     }
 
-    return Response.json({ success: false, error: 'CEP ou endereço não encontrado. Verifique os dados e tente novamente.' });
+    // Tentativa 3: CEP + cidade (se extraída)
+    if (!resultado && cepNormalizado && cidade) {
+      resultado = await buscarNominatim(`${cepNormalizado} ${cidade} Brasil`, `CEP + cidade`);
+    }
+
+    // Tentativa 4: primeiros 3 segmentos do endereço (rua, número, bairro)
+    if (!resultado && partes.length > 3) {
+      const enderecoReduzido = partes.slice(0, 3).join(', ');
+      resultado = await buscarNominatim(enderecoReduzido, 'endereço reduzido (3 segmentos)');
+    }
+
+    // Tentativa 5: apenas rua + cidade + estado
+    if (!resultado && partes.length >= 2 && (cidade || estado)) {
+      const enderecoBasico = [partes[0], cidade, estado, 'Brasil'].filter(Boolean).join(', ');
+      resultado = await buscarNominatim(enderecoBasico, 'rua + cidade + estado');
+    }
+
+    // Tentativa 6: apenas cidade + estado (para pelo menos gerar coordenadas aproximadas)
+    if (!resultado && cidade && estado) {
+      resultado = await buscarNominatim(`${cidade} ${estado} Brasil`, 'cidade + estado (fallback amplo)');
+    }
+
+    if (resultado) {
+      return Response.json({ success: true, ...resultado });
+    }
+
+    console.log(`[geocodificar] Todas as tentativas falharam para: "${endereco}"`);
+    return Response.json({
+      success: false,
+      error: 'CEP ou endereço não encontrado. Verifique os dados e tente novamente.'
+    });
 
   } catch (error) {
+    console.error('[geocodificar] Erro interno:', error.message);
     return Response.json({ success: false, error: 'Erro interno ao processar geocodificação' }, { status: 500 });
   }
 });
