@@ -1113,6 +1113,7 @@ export default function Configuracoes() {
                   latitude={pizzaria.latitude}
                   longitude={pizzaria.longitude}
                   raioKm={pizzaria.raio_entrega_km || 10}
+                  raioMaximoKm={pizzaria.raio_maximo_atendimento_km || 0}
                   taxaBase={pizzaria.taxa_entrega_base || 0}
                   taxaAdicional={pizzaria.taxa_adicional_por_km || 0}
                 />
