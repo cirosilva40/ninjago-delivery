@@ -1582,12 +1582,14 @@ export default function CardapioCliente() {
                               <SelectItem value="sim">Sim, preciso de troco</SelectItem>
                             </SelectContent>
                           </Select>
-                          {formCliente.troco_para > 0 && (
+                          {(formCliente.troco_para !== 0 && formCliente.troco_para !== '') || formCliente.troco_para === '' ? (
+                            formCliente.troco_para !== 0 && (
                             <div>
                               <Label>Troco para quanto?</Label>
-                              <Input type="number" value={formCliente.troco_para} onChange={(e) => setFormCliente({ ...formCliente, troco_para: parseFloat(e.target.value) })} className="bg-slate-800 border-slate-700 text-white" placeholder="Ex: 50.00" />
+                              <Input type="number" value={formCliente.troco_para} onChange={(e) => setFormCliente({ ...formCliente, troco_para: parseFloat(e.target.value) || '' })} className="bg-slate-800 border-slate-700 text-white" placeholder="Ex: 50.00" />
                             </div>
-                          )}
+                            )
+                          ) : null}
                         </div>
                       )}
                     </div>
