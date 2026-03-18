@@ -1151,6 +1151,8 @@ export default function CardapioCliente() {
                     return;
                   }
                   setShowCarrinho(false);
+                  setTaxaEntrega(0);
+                  setCheckoutStep(1);
                   setShowCheckout(true);
                 }}
                 className={`w-full h-14 text-lg font-bold ${!lojaAberta ? 'bg-slate-600 cursor-not-allowed' : 'bg-gradient-to-r from-orange-500 to-red-600'}`}
