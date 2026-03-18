@@ -978,6 +978,53 @@ export default function Configuracoes() {
                 </div>
               </div>
 
+              {/* Raio Máximo de Atendimento */}
+              <div className="p-4 rounded-xl bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/30">
+                <h4 className="font-medium text-white mb-1 flex items-center gap-2">
+                  🚫 Raio Máximo de Atendimento
+                </h4>
+                <p className="text-xs text-slate-400 mb-4">
+                  Pedidos fora deste raio <strong className="text-red-400">não serão aceitos</strong>. Deixe em 0 para não ter limite.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                  <div>
+                    <Label className="text-slate-400">Raio Máximo (km)</Label>
+                    <Input
+                      type="text"
+                      value={pizzaria.raio_maximo_atendimento_km ?? ''}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^0-9,]/g, '');
+                        setPizzaria({ ...pizzaria, raio_maximo_atendimento_km: value });
+                      }}
+                      onBlur={(e) => {
+                        const value = e.target.value.replace(',', '.');
+                        setPizzaria({ ...pizzaria, raio_maximo_atendimento_km: value ? parseFloat(value) : 0 });
+                      }}
+                      className="bg-slate-800 border-slate-700 text-white"
+                      placeholder="Ex: 20"
+                    />
+                    <p className="text-xs text-slate-500 mt-1">
+                      Distância máxima que você atende
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white/5 text-sm text-slate-300">
+                    {parseFloat(pizzaria.raio_maximo_atendimento_km) > 0 ? (
+                      <>
+                        <p className="text-red-400 font-medium">Limite ativo</p>
+                        <p className="text-slate-400 mt-1">
+                          Clientes além de <strong className="text-white">{pizzaria.raio_maximo_atendimento_km} km</strong> verão mensagem de área fora de cobertura.
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-slate-500">Sem limite — atende qualquer distância (com taxa adicional).</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="hidden">{/* placeholder para fechar o grid anterior */}
+              </div>
+
               {/* Entrega Grátis */}
               <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/30">
                 <h4 className="font-medium text-white mb-4 flex items-center gap-2">
