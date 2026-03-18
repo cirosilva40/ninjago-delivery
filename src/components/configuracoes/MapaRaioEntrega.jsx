@@ -127,6 +127,28 @@ export default function MapaRaioEntrega({ latitude, longitude, raioKm, raioMaxim
           </Popup>
         </Marker>
         
+        {/* Círculo do Raio Máximo de Atendimento */}
+        {parseFloat(raioMaximoKm) > 0 && (
+          <Circle
+            center={markerPosition}
+            radius={parseFloat(raioMaximoKm) * 1000}
+            pathOptions={{
+              color: '#ef4444',
+              fillColor: '#ef4444',
+              fillOpacity: 0.06,
+              weight: 2,
+              dashArray: '10 6',
+            }}
+          >
+            <Popup>
+              <div className="text-center">
+                <div className="text-sm font-bold text-red-600">🚫 Limite de Atendimento</div>
+                <p className="text-xs text-gray-700 mt-1">{raioMaximoKm} km — fora desta área não atende</p>
+              </div>
+            </Popup>
+          </Circle>
+        )}
+
         {/* Círculo do Raio Base */}
         {raioKm > 0 && (
           <Circle
