@@ -204,6 +204,12 @@ export default function MapaRaioEntrega({ latitude, longitude, raioKm, raioMaxim
             <span className="text-xs text-gray-700">+R$ {(parseFloat(taxaAdicional)||0).toFixed(2)}/km fora do raio</span>
           </div>
         )}
+        {parseFloat(raioMaximoKm) > 0 && (
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-3 h-3 rounded-full bg-red-500 opacity-70"></div>
+            <span className="text-xs text-gray-700">Limite máx. ({raioMaximoKm} km)</span>
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <div className="text-base">🍕</div>
           <span className="text-xs text-gray-700">{hasLocation ? 'Sua pizzaria' : 'Posição estimada'}</span>
