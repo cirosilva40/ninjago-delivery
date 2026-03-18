@@ -82,6 +82,10 @@ export default function CardapioCliente() {
   const [cupomCodigo, setCupomCodigo] = useState('');
   const [cupomAplicado, setCupomAplicado] = useState(null);
   const [taxaEntrega, setTaxaEntrega] = useState(0);
+  const [distanciaEntrega, setDistanciaEntrega] = useState(null); // km da rota real
+  const [calculandoFrete, setCalculandoFrete] = useState(false);
+  const [erroFrete, setErroFrete] = useState('');
+  const [detalhesEntrega, setDetalhesEntrega] = useState(null);
   const [checkoutStep, setCheckoutStep] = useState(1); // 1: dados+endereço, 2: pagamento, 3: revisão, 4: pagar
   const [processandoPagamento, setProcessandoPagamento] = useState(false);
   const [metodoPagamentoOnline, setMetodoPagamentoOnline] = useState(''); // 'pix', 'credit_card', 'debit_card', 'vale_refeicao'
