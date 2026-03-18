@@ -1480,13 +1480,20 @@ export default function CardapioCliente() {
                             // falhou geocodificação, segue sem coordenadas
                           }
                         }
-                        // Recalcular taxa com coordenadas obtidas
+                        // Calcular taxa de entrega com base nas configurações da pizzaria
                         const config = pizzariaConfig;
                         if (config?.id) {
                           const subtotal = calcularSubtotal();
-                          if (config.valor_minimo_entrega_gratis > 0 && subtotal >= config.valor_minimo_entrega_gratis) {
+                          const taxaBase = Number(config.taxa_entrega_base) || 0;
+                          const raioBase = Number(config.raio_entrega_km) || 0;
+                          const taxaAdicionalPorKm = Number(config.taxa_adicional_por_km) || 0;
+
+                          // 1. Pedido atingiu valor mínimo para entrega grátis?
+                          if (config.valor_minimo_entrega_gratis > 0 && subtotal >= Number(config.valor_minimo_entrega_gratis)) {
                             setTaxaEntrega(0);
-                          } else if (config.latitude && config.longitude && latCliente && lngCliente) {
+                          }
+                          // 2. Temos coordenadas? Calcular distância real
+                          else if (config.latitude && config.longitude && latCliente && lngCliente) {
                             const R = 6371;
                             const dLat = (latCliente - config.latitude) * Math.PI / 180;
                             const dLon = (lngCliente - config.longitude) * Math.PI / 180;
@@ -1494,15 +1501,26 @@ export default function CardapioCliente() {
                                       Math.cos(config.latitude * Math.PI / 180) * Math.cos(latCliente * Math.PI / 180) *
                                       Math.sin(dLon/2) * Math.sin(dLon/2);
                             const distanciaKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                            const raioBase = config.raio_entrega_km || 0;
-                            if (raioBase === 0 || distanciaKm <= raioBase) {
-                              setTaxaEntrega(config.entrega_gratis_dentro_raio_base ? 0 : (config.taxa_entrega_base || 0));
-                            } else {
+
+                            console.log(`📍 Distância calculada: ${distanciaKm.toFixed(2)} km | Raio base: ${raioBase} km | Taxa base: R$${taxaBase} | Taxa adicional: R$${taxaAdicionalPorKm}/km`);
+
+                            if (config.entrega_gratis_dentro_raio_base && distanciaKm <= raioBase) {
+                              // Dentro do raio base e configurado como grátis
+                              setTaxaEntrega(0);
+                            } else if (raioBase > 0 && distanciaKm > raioBase) {
+                              // Fora do raio base: taxa_base + km_extra * taxa_adicional
                               const kmExtra = distanciaKm - raioBase;
-                              setTaxaEntrega((config.taxa_entrega_base || 0) + kmExtra * (config.taxa_adicional_por_km || 0));
+                              const taxaFinal = taxaBase + (kmExtra * taxaAdicionalPorKm);
+                              console.log(`💰 Taxa: R$${taxaBase} + ${kmExtra.toFixed(2)}km × R$${taxaAdicionalPorKm} = R$${taxaFinal.toFixed(2)}`);
+                              setTaxaEntrega(taxaFinal);
+                            } else {
+                              // Dentro do raio base, não é grátis: cobra taxa base
+                              setTaxaEntrega(taxaBase);
                             }
-                          } else {
-                            setTaxaEntrega(config.entrega_gratis_dentro_raio_base ? 0 : (config.taxa_entrega_base || 0));
+                          }
+                          // 3. Sem coordenadas: usar taxa base
+                          else {
+                            setTaxaEntrega(taxaBase);
                           }
                         }
                         setCheckoutStep(2);
