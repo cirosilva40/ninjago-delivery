@@ -1156,6 +1156,9 @@ export default function CardapioCliente() {
                   }
                   setShowCarrinho(false);
                   setTaxaEntrega(0);
+                  setDistanciaEntrega(null);
+                  setErroFrete('');
+                  setDetalhesEntrega(null);
                   setCheckoutStep(1);
                   setShowCheckout(true);
                 }}
