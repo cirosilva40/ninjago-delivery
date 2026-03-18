@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     const config = pizzarias[0];
     const taxaBase = Number(config.taxa_entrega_base) || 0;
     const raioBase = Number(config.raio_entrega_km) || 0;
-    const raioMaximo = Number(config.raio_maximo_entrega_km) || raioBase || 0;
+    const raioMaximo = Number(config.raio_maximo_atendimento_km) || 0;
     const taxaAdicionalPorKm = Number(config.taxa_adicional_por_km) || 0;
 
     // Calcular rota real via OSRM (gratuito, sem chave)
