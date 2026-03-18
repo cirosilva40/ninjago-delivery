@@ -1310,8 +1310,8 @@ export default function CardapioCliente() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Taxa de entrega:</span>
-                      <span className={`font-semibold ${taxaEntrega === 0 ? 'text-emerald-400' : 'text-white'}`}>
-                        {taxaEntrega === 0 ? 'GRÁTIS' : `R$ ${taxaEntrega.toFixed(2)}`}
+                      <span className={`font-semibold ${checkoutStep === 1 ? 'text-slate-500 italic' : taxaEntrega === 0 ? 'text-emerald-400' : 'text-white'}`}>
+                        {checkoutStep === 1 ? 'A calcular após endereço' : taxaEntrega === 0 ? 'GRÁTIS' : `R$ ${taxaEntrega.toFixed(2)}`}
                       </span>
                     </div>
                     {cupomAplicado && (
