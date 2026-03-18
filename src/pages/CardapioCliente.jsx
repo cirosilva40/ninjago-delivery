@@ -1485,7 +1485,7 @@ export default function CardapioCliente() {
                           <p className="text-slate-300">Taxa de entrega: <strong className="text-white">R$ {taxaEntrega.toFixed(2)}</strong> (dentro do raio base de {detalhesEntrega.raio_base} km)</p>
                         ) : (
                           <p className="text-slate-300">
-                            Taxa: R$ {detalhesEntrega.taxa_base.toFixed(2)} base + {detalhesEntrega.km_excedente.toFixed(2)} km × R$ {detalhesEntrega.taxa_adicional_por_km.toFixed(2)} = <strong className="text-white">R$ {taxaEntrega.toFixed(2)}</strong>
+                            Taxa: R$ {detalhesEntrega.taxa_base.toFixed(2)} base + {detalhesEntrega.km_cobrado} km cobrados × R$ {detalhesEntrega.taxa_adicional_por_km.toFixed(2)} = <strong className="text-white">R$ {taxaEntrega.toFixed(2)}</strong>
                           </p>
                         )}
                       </div>
