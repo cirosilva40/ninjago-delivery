@@ -57,7 +57,7 @@ function MapUpdater({ center, raio }) {
 
 const DEFAULT_CENTER = [-23.5505, -46.6333]; // São Paulo
 
-export default function MapaRaioEntrega({ latitude, longitude, raioKm, taxaBase, taxaAdicional, onLocationChange }) {
+export default function MapaRaioEntrega({ latitude, longitude, raioKm, raioMaximoKm, taxaBase, taxaAdicional, onLocationChange }) {
   const hasLocation = !!(latitude && longitude);
   const [markerPosition, setMarkerPosition] = useState(
     hasLocation ? [latitude, longitude] : DEFAULT_CENTER
