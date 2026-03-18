@@ -411,15 +411,8 @@ export default function CardapioCliente() {
     }
   };
 
-  // Recalcular taxa sempre que a config da pizzaria ou localização do cliente mudar
-  useEffect(() => {
-    if (pizzariaConfig?.id) {
-      calcularTaxaEntrega();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pizzariaConfig?.id, pizzariaConfig?.taxa_entrega_base, pizzariaConfig?.entrega_gratis_dentro_raio_base,
-      pizzariaConfig?.valor_minimo_entrega_gratis, pizzariaConfig?.raio_entrega_km,
-      formCliente.latitude, formCliente.longitude, carrinho.length]);
+  // Recalcular taxa apenas quando coordenadas do cliente estiverem disponíveis (via GPS ou após confirmar endereço)
+  // Não recalcular automaticamente — o cálculo correto acontece ao clicar em "Continuar para Pagamento"
 
   const usarLocalizacao = () => {
     setBuscandoLocalizacao(true);
