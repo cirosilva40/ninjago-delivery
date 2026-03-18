@@ -1022,11 +1022,8 @@ export default function Configuracoes() {
                 </div>
               </div>
 
-
-              </div>
-
               {/* Entrega Grátis */}
-              <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/30 col-span-full">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/30">
                 <h4 className="font-medium text-white mb-4 flex items-center gap-2">
                   🎁 Entrega Grátis
                 </h4>
