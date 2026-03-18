@@ -46,12 +46,11 @@ Deno.serve(async (req) => {
       if (config) {
         const taxaBase = Number(config.taxa_entrega_base) || 0;
         const raioBase = Number(config.raio_entrega_km) || 0;
+        const raioMaximo = Number(config.raio_maximo_entrega_km) || raioBase || 0;
         const taxaAdicionalPorKm = Number(config.taxa_adicional_por_km) || 0;
-        const valorMinimoGratis = Number(config.valor_minimo_entrega_gratis) || 0;
-        const raioMaximo = Number(config.raio_entrega_km) || 0;
 
-        // Verificar se está dentro da área de entrega (raio * 1.5 como margem para rota real)
-        const dentroAreaEntrega = raioMaximo === 0 || distanciaKm <= (raioMaximo * 2);
+        // Verificar se está dentro da área máxima de entrega
+        const dentroAreaEntrega = raioMaximo === 0 || distanciaKm <= raioMaximo;
 
         if (!dentroAreaEntrega) {
           return Response.json({
@@ -62,7 +61,10 @@ Deno.serve(async (req) => {
           });
         }
 
-        if (raioBase > 0 && distanciaKm <= raioBase) {
+        // Calcular km excedente ao raio base
+        const kmExtra = Math.max(0, distanciaKm - raioBase);
+
+        if (kmExtra <= 0) {
           // Dentro do raio base
           taxaEntrega = config.entrega_gratis_dentro_raio_base ? 0 : taxaBase;
           detalhes = {
@@ -71,12 +73,14 @@ Deno.serve(async (req) => {
             raio_base: raioBase,
             taxa_base: taxaBase,
             km_excedente: 0,
+            km_cobrado: 0,
             valor_adicional: 0
           };
-        } else if (raioBase > 0 && distanciaKm > raioBase) {
-          // Fora do raio base: taxa_base + km_extra * taxa_adicional
-          const kmExtra = distanciaKm - raioBase;
-          const valorAdicional = kmExtra * taxaAdicionalPorKm;
+        } else {
+          // Fora do raio base: cobrar em blocos de 0,5 km (arredondando para cima)
+          const blocos = Math.ceil(kmExtra / 0.5);
+          const kmCobrado = blocos * 0.5;
+          const valorAdicional = kmCobrado * taxaAdicionalPorKm;
           taxaEntrega = parseFloat((taxaBase + valorAdicional).toFixed(2));
           detalhes = {
             dentro_raio_base: false,
@@ -84,19 +88,10 @@ Deno.serve(async (req) => {
             raio_base: raioBase,
             taxa_base: taxaBase,
             km_excedente: parseFloat(kmExtra.toFixed(2)),
+            km_cobrado: parseFloat(kmCobrado.toFixed(1)),
+            blocos,
             taxa_adicional_por_km: taxaAdicionalPorKm,
             valor_adicional: parseFloat(valorAdicional.toFixed(2))
-          };
-        } else {
-          // Sem raio base configurado: cobrar taxa base
-          taxaEntrega = taxaBase;
-          detalhes = {
-            dentro_raio_base: true,
-            km_percorridos: parseFloat(distanciaKm.toFixed(2)),
-            raio_base: 0,
-            taxa_base: taxaBase,
-            km_excedente: 0,
-            valor_adicional: 0
           };
         }
       }
