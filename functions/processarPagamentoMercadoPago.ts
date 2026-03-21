@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
       }, { status: 500 });
     }
 
-    const pedido = await base44.asServiceRole.entities.Pedido.get(pedidoId);
+    const pedido = await base44.entities.Pedido.get(pedidoId);
     if (!pedido) {
       return Response.json({ error: 'Pedido não encontrado' }, { status: 404 });
     }
@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
         }, { status: res.status });
       }
 
-      await base44.asServiceRole.entities.Pedido.update(pedidoId, {
+      await base44.entities.Pedido.update(pedidoId, {
         status_pagamento: 'pendente',
         observacoes_financeiras: `Pagamento PIX - ID: ${data.id}`
       });
