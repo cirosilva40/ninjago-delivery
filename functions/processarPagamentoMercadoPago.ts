@@ -140,14 +140,14 @@ Deno.serve(async (req) => {
       const tipoPagamento = metodoPagamento === 'credit_card' ? 'Crédito' :
                             metodoPagamento === 'debit_card' ? 'Débito' : 'Vale Refeição';
 
-      await base44.asServiceRole.entities.Pedido.update(pedidoId, {
+      await base44.entities.Pedido.update(pedidoId, {
         status_pagamento: novoStatus,
         observacoes_financeiras: `Pagamento ${tipoPagamento} - ID: ${data.id} - Status: ${data.status} (${data.status_detail})`
       });
 
       // Se aprovado, mover para em_preparo
       if (data.status === 'approved') {
-        await base44.asServiceRole.entities.Pedido.update(pedidoId, { status: 'em_preparo' });
+        await base44.entities.Pedido.update(pedidoId, { status: 'em_preparo' });
       }
 
       return Response.json({
