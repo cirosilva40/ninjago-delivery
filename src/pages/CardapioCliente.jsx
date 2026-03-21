@@ -1167,7 +1167,7 @@ export default function CardapioCliente() {
                   setCheckoutStep(1);
                   setShowCheckout(true);
                 }}
-                className={`w-full h-14 text-lg font-bold ${!lojaAberta ? 'bg-slate-600 cursor-not-allowed' : 'bg-gradient-to-r from-orange-500 to-red-600'}`}
+                className={`w-full h-14 text-lg font-bold flex-shrink-0 ${!lojaAberta ? 'bg-slate-600 cursor-not-allowed' : 'bg-gradient-to-r from-orange-500 to-red-600'}`}
               >
                 {!lojaAberta ? '🔒 Loja Fechada' : 'Finalizar Pedido'}
               </Button>
