@@ -447,6 +447,26 @@ export default function Pedidos() {
                           {pedido.origem === '99food' && (
                             <Badge className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">99Food</Badge>
                           )}
+                          {/* Tipo: Delivery ou Balcão */}
+                          {pedido.tipo_pedido === 'balcao' ? (
+                            <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1">
+                              <Store className="w-3 h-3" />Balcão
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1">
+                              <ShoppingBag className="w-3 h-3" />Delivery
+                            </Badge>
+                          )}
+                          {/* Status de pagamento */}
+                          {pedido.status_pagamento === 'pago' ? (
+                            <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3" />Pago
+                            </Badge>
+                          ) : pedido.status_pagamento === 'cancelado' ? null : (
+                            <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" />Pendente
+                            </Badge>
+                          )}
                         </div>
                         <p className="text-white font-medium">{pedido.cliente_nome}</p>
                         <p className="text-sm text-slate-400">{pedido.cliente_endereco}</p>
