@@ -1171,7 +1171,7 @@ export default function CardapioCliente() {
               >
                 {!lojaAberta ? '🔒 Loja Fechada' : 'Finalizar Pedido'}
               </Button>
-            </div>
+            </div> {/* fim flex flex-col */}
           )}
         </DialogContent>
       </Dialog>
