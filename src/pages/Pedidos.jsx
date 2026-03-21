@@ -134,6 +134,20 @@ export default function Pedidos() {
     refetchInterval: 10000,
   });
 
+  // Detecta novos pedidos e toca som
+  useEffect(() => {
+    if (!pedidos || pedidos.length === 0) return;
+    const isFirstLoad = knownPedidoIds.current.size === 0;
+    const novosPedidos = pedidos.filter(p => !knownPedidoIds.current.has(p.id));
+    pedidos.forEach(p => knownPedidoIds.current.add(p.id));
+    if (!isFirstLoad && novosPedidos.length > 0) {
+      playNewOrderSound();
+      novosPedidos.forEach(p => {
+        toast.success(`🛵 Novo pedido #${p.numero_pedido} de ${p.cliente_nome}!`, { duration: 6000 });
+      });
+    }
+  }, [pedidos]);
+
   const updateStatus = async (pedido, newStatus) => {
     try {
       const statusAntigo = pedido.status;
