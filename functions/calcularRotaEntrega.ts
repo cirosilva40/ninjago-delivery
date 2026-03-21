@@ -1,8 +1,10 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
+import { createClient } from 'npm:@base44/sdk@0.8.21';
+
+const serviceClient = createClient({ appId: Deno.env.get('BASE44_APP_ID') });
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
+    const base44 = serviceClient;
     const payload = await req.json();
     const { origemLat, origemLng, destinoLat, destinoLng, pizzariaId } = payload;
 
