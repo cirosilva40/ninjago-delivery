@@ -101,6 +101,29 @@ export default function Pedidos() {
     localStorage.setItem('pedidos_view_mode', mode);
   };
 
+  // Som de novo pedido via Web Audio API
+  const playNewOrderSound = () => {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const playTone = (freq, start, duration) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, ctx.currentTime + start);
+      gain.gain.linearRampToValueAtTime(0.4, ctx.currentTime + start + 0.02);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + start + duration);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + duration);
+    };
+    playTone(880, 0, 0.15);
+    playTone(1100, 0.18, 0.15);
+    playTone(1320, 0.36, 0.25);
+  };
+
   const { data: pedidos = [], refetch } = useQuery({
     queryKey: ['pedidos', pizzariaId],
     queryFn: async () => {
