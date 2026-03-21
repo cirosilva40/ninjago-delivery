@@ -354,6 +354,26 @@ export default function Pedidos() {
                             </DropdownMenu>
                           </div>
 
+                          <div className="flex flex-wrap gap-1 mb-1">
+                            {pedido.tipo_pedido === 'balcao' ? (
+                              <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs flex items-center gap-1 px-1.5 py-0.5">
+                                <Store className="w-2.5 h-2.5" />Balcão
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs flex items-center gap-1 px-1.5 py-0.5">
+                                <ShoppingBag className="w-2.5 h-2.5" />Delivery
+                              </Badge>
+                            )}
+                            {pedido.status_pagamento === 'pago' ? (
+                              <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs flex items-center gap-1 px-1.5 py-0.5">
+                                <CheckCircle2 className="w-2.5 h-2.5" />Pago
+                              </Badge>
+                            ) : pedido.status_pagamento === 'cancelado' ? null : (
+                              <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs flex items-center gap-1 px-1.5 py-0.5">
+                                <AlertCircle className="w-2.5 h-2.5" />Pendente
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-white font-medium text-sm mb-1 truncate">{pedido.cliente_nome}</p>
                           <p className="text-xs text-slate-400 truncate">{pedido.cliente_bairro || pedido.cliente_endereco}</p>
 
