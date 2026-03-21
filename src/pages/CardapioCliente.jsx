@@ -1142,7 +1142,10 @@ export default function CardapioCliente() {
                 </div>;
               })}
 
-              <div className="border-t border-white/10 pt-4 space-y-2">
+              </div>{/* fim scroll area */}
+
+              {/* Rodapé fixo */}
+              <div className="border-t border-white/10 pt-4 space-y-2 mt-2 flex-shrink-0">
                 <div className="flex justify-between text-lg">
                   <span className="text-slate-400">Subtotal:</span>
                   <span className="text-white font-semibold">R$ {calcularSubtotal().toFixed(2)}</span>
