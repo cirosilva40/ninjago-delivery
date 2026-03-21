@@ -66,6 +66,8 @@ export default function Pedidos() {
   const itemsPerPage = 20;
   const [user, setUser] = useState(null);
   const [pizzariaId, setPizzariaId] = useState(null);
+  const knownPedidoIds = useRef(new Set());
+  const audioCtxRef = useRef(null);
 
   React.useEffect(() => {
     const loadUser = async () => {
