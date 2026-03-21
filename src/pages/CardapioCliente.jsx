@@ -1068,7 +1068,9 @@ export default function CardapioCliente() {
               <p className="text-slate-400">Seu carrinho está vazio</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="flex flex-col" style={{ maxHeight: '75vh' }}>
+              {/* Área dos itens com scroll */}
+              <div className="overflow-y-auto flex-1 space-y-4 pr-1" style={{ maxHeight: 'calc(75vh - 160px)' }}>
               {carrinho.map((item, idx) => {
                 // Montar descrição das personalizações
                 const linhasPersonalizacao = [];
