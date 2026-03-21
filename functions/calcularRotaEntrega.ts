@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     let detalhes = null;
 
     if (pizzariaId) {
-      const pizzarias = await base44.asServiceRole.entities.Pizzaria.filter({ id: pizzariaId });
+      const pizzarias = await base44.entities.Pizzaria.filter({ id: pizzariaId });
       const config = pizzarias[0];
 
       if (config) {

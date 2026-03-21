@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
     }
 
     // Buscar pizzaria para pegar o access token dela
-    const pizzaria = await base44.asServiceRole.entities.Pizzaria.get(pizzariaId);
+    const pizzaria = await base44.entities.Pizzaria.get(pizzariaId);
     if (!pizzaria) {
       return Response.json({ error: 'Pizzaria não encontrada' }, { status: 404 });
     }
