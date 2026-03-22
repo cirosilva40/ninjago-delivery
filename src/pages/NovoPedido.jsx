@@ -120,6 +120,26 @@ export default function NovoPedido() {
   const [calculandoTaxa, setCalculandoTaxa] = useState(false);
   const [distanciaCalculada, setDistanciaCalculada] = useState(null);
   const [salvandoIntegracao, setSalvandoIntegracao] = useState(null);
+  const [salvandoStatusLoja, setSalvandoStatusLoja] = useState(false);
+
+  const toggleStatusLoja = async () => {
+    if (!pizzaria.id) return;
+    setSalvandoStatusLoja(true);
+    const lojaAbertaAtual = pizzaria.configuracoes?.loja_aberta ?? true;
+    try {
+      await base44.entities.Pizzaria.update(pizzaria.id, {
+        configuracoes: {
+          ...pizzaria.configuracoes,
+          loja_aberta: !lojaAbertaAtual,
+        }
+      });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSalvandoStatusLoja(false);
+    }
+  };
+
 
   const { data: produtos = [], isLoading: loadingProdutos } = useQuery({
     queryKey: ['produtos-disponiveis', pizzariaId],
