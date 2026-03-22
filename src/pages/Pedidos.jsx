@@ -56,7 +56,7 @@ const statusConfig = {
 
 export default function Pedidos() {
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
+  const [statusFilter, setStatusFilter] = useState('hoje');
   const [viewMode, setViewMode] = useState(() => localStorage.getItem('pedidos_view_mode') || 'horizontal');
   const [showPedidoModal, setShowPedidoModal] = useState(false);
   const [showAtribuirModal, setShowAtribuirModal] = useState(false);
@@ -175,7 +175,18 @@ export default function Pedidos() {
       p.numero_pedido?.toLowerCase().includes(search.toLowerCase()) ||
       p.cliente_nome?.toLowerCase().includes(search.toLowerCase()) ||
       p.cliente_telefone?.includes(search);
-    const matchStatus = statusFilter === 'todos' || p.status === statusFilter;
+    
+    let matchStatus = true;
+    if (statusFilter === 'hoje') {
+      const hoje = new Date();
+      const dataPedido = new Date(p.created_date);
+      matchStatus = dataPedido.getFullYear() === hoje.getFullYear() &&
+                    dataPedido.getMonth() === hoje.getMonth() &&
+                    dataPedido.getDate() === hoje.getDate();
+    } else if (statusFilter !== 'todos') {
+      matchStatus = p.status === statusFilter;
+    }
+    
     return matchSearch && matchStatus;
   });
 
@@ -201,7 +212,7 @@ export default function Pedidos() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white">Pedidos</h1>
-          <p className="text-slate-400 mt-1">{pedidos.length} pedidos no total</p>
+          <p className="text-slate-400 mt-1">{filteredPedidos.length} pedido(s) {statusFilter === 'hoje' ? 'hoje' : 'encontrado(s)'}</p>
         </div>
 
       </div>
@@ -223,6 +234,7 @@ export default function Pedidos() {
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent className="bg-slate-900 border-slate-700">
+            <SelectItem value="hoje">📅 Hoje</SelectItem>
             <SelectItem value="todos">Todos</SelectItem>
             <SelectItem value="novo">Novos</SelectItem>
             <SelectItem value="em_preparo">Em Preparo</SelectItem>
