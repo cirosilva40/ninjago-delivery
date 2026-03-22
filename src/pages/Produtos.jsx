@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
   Package,
   Plus,
