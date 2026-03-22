@@ -121,11 +121,11 @@ export default function NovoPedido() {
   const [distanciaCalculada, setDistanciaCalculada] = useState(null);
   const [salvandoIntegracao, setSalvandoIntegracao] = useState(null);
   const [salvandoStatusLoja, setSalvandoStatusLoja] = useState(false);
+  const queryClient = useQueryClient();
 
   const toggleStatusLoja = async () => {
     if (!pizzaria.id) return;
     setSalvandoStatusLoja(true);
-    // Se nunca foi definido ou está fechado (false), abre (true). Se está aberto (true), fecha (false).
     const lojaAbertaAtual = pizzaria.configuracoes?.loja_aberta;
     const novoValor = lojaAbertaAtual === true ? false : true;
     try {
@@ -135,6 +135,7 @@ export default function NovoPedido() {
           loja_aberta: novoValor,
         }
       });
+      queryClient.invalidateQueries({ queryKey: ['pizzarias', pizzariaId] });
     } catch (e) {
       console.error(e);
     } finally {
