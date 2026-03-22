@@ -206,7 +206,13 @@ export default function CardapioCliente() {
   const nomeExibicao = pizzariaConfig.nome_exibicao_cliente || pizzariaConfig.nome || 'NinjaGO Delivery';
 
   // Verificar se a loja está aberta
+  // O campo manual loja_aberta tem prioridade sobre o horário
   const verificarLojaAberta = () => {
+    const config = pizzariaConfig.configuracoes || {};
+    // Se o campo manual foi definido explicitamente, ele tem prioridade
+    if (config.loja_aberta === false) return false;
+    if (config.loja_aberta === true) return true;
+    // Sem override manual: usar horário de funcionamento
     if (!pizzariaConfig.horario_abertura || !pizzariaConfig.horario_fechamento) return true;
     const agora = new Date();
     const [hAbr, mAbr] = pizzariaConfig.horario_abertura.split(':').map(Number);
@@ -214,7 +220,6 @@ export default function CardapioCliente() {
     const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
     const minutosAbertura = hAbr * 60 + mAbr;
     const minutosFechamento = hFech * 60 + mFech;
-    // Suporte para virada de meia noite (ex: 18:00 - 02:00)
     if (minutosFechamento < minutosAbertura) {
       return minutosAgora >= minutosAbertura || minutosAgora < minutosFechamento;
     }
