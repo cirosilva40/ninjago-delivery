@@ -211,11 +211,14 @@ export default function CardapioCliente() {
   // O campo manual loja_aberta tem prioridade sobre o horário
   const verificarLojaAberta = () => {
     const config = pizzariaConfig.configuracoes || {};
-    // Se fechado manualmente, fecha sempre
-    if (config.loja_aberta === false) return false;
     // Se aberto manualmente (true), ignora horário
     if (config.loja_aberta === true) return true;
-    // undefined = nunca configurado, usa horário
+    // Se fechado (false) ou nunca configurado (undefined), fecha
+    if (config.loja_aberta === false || config.loja_aberta === undefined) {
+      // Se há horário configurado, usa horário para decidir
+      if (!pizzariaConfig.horario_abertura || !pizzariaConfig.horario_fechamento) return false;
+      // undefined sem horário = fechado por padrão
+    }
     // Sem override manual: usar horário de funcionamento
     if (!pizzariaConfig.horario_abertura || !pizzariaConfig.horario_fechamento) return true;
     const agora = new Date();
