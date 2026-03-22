@@ -71,6 +71,16 @@ export default function OpcoesPersonalizacaoManager({ opcoes = [], onChange }) {
     onChange(novasOpcoes);
   };
 
+  const onDragEndItem = (grupoIndex, result) => {
+    if (!result.destination) return;
+    const novasOpcoes = [...opcoes];
+    const itens = [...novasOpcoes[grupoIndex].itens];
+    const [removed] = itens.splice(result.source.index, 1);
+    itens.splice(result.destination.index, 0, removed);
+    novasOpcoes[grupoIndex].itens = itens;
+    onChange(novasOpcoes);
+  };
+
   const updateItem = (grupoIndex, itemIndex, campo, valor) => {
     const novasOpcoes = [...opcoes];
     novasOpcoes[grupoIndex].itens[itemIndex] = {
