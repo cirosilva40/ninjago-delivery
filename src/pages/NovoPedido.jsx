@@ -125,9 +125,9 @@ export default function NovoPedido() {
   const toggleStatusLoja = async () => {
     if (!pizzaria.id) return;
     setSalvandoStatusLoja(true);
-    // Se nunca foi definido, assume aberta (true) e fecha (false)
+    // Se nunca foi definido ou está fechado (false), abre (true). Se está aberto (true), fecha (false).
     const lojaAbertaAtual = pizzaria.configuracoes?.loja_aberta;
-    const novoValor = lojaAbertaAtual === false ? true : false;
+    const novoValor = lojaAbertaAtual === true ? false : true;
     try {
       await base44.entities.Pizzaria.update(pizzaria.id, {
         configuracoes: {
@@ -652,7 +652,7 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
         <div className="flex items-center gap-3">
           {/* Toggle Loja Aberta/Fechada */}
           {(() => {
-            const lojaAberta = pizzaria.configuracoes?.loja_aberta !== false;
+            const lojaAberta = pizzaria.configuracoes?.loja_aberta === true;
             return (
               <button
                 onClick={toggleStatusLoja}
