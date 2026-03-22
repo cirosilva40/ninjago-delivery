@@ -225,6 +225,25 @@ export default function OpcoesPersonalizacaoManager({ opcoes = [], onChange }) {
                     <div className="space-y-2">
                       {grupo.itens.map((item, itemIndex) => (
                         <div key={itemIndex} className="flex items-center gap-2 p-2 rounded-lg bg-slate-900/50">
+                          {/* Botões de reordenar item */}
+                          <div className="flex flex-col gap-0.5">
+                            <button
+                              type="button"
+                              onClick={() => moverItem(grupoIndex, itemIndex, -1)}
+                              disabled={itemIndex === 0}
+                              className="h-4 w-5 flex items-center justify-center text-slate-500 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <ChevronUp className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moverItem(grupoIndex, itemIndex, 1)}
+                              disabled={itemIndex === (grupo.itens.length - 1)}
+                              className="h-4 w-5 flex items-center justify-center text-slate-500 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <ChevronDown className="w-3 h-3" />
+                            </button>
+                          </div>
                           <Input
                             value={item.nome}
                             onChange={(e) => updateItem(grupoIndex, itemIndex, 'nome', e.target.value)}
