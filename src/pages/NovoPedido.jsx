@@ -170,6 +170,7 @@ export default function NovoPedido() {
           [campo]: !valorAtual,
         }
       });
+      queryClient.invalidateQueries({ queryKey: ['pizzarias', pizzariaId] });
     } catch (e) {
       console.error(e);
     } finally {
