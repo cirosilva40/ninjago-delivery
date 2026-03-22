@@ -233,73 +233,78 @@ export default function OpcoesPersonalizacaoManager({ opcoes = [], onChange }) {
                   {(grupo.itens || []).length === 0 ? (
                     <p className="text-xs text-slate-600 text-center py-3">Nenhum item adicionado</p>
                   ) : (
-                    <div className="space-y-2">
-                      {grupo.itens.map((item, itemIndex) => (
-                        <div key={itemIndex} className="flex items-center gap-2 p-2 rounded-lg bg-slate-900/50">
-                          {/* Botões de reordenar item */}
-                          <div className="flex flex-col gap-0.5">
-                            <button
-                              type="button"
-                              onClick={() => moverItem(grupoIndex, itemIndex, -1)}
-                              disabled={itemIndex === 0}
-                              className="h-4 w-5 flex items-center justify-center text-slate-500 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
-                            >
-                              <ChevronUp className="w-3 h-3" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => moverItem(grupoIndex, itemIndex, 1)}
-                              disabled={itemIndex === (grupo.itens.length - 1)}
-                              className="h-4 w-5 flex items-center justify-center text-slate-500 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
-                            >
-                              <ChevronDown className="w-3 h-3" />
-                            </button>
-                          </div>
-                          <Input
-                            value={item.nome}
-                            onChange={(e) => updateItem(grupoIndex, itemIndex, 'nome', e.target.value)}
-                            className="flex-1 bg-slate-800 border-slate-600 text-white h-8 text-sm"
-                            placeholder="Nome do item (ex: M&M)"
-                          />
-                          
-                          {grupo.permite_precificacao && (
-                            <div className="flex items-center gap-1 w-28">
-                              <DollarSign className="w-3 h-3 text-slate-500" />
-                              <Input
-                                type="number"
-                                step="0.01"
-                                min="0"
-                                value={item.preco_adicional}
-                                onChange={(e) => updateItem(grupoIndex, itemIndex, 'preco_adicional', parseFloat(e.target.value) || 0)}
-                                className="bg-slate-800 border-slate-600 text-white h-8 text-sm"
-                                placeholder="0.00"
-                              />
-                            </div>
-                          )}
+                    <DragDropContext onDragEnd={(result) => onDragEndItem(grupoIndex, result)}>
+                      <Droppable droppableId={`grupo-${grupoIndex}`}>
+                        {(provided) => (
+                          <div className="space-y-2" ref={provided.innerRef} {...provided.droppableProps}>
+                            {grupo.itens.map((item, itemIndex) => (
+                              <Draggable key={itemIndex} draggableId={`item-${grupoIndex}-${itemIndex}`} index={itemIndex}>
+                                {(provided, snapshot) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${snapshot.isDragging ? 'bg-slate-700 shadow-lg ring-1 ring-orange-500/50' : 'bg-slate-900/50'}`}
+                                  >
+                                    {/* Handle de arrastar */}
+                                    <div
+                                      {...provided.dragHandleProps}
+                                      className="cursor-grab active:cursor-grabbing text-slate-500 hover:text-slate-300 transition-colors px-1"
+                                      title="Arraste para reordenar"
+                                    >
+                                      <GripVertical className="w-4 h-4" />
+                                    </div>
 
-                          <div className="flex items-center gap-1">
-                            <Switch
-                              checked={item.disponivel}
-                              onCheckedChange={(v) => updateItem(grupoIndex, itemIndex, 'disponivel', v)}
-                              className="scale-75"
-                            />
-                            <span className="text-xs text-slate-500 hidden sm:inline">
-                              {item.disponivel ? '✓' : '✗'}
-                            </span>
-                          </div>
+                                    <Input
+                                      value={item.nome}
+                                      onChange={(e) => updateItem(grupoIndex, itemIndex, 'nome', e.target.value)}
+                                      className="flex-1 bg-slate-800 border-slate-600 text-white h-8 text-sm"
+                                      placeholder="Nome do item (ex: M&M)"
+                                    />
 
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => removeItem(grupoIndex, itemIndex)}
-                            className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-8 w-8"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
+                                    {grupo.permite_precificacao && (
+                                      <div className="flex items-center gap-1 w-28">
+                                        <DollarSign className="w-3 h-3 text-slate-500" />
+                                        <Input
+                                          type="number"
+                                          step="0.01"
+                                          min="0"
+                                          value={item.preco_adicional}
+                                          onChange={(e) => updateItem(grupoIndex, itemIndex, 'preco_adicional', parseFloat(e.target.value) || 0)}
+                                          className="bg-slate-800 border-slate-600 text-white h-8 text-sm"
+                                          placeholder="0.00"
+                                        />
+                                      </div>
+                                    )}
+
+                                    <div className="flex items-center gap-1">
+                                      <Switch
+                                        checked={item.disponivel}
+                                        onCheckedChange={(v) => updateItem(grupoIndex, itemIndex, 'disponivel', v)}
+                                        className="scale-75"
+                                      />
+                                      <span className="text-xs text-slate-500 hidden sm:inline">
+                                        {item.disponivel ? '✓' : '✗'}
+                                      </span>
+                                    </div>
+
+                                    <Button
+                                      type="button"
+                                      size="icon"
+                                      variant="ghost"
+                                      onClick={() => removeItem(grupoIndex, itemIndex)}
+                                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-8 w-8"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </DragDropContext>
                   )}
                 </div>
               </div>
