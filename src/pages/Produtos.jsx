@@ -380,104 +380,124 @@ export default function Produtos() {
                   {config.label}
                   <span className="text-sm text-slate-500">({items.length})</span>
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  <AnimatePresence>
-                    {items.map((produto, index) => (
-                      <motion.div
-                        key={produto.id}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: index * 0.03 }}
-                        className={`rounded-xl bg-white/5 border border-white/10 overflow-hidden hover:bg-white/8 transition-all ${
-                          !produto.disponivel ? 'opacity-50' : ''
-                        }`}
+                <DragDropContext onDragEnd={onDragEndProduto}>
+                  <Droppable droppableId={`cat-${categoria}`} direction="horizontal">
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
                       >
-                        {/* Imagem */}
-                        <div className="aspect-square bg-slate-800 relative overflow-hidden">
-                          {produto.imagem_url ? (
-                            <img 
-                              src={produto.imagem_url} 
-                              alt={produto.nome}
-                              className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-                              <Icon className="w-12 h-12 text-slate-600" />
-                              <p className="text-xs text-slate-600">Sem imagem</p>
-                            </div>
-                          )}
-                          {produto.destaque && (
-                            <Badge className="absolute top-2 left-2 bg-yellow-500 text-black">
-                              ⭐ Destaque
-                            </Badge>
-                          )}
-                          {!produto.disponivel && (
-                            <Badge className="absolute top-2 right-2 bg-red-500">
-                              Indisponível
-                            </Badge>
-                          )}
-                        </div>
-
-                        {/* Info */}
-                        <div className="p-4">
-                          <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <h3 className="font-semibold text-white">{produto.nome}</h3>
-                              {produto.descricao && (
-                                <p className="text-sm text-slate-400 line-clamp-2 mt-1">{produto.descricao}</p>
-                              )}
-                            </div>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-slate-400 h-8 w-8">
-                                  <MoreVertical className="w-4 h-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="bg-slate-900 border-slate-700">
-                                <DropdownMenuItem onClick={() => handleEdit(produto)} className="cursor-pointer">
-                                  <Edit className="w-4 h-4 mr-2" />
-                                  Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => toggleDisponivel(produto)} className="cursor-pointer">
-                                  {produto.disponivel ? (
-                                    <><X className="w-4 h-4 mr-2" /> Marcar Indisponível</>
-                                  ) : (
-                                    <><Check className="w-4 h-4 mr-2" /> Marcar Disponível</>
-                                  )}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={() => handleDelete(produto.id)}
-                                  className="cursor-pointer text-red-400"
+                        {items.map((produto, index) => (
+                          <Draggable key={produto.id} draggableId={produto.id} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={`rounded-xl bg-white/5 border border-white/10 overflow-hidden transition-all ${
+                                  !produto.disponivel ? 'opacity-50' : ''
+                                } ${snapshot.isDragging ? 'shadow-2xl ring-2 ring-orange-500/50 scale-105' : 'hover:bg-white/8'}`}
+                              >
+                                {/* Handle de arrastar (topo do card) */}
+                                <div
+                                  {...provided.dragHandleProps}
+                                  className="flex items-center justify-center h-6 bg-white/5 cursor-grab active:cursor-grabbing hover:bg-orange-500/10 transition-colors group"
+                                  title="Arraste para reordenar"
                                 >
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  Excluir
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                          <div className="mt-3">
-                            {produto.em_promocao && produto.preco_original > 0 ? (
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-sm text-slate-500 line-through">
-                                  R$ {produto.preco_original?.toFixed(2)}
-                                </span>
-                                <span className="text-xl font-bold text-emerald-400">
-                                  R$ {produto.preco?.toFixed(2)}
-                                </span>
-                                <Badge className="bg-red-500 text-white text-xs">PROMO</Badge>
+                                  <GripVertical className="w-4 h-4 text-slate-600 group-hover:text-orange-400 transition-colors" />
+                                </div>
+
+                                {/* Imagem */}
+                                <div className="aspect-square bg-slate-800 relative overflow-hidden">
+                                  {produto.imagem_url ? (
+                                    <img 
+                                      src={produto.imagem_url} 
+                                      alt={produto.nome}
+                                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                      loading="lazy"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                                      <Icon className="w-12 h-12 text-slate-600" />
+                                      <p className="text-xs text-slate-600">Sem imagem</p>
+                                    </div>
+                                  )}
+                                  {produto.destaque && (
+                                    <Badge className="absolute top-2 left-2 bg-yellow-500 text-black">
+                                      ⭐ Destaque
+                                    </Badge>
+                                  )}
+                                  {!produto.disponivel && (
+                                    <Badge className="absolute top-2 right-2 bg-red-500">
+                                      Indisponível
+                                    </Badge>
+                                  )}
+                                </div>
+
+                                {/* Info */}
+                                <div className="p-4">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div>
+                                      <h3 className="font-semibold text-white">{produto.nome}</h3>
+                                      {produto.descricao && (
+                                        <p className="text-sm text-slate-400 line-clamp-2 mt-1">{produto.descricao}</p>
+                                      )}
+                                    </div>
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="text-slate-400 h-8 w-8">
+                                          <MoreVertical className="w-4 h-4" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end" className="bg-slate-900 border-slate-700">
+                                        <DropdownMenuItem onClick={() => handleEdit(produto)} className="cursor-pointer">
+                                          <Edit className="w-4 h-4 mr-2" />
+                                          Editar
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => toggleDisponivel(produto)} className="cursor-pointer">
+                                          {produto.disponivel ? (
+                                            <><X className="w-4 h-4 mr-2" /> Marcar Indisponível</>
+                                          ) : (
+                                            <><Check className="w-4 h-4 mr-2" /> Marcar Disponível</>
+                                          )}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem 
+                                          onClick={() => handleDelete(produto.id)}
+                                          className="cursor-pointer text-red-400"
+                                        >
+                                          <Trash2 className="w-4 h-4 mr-2" />
+                                          Excluir
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </div>
+                                  <div className="mt-3">
+                                    {produto.em_promocao && produto.preco_original > 0 ? (
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-sm text-slate-500 line-through">
+                                          R$ {produto.preco_original?.toFixed(2)}
+                                        </span>
+                                        <span className="text-xl font-bold text-emerald-400">
+                                          R$ {produto.preco?.toFixed(2)}
+                                        </span>
+                                        <Badge className="bg-red-500 text-white text-xs">PROMO</Badge>
+                                      </div>
+                                    ) : (
+                                      <p className="text-xl font-bold text-emerald-400">
+                                        R$ {produto.preco?.toFixed(2)}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-                            ) : (
-                              <p className="text-xl font-bold text-emerald-400">
-                                R$ {produto.preco?.toFixed(2)}
-                              </p>
                             )}
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </div>
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
               </div>
             );
           })}
