@@ -182,6 +182,7 @@ export default function CardapioCliente() {
       return result;
     },
     enabled: !!pizzariaId,
+    refetchInterval: 30000, // Atualiza a cada 30s para refletir abertura/fechamento manual
   });
 
   const pizzariaConfig = pizzarias[0] || {};
