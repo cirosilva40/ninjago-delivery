@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card } from '@/components/ui/card';
 import { Plus, Trash2, GripVertical, DollarSign, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 export default function OpcoesPersonalizacaoManager({ opcoes = [], onChange }) {
   const addGrupo = () => {
