@@ -24,14 +24,19 @@ const statusConfig = {
 export default function AtribuirEntregaModal({ open, onClose, pedido, pizzariaId, onAtribuir }) {
   const [entregadores, setEntregadores] = useState([]);
   const [selectedEntregador, setSelectedEntregador] = useState(null);
-  const [taxaEntregador, setTaxaEntregador] = useState(5);
+  const [taxaEntregador, setTaxaEntregador] = useState(0);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (open && pizzariaId) {
       loadEntregadores();
+      // Pré-preencher com a taxa de entrega do pedido
+      if (pedido?.taxa_entrega != null) {
+        setTaxaEntregador(pedido.taxa_entrega);
+      }
+      setSelectedEntregador(null);
     }
-  }, [open, pizzariaId]);
+  }, [open, pizzariaId, pedido?.id]);
 
   const loadEntregadores = async () => {
     try {
