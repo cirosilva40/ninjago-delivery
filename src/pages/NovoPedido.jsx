@@ -648,6 +648,23 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
           <p className="text-slate-400 mt-1">Cadastre um novo pedido</p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Toggle Loja Aberta/Fechada */}
+          <button
+            onClick={toggleStatusLoja}
+            disabled={salvandoStatusLoja}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all font-medium text-sm ${
+              (pizzaria.configuracoes?.loja_aberta ?? true)
+                ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                : 'bg-red-500/20 border-red-500/50 text-red-400'
+            }`}
+          >
+            {salvandoStatusLoja ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Power className={`w-4 h-4 ${(pizzaria.configuracoes?.loja_aberta ?? true) ? 'text-emerald-400' : 'text-red-400'}`} />
+            )}
+            Loja {(pizzaria.configuracoes?.loja_aberta ?? true) ? 'Aberta' : 'Fechada'}
+          </button>
           {/* Toggle iFood */}
           <button
             onClick={() => toggleIntegracao('ifood')}
