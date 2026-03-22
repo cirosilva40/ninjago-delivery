@@ -243,6 +243,27 @@ export default function Produtos() {
     });
   };
 
+  // Ordem local dos produtos (por id)
+  const [ordemLocal, setOrdemLocal] = useState({});
+
+  const onDragEndProduto = async (result) => {
+    if (!result.destination) return;
+    const categoria = result.source.droppableId.replace('cat-', '');
+    const itensCategoria = [...(produtosPorCategoria[categoria] || [])];
+    const [moved] = itensCategoria.splice(result.source.index, 1);
+    itensCategoria.splice(result.destination.index, 0, moved);
+
+    // Salva ordem local
+    const novaOrdem = { ...ordemLocal };
+    itensCategoria.forEach((p, idx) => { novaOrdem[p.id] = idx; });
+    setOrdemLocal(novaOrdem);
+
+    // Persiste no banco
+    await Promise.all(itensCategoria.map((p, idx) =>
+      base44.entities.Produto.update(p.id, { ordem: idx })
+    ));
+  };
+
   // Agrupar por categoria
   const produtosPorCategoria = filteredProdutos.reduce((acc, p) => {
     const cat = p.categoria || 'outro';
@@ -250,6 +271,15 @@ export default function Produtos() {
     acc[cat].push(p);
     return acc;
   }, {});
+
+  // Ordenar produtos dentro de cada categoria
+  Object.keys(produtosPorCategoria).forEach(cat => {
+    produtosPorCategoria[cat].sort((a, b) => {
+      const oa = ordemLocal[a.id] !== undefined ? ordemLocal[a.id] : (a.ordem !== undefined ? a.ordem : 9999);
+      const ob = ordemLocal[b.id] !== undefined ? ordemLocal[b.id] : (b.ordem !== undefined ? b.ordem : 9999);
+      return oa - ob;
+    });
+  });
 
   return (
     <div className="space-y-6">
