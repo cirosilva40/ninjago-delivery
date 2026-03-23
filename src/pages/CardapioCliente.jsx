@@ -174,19 +174,19 @@ export default function CardapioCliente() {
     enabled: !!pizzariaId,
   });
 
-  const { data: pizzarias = [], isLoading: loadingPizzaria } = useQuery({
+  const { data: pizzariaConfigData, isLoading: loadingPizzaria } = useQuery({
     queryKey: ['pizzaria-config', pizzariaId],
     queryFn: async () => {
-      const result = await base44.entities.Pizzaria.filter({ id: pizzariaId });
-      console.log('Pizzaria encontrada:', result.length > 0, 'ID:', pizzariaId);
-      return result;
+      const { data } = await base44.functions.invoke('obterConfigPublicaPizzaria', { pizzariaId });
+      return data?.pizzaria || null;
     },
     enabled: !!pizzariaId,
     refetchInterval: 10000,
     refetchOnWindowFocus: true,
   });
 
-  const pizzariaConfig = pizzarias[0] || {};
+  const pizzariaConfig = pizzariaConfigData || {};
+  const pizzarias = pizzariaConfig.id ? [pizzariaConfig] : [];
 
   // Inicializar SDK do MP com a chave pública da pizzaria
   const { mp, isLoaded: mpLoaded } = useMercadoPago(mpPublicKey);
