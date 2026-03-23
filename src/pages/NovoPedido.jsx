@@ -126,8 +126,8 @@ export default function NovoPedido() {
   const toggleStatusLoja = async () => {
     if (!pizzaria.id) return;
     setSalvandoStatusLoja(true);
-    const lojaAbertaAtual = pizzaria.configuracoes?.loja_aberta;
-    const novoValor = lojaAbertaAtual === true ? false : true;
+    const lojaAbertaAtual = pizzaria.configuracoes?.loja_aberta !== false; // mesma lógica do display
+    const novoValor = lojaAbertaAtual ? false : true;
     try {
       await base44.entities.Pizzaria.update(pizzaria.id, {
         configuracoes: {
