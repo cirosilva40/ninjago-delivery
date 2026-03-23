@@ -158,7 +158,7 @@ export default function CardapioCliente() {
       const result = await base44.entities.Produto.filter({ 
         disponivel: true, 
         restaurante_id: pizzariaId 
-      }, '-created_date', 100);
+      }, 'ordem', 500);
       console.log('Produtos encontrados:', result.length, 'para pizzariaId:', pizzariaId);
       return result;
     },
