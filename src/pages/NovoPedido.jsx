@@ -654,7 +654,7 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
         <div className="flex items-center gap-3">
           {/* Toggle Loja Aberta/Fechada */}
           {(() => {
-            const lojaAberta = pizzaria.configuracoes?.loja_aberta === true;
+            const lojaAberta = pizzaria.configuracoes?.loja_aberta !== false;
             return (
               <button
                 onClick={toggleStatusLoja}
