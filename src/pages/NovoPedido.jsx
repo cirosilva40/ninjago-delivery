@@ -121,13 +121,15 @@ export default function NovoPedido() {
   const [distanciaCalculada, setDistanciaCalculada] = useState(null);
   const [salvandoIntegracao, setSalvandoIntegracao] = useState(null);
   const [salvandoStatusLoja, setSalvandoStatusLoja] = useState(false);
+  const [lojaAbertaLocal, setLojaAbertaLocal] = useState(null); // null = usa valor do servidor
   const queryClient = useQueryClient();
 
   const toggleStatusLoja = async () => {
     if (!pizzaria.id) return;
     setSalvandoStatusLoja(true);
-    const lojaAbertaAtual = pizzaria.configuracoes?.loja_aberta !== false; // mesma lógica do display
-    const novoValor = lojaAbertaAtual ? false : true;
+    const lojaAbertaAtual = lojaAbertaLocal !== null ? lojaAbertaLocal : (pizzaria.configuracoes?.loja_aberta ?? true);
+    const novoValor = !lojaAbertaAtual;
+    setLojaAbertaLocal(novoValor); // atualiza imediatamente
     try {
       await base44.entities.Pizzaria.update(pizzaria.id, {
         configuracoes: {
@@ -138,6 +140,7 @@ export default function NovoPedido() {
       await queryClient.refetchQueries({ queryKey: ['pizzarias', pizzariaId] });
     } catch (e) {
       console.error(e);
+      setLojaAbertaLocal(lojaAbertaAtual); // reverte se falhar
     } finally {
       setSalvandoStatusLoja(false);
     }
@@ -654,7 +657,7 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
         <div className="flex items-center gap-3">
           {/* Toggle Loja Aberta/Fechada */}
           {(() => {
-            const lojaAberta = pizzaria.configuracoes?.loja_aberta !== false;
+            const lojaAberta = lojaAbertaLocal !== null ? lojaAbertaLocal : (pizzaria.configuracoes?.loja_aberta ?? true);
             return (
               <button
                 onClick={toggleStatusLoja}
