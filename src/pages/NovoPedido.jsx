@@ -135,7 +135,7 @@ export default function NovoPedido() {
           loja_aberta: novoValor,
         }
       });
-      queryClient.invalidateQueries({ queryKey: ['pizzarias', pizzariaId] });
+      await queryClient.refetchQueries({ queryKey: ['pizzarias', pizzariaId] });
     } catch (e) {
       console.error(e);
     } finally {
@@ -170,7 +170,7 @@ export default function NovoPedido() {
           [campo]: !valorAtual,
         }
       });
-      queryClient.invalidateQueries({ queryKey: ['pizzarias', pizzariaId] });
+      await queryClient.refetchQueries({ queryKey: ['pizzarias', pizzariaId] });
     } catch (e) {
       console.error(e);
     } finally {
