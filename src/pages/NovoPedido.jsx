@@ -535,9 +535,12 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
 
       let proximoNumero = 1;
       if (pedidosHojeFiltrados.length > 0) {
-        const numeros = pedidosHojeFiltrados.map(p => parseInt(p.numero_pedido) || 0);
-        const maiorNumero = Math.max(...numeros);
-        proximoNumero = maiorNumero + 1;
+        const numeros = pedidosHojeFiltrados
+          .map(p => parseInt(p.numero_pedido))
+          .filter(n => Number.isFinite(n) && n > 0);
+        if (numeros.length > 0) {
+          proximoNumero = Math.max(...numeros) + 1;
+        }
       }
 
       const numeroPedido = proximoNumero.toString().padStart(2, '0');
