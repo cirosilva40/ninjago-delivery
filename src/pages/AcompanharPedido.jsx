@@ -132,8 +132,8 @@ export default function AcompanharPedido() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -80, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-            className="fixed top-4 z-[100] w-[90vw] max-w-sm bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl shadow-2xl p-4 flex items-start gap-3"
-            style={{ left: '50%', transform: 'translateX(-50%)' }}
+            className="fixed top-4 inset-x-4 z-[100] bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl shadow-2xl p-4 flex items-start gap-3 mx-auto"
+            style={{ maxWidth: '400px', left: '50%', transform: 'translateX(-50%)', right: 'auto', width: 'calc(100% - 2rem)' }}
           >
             <span className="text-2xl">{toast.titulo.split(' ')[0]}</span>
             <div>
