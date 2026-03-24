@@ -22,6 +22,7 @@ import {
   Store,
   CheckCircle2,
   AlertCircle,
+  DollarSign,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -167,6 +168,26 @@ export default function Pedidos() {
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
       toast.error('Erro ao atualizar status');
+    }
+  };
+
+  const confirmarPagamento = async (pedido) => {
+    try {
+      await base44.entities.Pedido.update(pedido.id, { status_pagamento: 'pago' });
+      // Notificar cliente
+      await base44.entities.Notificacao.create({
+        pizzaria_id: pedido.pizzaria_id,
+        tipo: 'sistema',
+        titulo: `✅ Pagamento Confirmado - Pedido #${pedido.numero_pedido}`,
+        mensagem: `Seu pagamento de R$ ${pedido.valor_total?.toFixed(2)} foi confirmado pelo estabelecimento. Obrigado!`,
+        dados: { pedido_id: pedido.id },
+        lida: false,
+      });
+      toast.success(`Pagamento do pedido #${pedido.numero_pedido} confirmado e cliente notificado! ✅`);
+      refetch();
+    } catch (error) {
+      console.error('Erro ao confirmar pagamento:', error);
+      toast.error('Erro ao confirmar pagamento');
     }
   };
 
@@ -351,6 +372,15 @@ export default function Pedidos() {
                                   >
                                     <Bike className="w-4 h-4 mr-2" />
                                     Atribuir Entrega
+                                  </DropdownMenuItem>
+                                )}
+                                {pedido.status_pagamento !== 'pago' && pedido.status !== 'cancelado' && (
+                                  <DropdownMenuItem
+                                    onClick={(e) => { e.stopPropagation(); confirmarPagamento(pedido); }}
+                                    className="cursor-pointer text-emerald-400"
+                                  >
+                                    <DollarSign className="w-4 h-4 mr-2" />
+                                    Confirmar Pagamento
                                   </DropdownMenuItem>
                                 )}
                                 {pedido.status !== 'cancelado' && pedido.status !== 'entregue' && (
@@ -568,6 +598,15 @@ export default function Pedidos() {
                               >
                                 <Check className="w-4 h-4 mr-2" />
                                 Marcar como Pronto
+                              </DropdownMenuItem>
+                            )}
+                            {pedido.status_pagamento !== 'pago' && pedido.status !== 'cancelado' && (
+                              <DropdownMenuItem
+                                onClick={() => confirmarPagamento(pedido)}
+                                className="cursor-pointer text-emerald-400"
+                              >
+                                <DollarSign className="w-4 h-4 mr-2" />
+                                Confirmar Pagamento
                               </DropdownMenuItem>
                             )}
                             {pedido.status !== 'cancelado' && pedido.status !== 'entregue' && (
