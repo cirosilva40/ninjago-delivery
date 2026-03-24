@@ -50,9 +50,7 @@ export default function AcompanharPedido() {
     }
   }, []);
 
-  const pedidoSubscriptionRef = useRef(null);
-
-  const { data: pedido, refetch } = useQuery({
+  const { data: pedido } = useQuery({
     queryKey: ['pedido-cliente', pedidoId],
     queryFn: () => base44.entities.Pedido.filter({ id: pedidoId }),
     enabled: !!pedidoId,
@@ -60,6 +58,25 @@ export default function AcompanharPedido() {
   });
 
   const pedidoAtual = pedido?.[0];
+
+  const tocarSom = () => {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.setValueAtTime(660, ctx.currentTime + 0.1);
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.4, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.6);
+    } catch (e) {
+      console.warn('Áudio não disponível:', e);
+    }
+  };
 
   // Detectar mudança de status e notificar
   useEffect(() => {
@@ -74,10 +91,9 @@ export default function AcompanharPedido() {
       };
       const msg = msgs[novoStatus];
       if (msg) {
-        // Toast interno
+        tocarSom();
         setToast(msg);
-        setTimeout(() => setToast(null), 5000);
-        // Notificação push do navegador
+        setTimeout(() => setToast(null), 6000);
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification(msg.titulo, { body: msg.body, icon: '/favicon.ico' });
         }
@@ -112,10 +128,12 @@ export default function AcompanharPedido() {
       <AnimatePresence>
         {toast && (
           <motion.div
-            initial={{ opacity: 0, y: -60 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -60 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-[90vw] max-w-sm bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl shadow-2xl p-4 flex items-start gap-3"
+            initial={{ opacity: 0, y: -80, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -80, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="fixed top-4 z-[100] w-[90vw] max-w-sm bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl shadow-2xl p-4 flex items-start gap-3"
+            style={{ left: '50%', transform: 'translateX(-50%)' }}
           >
             <span className="text-2xl">{toast.titulo.split(' ')[0]}</span>
             <div>
@@ -142,7 +160,6 @@ export default function AcompanharPedido() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {/* Botão de Notificações Push */}
               {'Notification' in window && notifPermissao !== 'granted' && (
                 <Button
                   variant="outline"
@@ -201,7 +218,6 @@ export default function AcompanharPedido() {
         <Card className="bg-white/5 border-white/10 p-6 mb-8">
           <h3 className="font-bold text-white mb-6">Progresso do Pedido</h3>
           <div className="relative">
-            {/* Linha vertical de progresso */}
             <div className="absolute left-5 top-6 bottom-6 w-0.5 bg-slate-700" />
             <div
               className="absolute left-5 top-6 w-0.5 bg-gradient-to-b from-emerald-500 to-orange-500 transition-all duration-700"
@@ -211,7 +227,6 @@ export default function AcompanharPedido() {
               {statusSteps.map((step, index) => {
                 const isCompleted = index < currentStepIndex;
                 const isCurrent = index === currentStepIndex;
-                const isPending = index > currentStepIndex;
                 return (
                   <motion.div
                     key={step.key}
@@ -325,7 +340,7 @@ export default function AcompanharPedido() {
           </div>
         </Card>
 
-        {/* Status do Pagamento PIX pendente */}
+        {/* Status do Pagamento PIX */}
         {pedidoAtual.forma_pagamento === 'pix' && pedidoAtual.status_pagamento === 'pendente' && (
           <Card className="bg-yellow-500/10 border-yellow-500/30 p-6 mt-6">
             <div className="flex items-center gap-3">
