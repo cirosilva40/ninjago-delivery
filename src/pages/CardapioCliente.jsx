@@ -1527,11 +1527,22 @@ export default function CardapioCliente() {
                             const enderecoCompleto = `${formCliente.endereco}, ${formCliente.numero}, ${formCliente.bairro}, ${formCliente.cidade}, ${formCliente.estado}, ${formCliente.cep}, Brasil`;
                             const { data: geoData } = await base44.functions.invoke('geocodificarEndereco', { endereco: enderecoCompleto });
                             if (geoData?.success && geoData?.latitude && geoData?.longitude) {
+                              // Se a precisão for apenas "cidade", não usar para calcular rota (evita distância errada)
+                              if (geoData.precisao === 'cidade') {
+                                console.warn('[checkout] Geocodificação retornou apenas cidade — usando taxa base sem cálculo de rota');
+                                setTaxaEntrega(Number(pizzariaConfig.taxa_entrega_base) || 0);
+                                setCheckoutStep(2);
+                                setCalculandoFrete(false);
+                                return;
+                              }
                               latCliente = geoData.latitude;
                               lngCliente = geoData.longitude;
                               setFormCliente(prev => ({ ...prev, latitude: geoData.latitude, longitude: geoData.longitude }));
                             } else {
-                              setErroFrete('Não foi possível localizar seu endereço. Verifique o CEP e número e tente novamente.');
+                              // Falha total: usar taxa base e deixar continuar
+                              console.warn('[checkout] Geocodificação falhou — usando taxa base');
+                              setTaxaEntrega(Number(pizzariaConfig.taxa_entrega_base) || 0);
+                              setCheckoutStep(2);
                               setCalculandoFrete(false);
                               return;
                             }

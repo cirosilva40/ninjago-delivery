@@ -5,13 +5,18 @@ function normalizarCep(cep) {
   return (cep || '').replace(/\D/g, '').padStart(8, '0').slice(0, 8);
 }
 
+// Delay para evitar rate limit do Nominatim
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
 // Busca no Nominatim com log
-async function buscarNominatim(query, descricao) {
+async function buscarNominatim(query, descricao, delayMs = 0) {
+  if (delayMs > 0) await sleep(delayMs);
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&countrycodes=br&accept-language=pt-BR`;
   console.log(`[geocodificar] Tentativa: ${descricao} | query: ${query}`);
   const resp = await fetch(url, { headers: { 'User-Agent': 'NinjaGO-Delivery-App' } });
   if (!resp.ok) {
     console.log(`[geocodificar] Falha HTTP ${resp.status} para: ${descricao}`);
+    if (resp.status === 429) await sleep(2000); // espera extra em caso de rate limit
     return null;
   }
   const data = await resp.json();
@@ -74,39 +79,42 @@ Deno.serve(async (req) => {
     const estado = partes.find(p => p.match(/^[A-Z]{2}$/)) || '';
 
     let resultado = null;
+    let precisao = 'exato';
 
     // Tentativa 1: endereço completo como enviado
     resultado = await buscarNominatim(endereco, 'endereço completo original');
 
     // Tentativa 2: CEP isolado + Brasil
     if (!resultado && cepNormalizado) {
-      resultado = await buscarNominatim(`${cepNormalizado} Brasil`, `CEP isolado (${cepNormalizado})`);
+      resultado = await buscarNominatim(`${cepNormalizado} Brasil`, `CEP isolado (${cepNormalizado})`, 1000);
     }
 
     // Tentativa 3: CEP + cidade (se extraída)
     if (!resultado && cepNormalizado && cidade) {
-      resultado = await buscarNominatim(`${cepNormalizado} ${cidade} Brasil`, `CEP + cidade`);
+      resultado = await buscarNominatim(`${cepNormalizado} ${cidade} Brasil`, `CEP + cidade`, 1000);
     }
 
     // Tentativa 4: primeiros 3 segmentos do endereço (rua, número, bairro)
     if (!resultado && partes.length > 3) {
       const enderecoReduzido = partes.slice(0, 3).join(', ');
-      resultado = await buscarNominatim(enderecoReduzido, 'endereço reduzido (3 segmentos)');
+      resultado = await buscarNominatim(enderecoReduzido, 'endereço reduzido (3 segmentos)', 1000);
     }
 
     // Tentativa 5: apenas rua + cidade + estado
     if (!resultado && partes.length >= 2 && (cidade || estado)) {
+      precisao = 'aproximado';
       const enderecoBasico = [partes[0], cidade, estado, 'Brasil'].filter(Boolean).join(', ');
-      resultado = await buscarNominatim(enderecoBasico, 'rua + cidade + estado');
+      resultado = await buscarNominatim(enderecoBasico, 'rua + cidade + estado', 1000);
     }
 
-    // Tentativa 6: apenas cidade + estado (para pelo menos gerar coordenadas aproximadas)
+    // Tentativa 6: apenas cidade + estado (fallback amplo — impreciso)
     if (!resultado && cidade && estado) {
-      resultado = await buscarNominatim(`${cidade} ${estado} Brasil`, 'cidade + estado (fallback amplo)');
+      precisao = 'cidade';
+      resultado = await buscarNominatim(`${cidade} ${estado} Brasil`, 'cidade + estado (fallback amplo)', 1000);
     }
 
     if (resultado) {
-      return Response.json({ success: true, ...resultado });
+      return Response.json({ success: true, precisao, ...resultado });
     }
 
     console.log(`[geocodificar] Todas as tentativas falharam para: "${endereco}"`);
