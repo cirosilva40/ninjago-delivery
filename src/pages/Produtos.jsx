@@ -97,7 +97,12 @@ export default function Produtos() {
     }
   });
 
-  const todasCategorias = { ...categoriaConfig, ...categoriasCustom };
+  const todasCategorias = {
+    ...categoriaConfig,
+    ...Object.fromEntries(
+      Object.entries(categoriasCustom).map(([k, v]) => [k, { ...v, icon: Package }])
+    ),
+  };
 
   React.useEffect(() => {
     const loadUser = async () => {
