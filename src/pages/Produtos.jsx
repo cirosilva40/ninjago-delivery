@@ -53,19 +53,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-const categoriaConfig = {
-  pizza: { label: 'Pizza', icon: Pizza, color: 'bg-red-500' },
-  esfiha: { label: 'Esfiha', icon: UtensilsCrossed, color: 'bg-orange-500' },
-  lanche: { label: 'Lanche', icon: Sandwich, color: 'bg-yellow-500' },
-  bebida: { label: 'Bebida', icon: Coffee, color: 'bg-blue-500' },
-  acai: { label: 'Açaí', icon: IceCream, color: 'bg-purple-500' },
-  combo: { label: 'Combo', icon: Package, color: 'bg-green-500' },
-  sobremesa: { label: 'Sobremesa', icon: IceCream, color: 'bg-pink-500' },
-  porcao: { label: 'Porção', icon: UtensilsCrossed, color: 'bg-amber-500' },
-  salgado: { label: 'Salgado', icon: UtensilsCrossed, color: 'bg-orange-600' },
-  doce: { label: 'Doce', icon: IceCream, color: 'bg-rose-500' },
-  outro: { label: 'Outro', icon: Package, color: 'bg-slate-500' },
-};
+
 
 export default function Produtos() {
   const [search, setSearch] = useState('');
@@ -77,7 +65,7 @@ export default function Produtos() {
   const [form, setForm] = useState({
     nome: '',
     descricao: '',
-    categoria: 'outro',
+    categoria: '',
     preco: '',
     preco_original: '',
     em_promocao: false,
@@ -97,12 +85,9 @@ export default function Produtos() {
     }
   });
 
-  const todasCategorias = {
-    ...categoriaConfig,
-    ...Object.fromEntries(
-      Object.entries(categoriasCustom).map(([k, v]) => [k, { ...v, icon: Package }])
-    ),
-  };
+  const todasCategorias = Object.fromEntries(
+    Object.entries(categoriasCustom).map(([k, v]) => [k, { ...v, icon: Package }])
+  );
 
   React.useEffect(() => {
     const loadUser = async () => {
@@ -215,7 +200,7 @@ export default function Produtos() {
     setForm({
       nome: produto.nome || '',
       descricao: produto.descricao || '',
-      categoria: produto.categoria || 'outro',
+      categoria: produto.categoria || '',
       preco: produto.preco?.toString() || '',
       preco_original: produto.preco_original?.toString() || '',
       em_promocao: produto.em_promocao || false,
@@ -244,7 +229,7 @@ export default function Produtos() {
     setForm({
       nome: '',
       descricao: '',
-      categoria: 'outro',
+      categoria: '',
       preco: '',
       preco_original: '',
       em_promocao: false,
@@ -381,7 +366,7 @@ export default function Produtos() {
       ) : (
         <div className="space-y-8">
           {Object.entries(produtosPorCategoria).map(([categoria, items]) => {
-            const config = todasCategorias[categoria] || categoriaConfig.outro;
+            const config = todasCategorias[categoria] || { label: categoria, icon: Package, color: 'bg-slate-500' };
             const Icon = config.icon;
             return (
               <div key={categoria}>
