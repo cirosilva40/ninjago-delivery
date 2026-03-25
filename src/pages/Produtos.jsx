@@ -135,8 +135,17 @@ export default function Produtos() {
     setCategoriasCustom(novasCategorias);
     localStorage.setItem('categoriasCustom', JSON.stringify(novasCategorias));
     setNovaCategoria({ key: '', label: '' });
-    setShowCategoriaModal(false);
   };
+
+  const excluirCategoria = (key) => {
+    if (!confirm('Excluir esta categoria? Os produtos não serão excluídos.')) return;
+    const novasCategorias = { ...categoriasCustom };
+    delete novasCategorias[key];
+    setCategoriasCustom(novasCategorias);
+    localStorage.setItem('categoriasCustom', JSON.stringify(novasCategorias));
+  };
+    setCategoriasCustom(novasCategorias);
+
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -830,33 +839,57 @@ export default function Produtos() {
           </DialogHeader>
 
           <div className="space-y-4 mt-4">
-            <div>
-              <Label className="text-slate-400">Nome da Categoria</Label>
-              <Input
-                value={novaCategoria.label}
-                onChange={(e) => setNovaCategoria({ 
-                  key: e.target.value.toLowerCase().replace(/\s+/g, '_'),
-                  label: e.target.value 
-                })}
-                className="bg-slate-800 border-slate-700 text-white"
-                placeholder="Ex: Massas, Saladas, etc."
-              />
+            {/* Categorias existentes */}
+            {Object.keys(categoriasCustom).length > 0 && (
+              <div>
+                <Label className="text-slate-400 mb-2 block">Suas categorias</Label>
+                <div className="space-y-2">
+                  {Object.entries(categoriasCustom).map(([key, config]) => (
+                    <div key={key} className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/10">
+                      <span className="text-white">{config.label}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => excluirCategoria(key)}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 w-7"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="border-t border-slate-700 pt-4">
+              <Label className="text-slate-400">Nova Categoria</Label>
+              <div className="flex gap-2 mt-1">
+                <Input
+                  value={novaCategoria.label}
+                  onChange={(e) => setNovaCategoria({ 
+                    key: e.target.value.toLowerCase().replace(/\s+/g, '_'),
+                    label: e.target.value 
+                  })}
+                  className="bg-slate-800 border-slate-700 text-white"
+                  placeholder="Ex: Massas, Saladas, etc."
+                />
+                <Button
+                  onClick={salvarNovaCategoria}
+                  disabled={!novaCategoria.label}
+                  className="bg-gradient-to-r from-orange-500 to-red-600 shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
+            <div className="flex justify-end pt-2">
               <Button 
                 variant="outline" 
                 onClick={() => setShowCategoriaModal(false)}
                 className="border-slate-600 text-slate-300"
               >
-                Cancelar
-              </Button>
-              <Button 
-                onClick={salvarNovaCategoria}
-                disabled={!novaCategoria.label}
-                className="bg-gradient-to-r from-orange-500 to-red-600"
-              >
-                Criar Categoria
+                Fechar
               </Button>
             </div>
           </div>
