@@ -45,6 +45,7 @@ import AtribuirEntregaModal from '@/components/pedidos/AtribuirEntregaModal';
 import { enviarNotificacaoStatusPedido, deveEnviarNotificacao } from '@/components/pedidos/NotificacaoHelper';
 import moment from 'moment';
 import { toast } from 'sonner';
+import { imprimirPedido } from '@/utils/imprimirPedido';
 
 const statusConfig = {
   novo: { label: 'Novo', color: 'bg-blue-500/20 text-blue-400', icon: Clock },
@@ -67,6 +68,7 @@ export default function Pedidos() {
   const itemsPerPage = 20;
   const [user, setUser] = useState(null);
   const [pizzariaId, setPizzariaId] = useState(null);
+  const [pizzariaInfo, setPizzariaInfo] = useState({});
   const knownPedidoIds = useRef(new Set());
   const audioCtxRef = useRef(null);
 
@@ -96,6 +98,13 @@ export default function Pedidos() {
     };
     loadUser();
   }, []);
+
+  React.useEffect(() => {
+    if (!pizzariaId) return;
+    base44.entities.Pizzaria.filter({ id: pizzariaId }, null, 1)
+      .then(res => { if (res?.[0]) setPizzariaInfo(res[0]); })
+      .catch(() => {});
+  }, [pizzariaId]);
 
   const handleViewModeChange = (mode) => {
     setViewMode(mode);
@@ -374,6 +383,13 @@ export default function Pedidos() {
                                     Atribuir Entrega
                                   </DropdownMenuItem>
                                 )}
+                                <DropdownMenuItem
+                                  onClick={(e) => { e.stopPropagation(); imprimirPedido(pedido, pizzariaInfo); }}
+                                  className="cursor-pointer"
+                                >
+                                  <Package className="w-4 h-4 mr-2" />
+                                  Imprimir Nota
+                                </DropdownMenuItem>
                                 {pedido.status_pagamento !== 'pago' && pedido.status !== 'cancelado' && (
                                   <DropdownMenuItem
                                     onClick={(e) => { e.stopPropagation(); confirmarPagamento(pedido); }}
@@ -384,7 +400,7 @@ export default function Pedidos() {
                                   </DropdownMenuItem>
                                 )}
                                 {pedido.status !== 'cancelado' && pedido.status !== 'entregue' && (
-                                  <DropdownMenuItem 
+                                  <DropdownMenuItem
                                     onClick={(e) => { e.stopPropagation(); updateStatus(pedido, 'cancelado'); }}
                                     className="cursor-pointer text-red-400"
                                   >
@@ -600,6 +616,13 @@ export default function Pedidos() {
                                 Marcar como Pronto
                               </DropdownMenuItem>
                             )}
+                            <DropdownMenuItem
+                              onClick={() => imprimirPedido(pedido, pizzariaInfo)}
+                              className="cursor-pointer"
+                            >
+                              <Package className="w-4 h-4 mr-2" />
+                              Imprimir Nota
+                            </DropdownMenuItem>
                             {pedido.status_pagamento !== 'pago' && pedido.status !== 'cancelado' && (
                               <DropdownMenuItem
                                 onClick={() => confirmarPagamento(pedido)}
@@ -610,7 +633,7 @@ export default function Pedidos() {
                               </DropdownMenuItem>
                             )}
                             {pedido.status !== 'cancelado' && pedido.status !== 'entregue' && (
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={() => updateStatus(pedido, 'cancelado')}
                                 className="cursor-pointer text-red-400"
                               >
