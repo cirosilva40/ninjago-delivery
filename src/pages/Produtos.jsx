@@ -144,8 +144,6 @@ export default function Produtos() {
     setCategoriasCustom(novasCategorias);
     localStorage.setItem('categoriasCustom', JSON.stringify(novasCategorias));
   };
-    setCategoriasCustom(novasCategorias);
-
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
