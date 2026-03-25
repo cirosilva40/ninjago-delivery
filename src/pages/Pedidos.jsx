@@ -44,6 +44,7 @@ import PedidoModal from '@/components/pedidos/PedidoModal';
 import AtribuirEntregaModal from '@/components/pedidos/AtribuirEntregaModal';
 import { enviarNotificacaoStatusPedido, deveEnviarNotificacao } from '@/components/pedidos/NotificacaoHelper';
 import moment from 'moment';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { toast } from 'sonner';
 import { imprimirPedido } from '@/utils/imprimirPedido';
 
@@ -305,180 +306,158 @@ export default function Pedidos() {
       {/* Pedidos List */}
       {viewMode === 'colunas' ? (
         // Visualização Kanban (por status)
+        <DragDropContext onDragEnd={async (result) => {
+          if (!result.destination) return;
+          const newStatus = result.destination.droppableId;
+          const pedidoId = result.draggableId;
+          const pedido = filteredPedidos.find(p => p.id === pedidoId);
+          if (!pedido || pedido.status === newStatus) return;
+          await updateStatus(pedido, newStatus);
+        }}>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {Object.entries(statusConfig).map(([statusKey, statusInfo]) => {
             const pedidosDoStatus = filteredPedidos.filter(p => p.status === statusKey);
             const StatusIcon = statusInfo.icon;
-            
             return (
               <div key={statusKey} className="flex flex-col">
-                {/* Header da Coluna */}
                 <div className={`rounded-xl p-3 mb-3 ${statusInfo.color} border border-white/10 sticky top-4 z-10`}>
                   <div className="flex items-center gap-2">
                     <StatusIcon className="w-4 h-4" />
                     <span className="font-semibold text-sm">{statusInfo.label}</span>
                   </div>
-                  <Badge className="bg-white/20 text-white text-xs mt-1">
-                    {pedidosDoStatus.length}
-                  </Badge>
+                  <Badge className="bg-white/20 text-white text-xs mt-1">{pedidosDoStatus.length}</Badge>
                 </div>
-
-                {/* Pedidos da Coluna */}
-                <div className="space-y-3 flex-1">
-                  <AnimatePresence>
-                    {pedidosDoStatus.map((pedido, index) => {
-                      const status = statusConfig[pedido.status] || statusConfig.novo;
-                      const StatusIcon = status.icon;
-                      
-                      return (
-                        <motion.div
-                          key={pedido.id}
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          transition={{ delay: index * 0.03 }}
-                          className="rounded-xl bg-white/5 border border-white/10 p-3 hover:bg-white/8 transition-all cursor-pointer"
-                          onClick={() => handleEdit(pedido)}
-                        >
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <span className="text-base font-bold text-white">#{pedido.numero_pedido}</span>
-                              <p className="text-xs text-slate-500">{moment(pedido.created_date).format('HH:mm')}</p>
-                            </div>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                <Button variant="ghost" size="icon" className="text-slate-400 h-6 w-6">
-                                  <MoreVertical className="w-3 h-3" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="bg-slate-900 border-slate-700">
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(pedido); }} className="cursor-pointer">
-                                  <Eye className="w-4 h-4 mr-2" />
-                                  Ver/Editar
-                                </DropdownMenuItem>
-                                {pedido.status === 'novo' && (
-                                  <DropdownMenuItem 
-                                    onClick={(e) => { e.stopPropagation(); updateStatus(pedido, 'em_preparo'); }}
-                                    className="cursor-pointer"
-                                  >
-                                    <ChefHat className="w-4 h-4 mr-2" />
-                                    Iniciar Preparo
-                                  </DropdownMenuItem>
+                <Droppable droppableId={statusKey}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className={`space-y-3 flex-1 min-h-[80px] rounded-xl transition-colors ${snapshot.isDraggingOver ? 'bg-white/10 ring-2 ring-orange-500/40' : ''}`}
+                    >
+                      {pedidosDoStatus.map((pedido, index) => {
+                        const status = statusConfig[pedido.status] || statusConfig.novo;
+                        const StatusIcon = status.icon;
+                        return (
+                          <Draggable key={pedido.id} draggableId={pedido.id} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                className={`rounded-xl bg-white/5 border border-white/10 p-3 transition-all cursor-grab active:cursor-grabbing ${
+                                  snapshot.isDragging ? 'shadow-2xl ring-2 ring-orange-500/50 scale-105 bg-white/15' : 'hover:bg-white/8'
+                                }`}
+                                onClick={() => !snapshot.isDragging && handleEdit(pedido)}
+                              >
+                                <div className="flex items-start justify-between mb-2">
+                                  <div>
+                                    <span className="text-base font-bold text-white">#{pedido.numero_pedido}</span>
+                                    <p className="text-xs text-slate-500">{moment(pedido.created_date).format('HH:mm')}</p>
+                                  </div>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                      <Button variant="ghost" size="icon" className="text-slate-400 h-6 w-6">
+                                        <MoreVertical className="w-3 h-3" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="bg-slate-900 border-slate-700">
+                                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(pedido); }} className="cursor-pointer">
+                                        <Eye className="w-4 h-4 mr-2" />Ver/Editar
+                                      </DropdownMenuItem>
+                                      {pedido.status === 'novo' && (
+                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); updateStatus(pedido, 'em_preparo'); }} className="cursor-pointer">
+                                          <ChefHat className="w-4 h-4 mr-2" />Iniciar Preparo
+                                        </DropdownMenuItem>
+                                      )}
+                                      {pedido.status === 'em_preparo' && (
+                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); updateStatus(pedido, 'pronto'); }} className="cursor-pointer">
+                                          <Check className="w-4 h-4 mr-2" />Marcar como Pronto
+                                        </DropdownMenuItem>
+                                      )}
+                                      {(pedido.status === 'novo' || pedido.status === 'pronto') && (
+                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleAtribuir(pedido); }} className="cursor-pointer">
+                                          <Bike className="w-4 h-4 mr-2" />Atribuir Entrega
+                                        </DropdownMenuItem>
+                                      )}
+                                      <DropdownMenuItem onClick={(e) => { e.stopPropagation(); imprimirPedido(pedido, pizzariaInfo); }} className="cursor-pointer">
+                                        <Package className="w-4 h-4 mr-2" />Imprimir Nota
+                                      </DropdownMenuItem>
+                                      {pedido.status_pagamento !== 'pago' && pedido.status !== 'cancelado' && (
+                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); confirmarPagamento(pedido); }} className="cursor-pointer text-emerald-400">
+                                          <DollarSign className="w-4 h-4 mr-2" />Confirmar Pagamento
+                                        </DropdownMenuItem>
+                                      )}
+                                      {pedido.status !== 'cancelado' && pedido.status !== 'entregue' && (
+                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); updateStatus(pedido, 'cancelado'); }} className="cursor-pointer text-red-400">
+                                          <X className="w-4 h-4 mr-2" />Cancelar
+                                        </DropdownMenuItem>
+                                      )}
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
+                                <div className="flex flex-wrap gap-1 mb-1">
+                                  {pedido.tipo_pedido === 'balcao' ? (
+                                    <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs flex items-center gap-1 px-1.5 py-0.5">
+                                      <Store className="w-2.5 h-2.5" />Balcão
+                                    </Badge>
+                                  ) : (
+                                    <Badge className="bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs flex items-center gap-1 px-1.5 py-0.5">
+                                      <ShoppingBag className="w-2.5 h-2.5" />Delivery
+                                    </Badge>
+                                  )}
+                                  {pedido.status_pagamento === 'pago' ? (
+                                    <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs flex items-center gap-1 px-1.5 py-0.5">
+                                      <CheckCircle2 className="w-2.5 h-2.5" />Pago
+                                    </Badge>
+                                  ) : pedido.status_pagamento === 'cancelado' ? null : (
+                                    <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs flex items-center gap-1 px-1.5 py-0.5">
+                                      <AlertCircle className="w-2.5 h-2.5" />Pendente
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-white font-medium text-sm mb-1 truncate">{pedido.cliente_nome}</p>
+                                <p className="text-xs text-slate-400 truncate">{pedido.cliente_bairro || pedido.cliente_endereco}</p>
+                                {pedido.itens && pedido.itens.length > 0 && (
+                                  <div className="mt-2 pt-2 border-t border-white/10">
+                                    <div className="flex flex-wrap gap-1">
+                                      {pedido.itens.slice(0, 2).map((item, i) => (
+                                        <span key={i} className="px-2 py-0.5 rounded bg-white/5 text-xs text-white truncate">
+                                          {item.quantidade}x {item.nome}
+                                        </span>
+                                      ))}
+                                      {pedido.itens.length > 2 && (
+                                        <span className="px-2 py-0.5 text-xs text-slate-400">+{pedido.itens.length - 2}</span>
+                                      )}
+                                    </div>
+                                  </div>
                                 )}
-                                {pedido.status === 'em_preparo' && (
-                                  <DropdownMenuItem 
-                                    onClick={(e) => { e.stopPropagation(); updateStatus(pedido, 'pronto'); }}
-                                    className="cursor-pointer"
-                                  >
-                                    <Check className="w-4 h-4 mr-2" />
-                                    Marcar como Pronto
-                                  </DropdownMenuItem>
-                                )}
-                                {(pedido.status === 'novo' || pedido.status === 'pronto') && (
-                                  <DropdownMenuItem 
-                                    onClick={(e) => { e.stopPropagation(); handleAtribuir(pedido); }}
-                                    className="cursor-pointer"
-                                  >
-                                    <Bike className="w-4 h-4 mr-2" />
-                                    Atribuir Entrega
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuItem
-                                  onClick={(e) => { e.stopPropagation(); imprimirPedido(pedido, pizzariaInfo); }}
-                                  className="cursor-pointer"
-                                >
-                                  <Package className="w-4 h-4 mr-2" />
-                                  Imprimir Nota
-                                </DropdownMenuItem>
-                                {pedido.status_pagamento !== 'pago' && pedido.status !== 'cancelado' && (
-                                  <DropdownMenuItem
-                                    onClick={(e) => { e.stopPropagation(); confirmarPagamento(pedido); }}
-                                    className="cursor-pointer text-emerald-400"
-                                  >
-                                    <DollarSign className="w-4 h-4 mr-2" />
-                                    Confirmar Pagamento
-                                  </DropdownMenuItem>
-                                )}
-                                {pedido.status !== 'cancelado' && pedido.status !== 'entregue' && (
-                                  <DropdownMenuItem
-                                    onClick={(e) => { e.stopPropagation(); updateStatus(pedido, 'cancelado'); }}
-                                    className="cursor-pointer text-red-400"
-                                  >
-                                    <X className="w-4 h-4 mr-2" />
-                                    Cancelar
-                                  </DropdownMenuItem>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-
-                          <div className="flex flex-wrap gap-1 mb-1">
-                            {pedido.tipo_pedido === 'balcao' ? (
-                              <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs flex items-center gap-1 px-1.5 py-0.5">
-                                <Store className="w-2.5 h-2.5" />Balcão
-                              </Badge>
-                            ) : (
-                              <Badge className="bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs flex items-center gap-1 px-1.5 py-0.5">
-                                <ShoppingBag className="w-2.5 h-2.5" />Delivery
-                              </Badge>
-                            )}
-                            {pedido.status_pagamento === 'pago' ? (
-                              <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs flex items-center gap-1 px-1.5 py-0.5">
-                                <CheckCircle2 className="w-2.5 h-2.5" />Pago
-                              </Badge>
-                            ) : pedido.status_pagamento === 'cancelado' ? null : (
-                              <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs flex items-center gap-1 px-1.5 py-0.5">
-                                <AlertCircle className="w-2.5 h-2.5" />Pendente
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-white font-medium text-sm mb-1 truncate">{pedido.cliente_nome}</p>
-                          <p className="text-xs text-slate-400 truncate">{pedido.cliente_bairro || pedido.cliente_endereco}</p>
-
-                          {pedido.itens && pedido.itens.length > 0 && (
-                            <div className="mt-2 pt-2 border-t border-white/10">
-                              <div className="flex flex-wrap gap-1">
-                                {pedido.itens.slice(0, 2).map((item, i) => (
-                                  <span 
-                                    key={i}
-                                    className="px-2 py-0.5 rounded bg-white/5 text-xs text-white truncate"
-                                  >
-                                    {item.quantidade}x {item.nome}
-                                  </span>
-                                ))}
-                                {pedido.itens.length > 2 && (
-                                  <span className="px-2 py-0.5 text-xs text-slate-400">
-                                    +{pedido.itens.length - 2}
-                                  </span>
-                                )}
+                                <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/10">
+                                  <p className="text-base font-bold text-emerald-400">R$ {pedido.valor_total?.toFixed(2)}</p>
+                                  <a href={`tel:${pedido.cliente_telefone}`} onClick={(e) => e.stopPropagation()} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
+                                    <Phone className="w-4 h-4 text-white" />
+                                  </a>
+                                </div>
                               </div>
-                            </div>
-                          )}
-
-                          <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/10">
-                            <p className="text-base font-bold text-emerald-400">R$ {pedido.valor_total?.toFixed(2)}</p>
-                            <a 
-                              href={`tel:${pedido.cliente_telefone}`}
-                              onClick={(e) => e.stopPropagation()}
-                              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-                            >
-                              <Phone className="w-4 h-4 text-white" />
-                            </a>
-                          </div>
-                        </motion.div>
-                      );
-                    })}
-                  </AnimatePresence>
-                  {pedidosDoStatus.length === 0 && (
-                    <div className="text-center py-8 text-slate-500">
-                      <p className="text-xs">Nenhum pedido</p>
+                            )}
+                          </Draggable>
+                        );
+                      })}
+                      {provided.placeholder}
+                      {pedidosDoStatus.length === 0 && (
+                        <div className={`text-center py-8 rounded-xl border-2 border-dashed transition-colors ${
+                          snapshot.isDraggingOver ? 'border-orange-500/50 text-orange-400' : 'border-white/10 text-slate-500'
+                        }`}>
+                          <p className="text-xs">{snapshot.isDraggingOver ? 'Soltar aqui' : 'Nenhum pedido'}</p>
+                        </div>
+                      )}
                     </div>
                   )}
-                </div>
+                </Droppable>
               </div>
             );
           })}
         </div>
+        </DragDropContext>
       ) : (
         // Visualização Horizontal
         <>
