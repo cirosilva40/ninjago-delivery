@@ -19,7 +19,8 @@ import {
   Home,
   Package,
   ChefHat,
-  Plug
+  Plug,
+  Layers
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -41,6 +42,7 @@ const menuItems = [
   { name: 'Entregadores', icon: Bike, page: 'Entregadores' },
   { name: 'Financeiro', icon: BarChart3, page: 'Financeiro' },
   { name: 'Relatórios', icon: BarChart3, page: 'Relatorios' },
+  { name: 'Estoque', icon: Layers, page: 'Estoque' },
   { name: 'Integrações', icon: Plug, page: 'Integracoes' },
   { name: 'Configurações', icon: Settings, page: 'Configuracoes' },
 ];
