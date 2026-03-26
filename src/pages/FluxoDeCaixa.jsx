@@ -39,14 +39,19 @@ export default function FluxoDeCaixa() {
   const [theme] = useState(() => localStorage.getItem('theme') || 'dark');
   const isLight = theme === 'light';
   const queryClient = useQueryClient();
-  
-  const [showCustoModal, setShowCustoModal] = useState(false);
-  const [editingCusto, setEditingCusto] = useState(null);
-  const [mesAtual, setMesAtual] = useState(moment().format('YYYY-MM'));
-  const [currentPage, setCurrentPage] = useState(1);
-  const [receitasPage, setReceitasPage] = useState(1);
-  const itemsPerPage = 10;
-  
+  const [pizzariaId, setPizzariaId] = useState(null);
+
+  React.useEffect(() => {
+    const estabelecimentoLogado = localStorage.getItem('estabelecimento_logado');
+    if (estabelecimentoLogado) {
+      try {
+        const estab = JSON.parse(estabelecimentoLogado);
+        if (estab?.id) { setPizzariaId(estab.id); return; }
+      } catch (e) {}
+    }
+    base44.auth.me().then(u => { if (u?.pizzaria_id) setPizzariaId(u.pizzaria_id); }).catch(() => {});
+  }, []);
+
   const [formData, setFormData] = useState({
     descricao: '',
     valor: '',
@@ -74,29 +79,31 @@ export default function FluxoDeCaixa() {
 
   // Buscar custos do mês
   const { data: custos = [] } = useQuery({
-    queryKey: ['custos', mesAtual],
+    queryKey: ['custos', mesAtual, pizzariaId],
     queryFn: async () => {
+      if (!pizzariaId) return [];
       const inicioMes = moment(mesAtual).startOf('month').format('YYYY-MM-DD');
       const fimMes = moment(mesAtual).endOf('month').format('YYYY-MM-DD');
-      const allCustos = await base44.entities.Custo.list('-data', 1000);
-      return allCustos.filter(c => 
-        moment(c.data).isBetween(inicioMes, fimMes, null, '[]')
-      );
+      const allCustos = await base44.entities.Custo.filter({ pizzaria_id: pizzariaId }, '-data', 1000);
+      return allCustos.filter(c => moment(c.data).isBetween(inicioMes, fimMes, null, '[]'));
     },
+    enabled: !!pizzariaId,
   });
 
   // Buscar pedidos finalizados do mês
   const { data: pedidosFinalizados = [] } = useQuery({
-    queryKey: ['pedidos-finalizados', mesAtual],
+    queryKey: ['pedidos-finalizados', mesAtual, pizzariaId],
     queryFn: async () => {
+      if (!pizzariaId) return [];
       const inicioMes = moment(mesAtual).startOf('month').toISOString();
       const fimMes = moment(mesAtual).endOf('month').toISOString();
-      const pedidos = await base44.entities.Pedido.list('-created_date', 1000);
-      return pedidos.filter(p => 
-        p.status === 'finalizada' && 
+      const pedidos = await base44.entities.Pedido.filter({ pizzaria_id: pizzariaId }, '-created_date', 1000);
+      return pedidos.filter(p =>
+        p.status === 'finalizada' &&
         moment(p.created_date).isBetween(inicioMes, fimMes, null, '[]')
       );
     },
+    enabled: !!pizzariaId,
   });
 
   // Mutations
@@ -150,7 +157,7 @@ export default function FluxoDeCaixa() {
     const data = {
       ...formData,
       valor: parseFloat(formData.valor),
-      pizzaria_id: 'default',
+      pizzaria_id: pizzariaId || 'default',
     };
 
     if (editingCusto) {

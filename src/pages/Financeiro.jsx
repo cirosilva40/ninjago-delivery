@@ -14,7 +14,7 @@ import {
   Clock,
   ArrowRight,
   Wallet,
-  Settings
+  Package
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import moment from 'moment';
@@ -253,23 +253,23 @@ export default function Financeiro() {
           </Card>
         </Link>
 
-        {/* Configurações Financeiras */}
-        <Link to={createPageUrl('ConfiguracoesFinanceiras')}>
+        {/* Estoque */}
+        <Link to={createPageUrl('Estoque')}>
           <Card className={`${isLight ? 'bg-white hover:bg-gray-50' : 'glass-card hover:bg-white/5'} border-none cursor-pointer transition-all h-full`}>
             <CardHeader>
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-3">
-                <Settings className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-3">
+                <Package className="w-6 h-6 text-white" />
               </div>
               <CardTitle className={isLight ? 'text-gray-900' : 'text-white'}>
-                Configurações
+                Estoque
               </CardTitle>
               <CardDescription className={isLight ? 'text-gray-600' : 'text-slate-400'}>
-                Dados bancários e KPIs
+                Insumos, compras e CMV
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className={`text-sm ${isLight ? 'text-gray-600' : 'text-slate-400'}`}>
-                Configure contas bancárias e acompanhe indicadores
+                Controle seu estoque, registre compras e calcule o custo real de cada produto
               </p>
             </CardContent>
           </Card>
