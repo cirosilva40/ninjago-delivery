@@ -52,6 +52,13 @@ export default function FluxoDeCaixa() {
     base44.auth.me().then(u => { if (u?.pizzaria_id) setPizzariaId(u.pizzaria_id); }).catch(() => {});
   }, []);
 
+  const [mesAtual, setMesAtual] = useState(moment().format('YYYY-MM'));
+  const [showCustoModal, setShowCustoModal] = useState(false);
+  const [editingCusto, setEditingCusto] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [receitasPage, setReceitasPage] = useState(1);
+  const itemsPerPage = 20;
+
   const [formData, setFormData] = useState({
     descricao: '',
     valor: '',
