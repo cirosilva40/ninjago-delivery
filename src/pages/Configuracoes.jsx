@@ -401,25 +401,56 @@ export default function Configuracoes() {
                     <Clock className="w-4 h-4 text-blue-400" />
                     <p className="text-sm font-semibold text-white">Horário de Funcionamento</p>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div>
-                      <Label className="text-slate-400">Abertura</Label>
-                      <Input
-                        type="time"
-                        value={pizzaria.horario_abertura}
-                        onChange={(e) => setPizzaria({ ...pizzaria, horario_abertura: e.target.value })}
-                        className="bg-slate-800/50 border-slate-600 text-white"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-slate-400">Fechamento</Label>
-                      <Input
-                        type="time"
-                        value={pizzaria.horario_fechamento}
-                        onChange={(e) => setPizzaria({ ...pizzaria, horario_fechamento: e.target.value })}
-                        className="bg-slate-800/50 border-slate-600 text-white"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    {[
+                      { key: 'seg', label: 'Segunda-feira' },
+                      { key: 'ter', label: 'Terça-feira' },
+                      { key: 'qua', label: 'Quarta-feira' },
+                      { key: 'qui', label: 'Quinta-feira' },
+                      { key: 'sex', label: 'Sexta-feira' },
+                      { key: 'sab', label: 'Sábado' },
+                      { key: 'dom', label: 'Domingo' },
+                    ].map(({ key, label }) => {
+                      const horarios = pizzaria.configuracoes?.horarios_semana || {};
+                      const dia = horarios[key] || { fechado: false, abertura: '18:00', fechamento: '23:00' };
+                      const updateDia = (campo, valor) => {
+                        const novoHorarios = {
+                          ...horarios,
+                          [key]: { ...dia, [campo]: valor },
+                        };
+                        updateConfig('horarios_semana', novoHorarios);
+                      };
+                      return (
+                        <div key={key} className="flex items-center gap-3 p-2 rounded-lg bg-white/5">
+                          <span className="text-slate-300 text-sm w-28 shrink-0">{label}</span>
+                          <Switch
+                            checked={!dia.fechado}
+                            onCheckedChange={(checked) => updateDia('fechado', !checked)}
+                          />
+                          {!dia.fechado ? (
+                            <>
+                              <Input
+                                type="time"
+                                value={dia.abertura || '18:00'}
+                                onChange={(e) => updateDia('abertura', e.target.value)}
+                                className="bg-slate-800/50 border-slate-600 text-white w-32"
+                              />
+                              <span className="text-slate-500 text-sm">às</span>
+                              <Input
+                                type="time"
+                                value={dia.fechamento || '23:00'}
+                                onChange={(e) => updateDia('fechamento', e.target.value)}
+                                className="bg-slate-800/50 border-slate-600 text-white w-32"
+                              />
+                            </>
+                          ) : (
+                            <span className="text-slate-500 text-sm italic">Fechado</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-4 grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-slate-400">Tempo Médio Preparo (min)</Label>
                       <Input
