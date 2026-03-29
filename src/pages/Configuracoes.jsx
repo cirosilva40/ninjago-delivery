@@ -1215,6 +1215,73 @@ export default function Configuracoes() {
                   />
                 </div>
               </div>
+
+              {/* Taxas de Pagamento */}
+              <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30">
+                <h4 className="font-medium text-white mb-1 flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-amber-400" />
+                  Taxas por Forma de Pagamento
+                </h4>
+                <p className="text-xs text-slate-400 mb-4">
+                  Defina a taxa percentual cobrada pela operadora. Serão usadas no cálculo real de lucro e CMV.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-slate-400">Taxa PIX (%)</Label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        value={pizzaria.configuracoes?.taxa_pix ?? 0.99}
+                        onChange={(e) => updateConfig('taxa_pix', parseFloat(e.target.value) || 0)}
+                        className="bg-slate-800 border-slate-700 text-white pr-8"
+                        placeholder="0.99"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">Ex: 0,99%</p>
+                  </div>
+                  <div>
+                    <Label className="text-slate-400">Taxa Débito (%)</Label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        value={pizzaria.configuracoes?.taxa_debito ?? 1.5}
+                        onChange={(e) => updateConfig('taxa_debito', parseFloat(e.target.value) || 0)}
+                        className="bg-slate-800 border-slate-700 text-white pr-8"
+                        placeholder="1.50"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">Ex: 1,50%</p>
+                  </div>
+                  <div>
+                    <Label className="text-slate-400">Taxa Crédito (%)</Label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        value={pizzaria.configuracoes?.taxa_credito ?? 2.5}
+                        onChange={(e) => updateConfig('taxa_credito', parseFloat(e.target.value) || 0)}
+                        className="bg-slate-800 border-slate-700 text-white pr-8"
+                        placeholder="2.50"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
+                    </div>
+                    <p className="text-xs text-slate-500 mt-1">Ex: 2,50%</p>
+                  </div>
+                </div>
+                <div className="mt-3 p-3 rounded-lg bg-white/5 text-xs text-slate-400">
+                  💡 <strong className="text-slate-300">Dinheiro</strong> não tem taxa. Os valores acima serão deduzidos no cálculo de lucro real por pedido.
+                </div>
+              </div>
             </CardContent>
           </Card>
 
