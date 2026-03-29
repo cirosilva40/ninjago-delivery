@@ -60,6 +60,7 @@ export default function Layout({ children, currentPageName }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [notificacoes, setNotificacoes] = useState([]);
+  const [pedidosNovosCount, setPedidosNovosCount] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
@@ -72,7 +73,20 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     if (user?.pizzaria_id) {
       loadNotificacoes(user.pizzaria_id);
+      loadPedidosNovos(user.pizzaria_id);
     }
+  }, [user]);
+
+  useEffect(() => {
+    const unsubscribe = base44.entities.Pedido.subscribe((event) => {
+      if (user?.pizzaria_id) {
+        loadPedidosNovos(user.pizzaria_id);
+        if (event.type === 'create') {
+          loadNotificacoes(user.pizzaria_id);
+        }
+      }
+    });
+    return unsubscribe;
   }, [user]);
 
   const loadUser = async () => {
@@ -81,6 +95,21 @@ export default function Layout({ children, currentPageName }) {
       setUser(userData);
     } catch (e) {
       console.log('User not logged in');
+    }
+  };
+
+  const loadPedidosNovos = async (pizzariaId) => {
+    try {
+      const hoje = new Date().toISOString().split('T')[0];
+      const data = await base44.entities.Pedido.filter(
+        { status: 'novo', pizzaria_id: pizzariaId },
+        '-created_date',
+        50
+      );
+      const hojeData = data.filter(p => p.created_date && p.created_date.startsWith(hoje));
+      setPedidosNovosCount(hojeData.length);
+    } catch (e) {
+      console.error('Erro ao carregar pedidos novos:', e);
     }
   };
 
@@ -210,21 +239,24 @@ export default function Layout({ children, currentPageName }) {
               const isActive = currentPageName === item.page;
               return (
                 <Link
-                  key={item.page}
-                  to={createPageUrl(item.page)}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`
-                    flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-150
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-orange-500/20 to-red-500/10 text-orange-500 border border-orange-500/20' 
-                      : isLight 
-                        ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                        : 'text-slate-100 hover:text-white hover:bg-white/5'
-                    }
-                  `}
+                key={item.page}
+                to={createPageUrl(item.page)}
+                onClick={() => setSidebarOpen(false)}
+                className={`
+                  flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-150
+                  ${isActive 
+                    ? 'bg-gradient-to-r from-orange-500/20 to-red-500/10 text-orange-500 border border-orange-500/20' 
+                    : isLight 
+                      ? 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      : 'text-slate-100 hover:text-white hover:bg-white/5'
+                  }
+                `}
                 >
-                  <item.icon className={`w-5 h-5 ${isActive ? 'text-orange-500' : ''}`} />
-                  <span className="font-medium">{item.name}</span>
+                <item.icon className={`w-5 h-5 ${isActive ? 'text-orange-500' : ''}`} />
+                <span className="font-medium flex-1">{item.name}</span>
+                {item.page === 'Pedidos' && pedidosNovosCount > 0 && (
+                  <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0" />
+                )}
                 </Link>
               );
             })}
