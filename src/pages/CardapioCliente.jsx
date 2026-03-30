@@ -217,13 +217,32 @@ export default function CardapioCliente() {
     if (config.loja_aberta === true) return true;
     if (config.loja_aberta === false) return false;
 
-    // Sem override: sem horário configurado = aberto por padrão
-    if (!pizzariaConfig.horario_abertura || !pizzariaConfig.horario_fechamento) return true;
-
     const agora = new Date();
+    const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+
+    // Horários por dia da semana (configurados em Configurações)
+    const horariosSemana = config.horarios_semana;
+    if (horariosSemana) {
+      const diasKeys = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
+      const diaKey = diasKeys[agora.getDay()];
+      const dia = horariosSemana[diaKey];
+      if (dia) {
+        if (dia.fechado) return false;
+        const [hAbr, mAbr] = (dia.abertura || '00:00').split(':').map(Number);
+        const [hFech, mFech] = (dia.fechamento || '23:59').split(':').map(Number);
+        const minutosAbertura = hAbr * 60 + mAbr;
+        const minutosFechamento = hFech * 60 + mFech;
+        if (minutosFechamento < minutosAbertura) {
+          return minutosAgora >= minutosAbertura || minutosAgora < minutosFechamento;
+        }
+        return minutosAgora >= minutosAbertura && minutosAgora < minutosFechamento;
+      }
+    }
+
+    // Fallback: horário global simples
+    if (!pizzariaConfig.horario_abertura || !pizzariaConfig.horario_fechamento) return true;
     const [hAbr, mAbr] = pizzariaConfig.horario_abertura.split(':').map(Number);
     const [hFech, mFech] = pizzariaConfig.horario_fechamento.split(':').map(Number);
-    const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
     const minutosAbertura = hAbr * 60 + mAbr;
     const minutosFechamento = hFech * 60 + mFech;
     if (minutosFechamento < minutosAbertura) {
