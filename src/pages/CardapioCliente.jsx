@@ -86,6 +86,7 @@ export default function CardapioCliente() {
   const [calculandoFrete, setCalculandoFrete] = useState(false);
   const [erroFrete, setErroFrete] = useState('');
   const [detalhesEntrega, setDetalhesEntrega] = useState(null);
+  const [tipoEntrega, setTipoEntrega] = useState('delivery'); // 'delivery' ou 'retirada'
   const [checkoutStep, setCheckoutStep] = useState(1); // 1: dados+endereço, 2: pagamento, 3: revisão, 4: pagar
   const [processandoPagamento, setProcessandoPagamento] = useState(false);
   const [metodoPagamentoOnline, setMetodoPagamentoOnline] = useState(''); // 'pix', 'credit_card', 'debit_card', 'vale_refeicao'
@@ -607,21 +608,23 @@ export default function CardapioCliente() {
     }
     const numeroPedido = proximoNumero.toString().padStart(2, '0');
 
+    const isRetirada = tipoEntrega === 'retirada';
+
     return await base44.entities.Pedido.create({
       pizzaria_id: pizzariaId,
       numero_pedido: numeroPedido,
-      tipo_pedido: 'delivery',
+      tipo_pedido: isRetirada ? 'balcao' : 'delivery',
       cliente_nome: formCliente.nome,
       cliente_telefone: formCliente.telefone,
-      cliente_cep: formCliente.cep,
-      cliente_endereco: formCliente.endereco,
-      cliente_numero: formCliente.numero,
-      cliente_bairro: formCliente.bairro,
-      cliente_cidade: formCliente.cidade,
-      cliente_estado: formCliente.estado,
-      cliente_complemento: formCliente.complemento,
-      latitude: formCliente.latitude,
-      longitude: formCliente.longitude,
+      cliente_cep: isRetirada ? '' : formCliente.cep,
+      cliente_endereco: isRetirada ? 'RETIRADA NO LOCAL' : formCliente.endereco,
+      cliente_numero: isRetirada ? '' : formCliente.numero,
+      cliente_bairro: isRetirada ? '' : formCliente.bairro,
+      cliente_cidade: isRetirada ? '' : formCliente.cidade,
+      cliente_estado: isRetirada ? '' : formCliente.estado,
+      cliente_complemento: isRetirada ? '' : formCliente.complemento,
+      latitude: isRetirada ? null : formCliente.latitude,
+      longitude: isRetirada ? null : formCliente.longitude,
       itens: itensMapeados,
       valor_produtos: calcularSubtotal(),
       taxa_entrega: taxaEntrega,
@@ -1331,8 +1334,8 @@ export default function CardapioCliente() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Taxa de entrega:</span>
-                      <span className={`font-semibold ${checkoutStep === 1 ? 'text-slate-500 italic' : taxaEntrega === 0 ? 'text-emerald-400' : 'text-white'}`}>
-                        {checkoutStep === 1 ? 'A calcular após endereço' : taxaEntrega === 0 ? 'GRÁTIS' : `R$ ${taxaEntrega.toFixed(2)}`}
+                      <span className={`font-semibold ${(checkoutStep === 1 && tipoEntrega === 'delivery') ? 'text-slate-500 italic' : taxaEntrega === 0 ? 'text-emerald-400' : 'text-white'}`}>
+                        {tipoEntrega === 'retirada' ? 'GRÁTIS' : checkoutStep === 1 ? 'A calcular após endereço' : taxaEntrega === 0 ? 'GRÁTIS' : `R$ ${taxaEntrega.toFixed(2)}`}
                       </span>
                     </div>
                     {distanciaEntrega && checkoutStep > 1 && (
@@ -1356,6 +1359,42 @@ export default function CardapioCliente() {
 
                 {checkoutStep === 1 && (
                   <>
+                    {/* Tipo de Entrega */}
+                    <div className="space-y-3 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                      <h3 className="font-semibold text-white">Como deseja receber?</h3>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          onClick={() => { setTipoEntrega('delivery'); setTaxaEntrega(0); setDistanciaEntrega(null); setErroFrete(''); }}
+                          className={`p-4 rounded-xl border-2 transition-all text-center ${
+                            tipoEntrega === 'delivery'
+                              ? 'border-orange-500 bg-orange-500/20'
+                              : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
+                          }`}
+                        >
+                          <div className="text-2xl mb-1">🛵</div>
+                          <p className="font-bold text-white text-sm">Delivery</p>
+                          <p className="text-xs text-slate-400 mt-0.5">Entrega no seu endereço</p>
+                        </button>
+                        <button
+                          onClick={() => { setTipoEntrega('retirada'); setTaxaEntrega(0); setDistanciaEntrega(null); setErroFrete(''); }}
+                          className={`p-4 rounded-xl border-2 transition-all text-center ${
+                            tipoEntrega === 'retirada'
+                              ? 'border-orange-500 bg-orange-500/20'
+                              : 'border-slate-600 bg-slate-800/50 hover:border-slate-500'
+                          }`}
+                        >
+                          <div className="text-2xl mb-1">🏪</div>
+                          <p className="font-bold text-white text-sm">Retirar no Local</p>
+                          <p className="text-xs text-slate-400 mt-0.5">Sem taxa de entrega</p>
+                        </button>
+                      </div>
+                      {tipoEntrega === 'retirada' && pizzariaConfig.endereco && (
+                        <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/30 text-sm text-orange-300">
+                          📍 Retire em: {pizzariaConfig.endereco}{pizzariaConfig.numero ? `, ${pizzariaConfig.numero}` : ''}{pizzariaConfig.bairro ? ` - ${pizzariaConfig.bairro}` : ''}
+                        </div>
+                      )}
+                    </div>
+
                     <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
                       <h3 className="font-semibold text-white">Seus Dados</h3>
                   <div className="grid grid-cols-2 gap-4">
@@ -1418,6 +1457,7 @@ export default function CardapioCliente() {
                   </div>
                 </div>
 
+                {tipoEntrega === 'delivery' && (
                 <div className="space-y-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
                   <div className="flex items-center justify-between">
                     <h3 className="font-semibold text-white">Endereço de Entrega</h3>
@@ -1488,15 +1528,16 @@ export default function CardapioCliente() {
                       />
                     </div>
                       </div>
-                    </div>
+                      </div>
+                      )}
 
-                    {erroFrete && (
+                      {tipoEntrega === 'delivery' && erroFrete && (
                       <div className="p-3 rounded-xl bg-red-500/20 border border-red-500/50 text-red-300 text-sm">
                         ⚠️ {erroFrete}
                       </div>
                     )}
 
-                    {distanciaEntrega && detalhesEntrega && !erroFrete && (
+                    {tipoEntrega === 'delivery' && distanciaEntrega && detalhesEntrega && !erroFrete && (
                       <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-sm space-y-1">
                         <p className="text-emerald-300 font-semibold">✅ Endereço calculado com sucesso</p>
                         <p className="text-slate-300">📍 Distância por rota: <strong>{distanciaEntrega} km</strong></p>
@@ -1512,6 +1553,11 @@ export default function CardapioCliente() {
 
                     <Button
                       onClick={async () => {
+                        if (tipoEntrega === 'retirada') {
+                          setCheckoutStep(2);
+                          return;
+                        }
+
                         if (!formCliente.cep || !formCliente.endereco || !formCliente.numero) {
                           alert('Preencha o endereço completo (CEP, endereço e número)');
                           return;
@@ -1609,7 +1655,7 @@ export default function CardapioCliente() {
                           <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                           Calculando frete...
                         </span>
-                      ) : 'Continuar para Pagamento'}
+                      ) : tipoEntrega === 'retirada' ? 'Continuar para Pagamento' : 'Continuar para Pagamento'}
                     </Button>
                   </>
                 )}
@@ -1733,10 +1779,22 @@ export default function CardapioCliente() {
                   <>
                     <div className="space-y-4">
                       <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
-                        <h3 className="font-semibold text-white mb-3">📍 Endereço de Entrega</h3>
-                        <p className="text-slate-300">{formCliente.endereco}, {formCliente.numero}{formCliente.complemento && ` - ${formCliente.complemento}`}</p>
-                        <p className="text-slate-300">{formCliente.bairro} - {formCliente.cidade}/{formCliente.estado}</p>
-                        <p className="text-slate-400 text-sm">CEP: {formCliente.cep}</p>
+                        {tipoEntrega === 'retirada' ? (
+                          <>
+                            <h3 className="font-semibold text-white mb-3">🏪 Retirada no Local</h3>
+                            <p className="text-slate-300">O cliente irá retirar o pedido no estabelecimento.</p>
+                            {pizzariaConfig.endereco && (
+                              <p className="text-slate-400 text-sm mt-1">📍 {pizzariaConfig.endereco}{pizzariaConfig.numero ? `, ${pizzariaConfig.numero}` : ''}{pizzariaConfig.bairro ? ` - ${pizzariaConfig.bairro}` : ''}</p>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <h3 className="font-semibold text-white mb-3">📍 Endereço de Entrega</h3>
+                            <p className="text-slate-300">{formCliente.endereco}, {formCliente.numero}{formCliente.complemento && ` - ${formCliente.complemento}`}</p>
+                            <p className="text-slate-300">{formCliente.bairro} - {formCliente.cidade}/{formCliente.estado}</p>
+                            <p className="text-slate-400 text-sm">CEP: {formCliente.cep}</p>
+                          </>
+                        )}
                       </div>
 
                       <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
