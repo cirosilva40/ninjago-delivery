@@ -45,6 +45,9 @@ const ESTABELECIMENTO_PAGES = [
   'Pagamentos',
   'ProgramaFidelidade',
   'EntregadorDetalhe',
+  'Clientes',
+  'Estoque',
+  'Integracoes',
 ];
 
 export function useRouteGuard(currentPageName) {

@@ -23,9 +23,15 @@ export default function Clientes() {
     if (idFromUrl) {
       setPizzariaId(idFromUrl);
     } else {
+      // Prioridade: estabelecimento_logado (login do estabelecimento)
+      const estabData = localStorage.getItem('estabelecimento_logado');
+      if (estabData) {
+        const estab = JSON.parse(estabData);
+        if (estab?.id) { setPizzariaId(estab.id); return; }
+      }
+      // Fallback: pizzaria_id salvo separadamente
       const id = localStorage.getItem('pizzaria_id');
       if (id) setPizzariaId(id);
-      else base44.auth.me().then(u => u?.pizzaria_id && setPizzariaId(u.pizzaria_id));
     }
   }, []);
 
