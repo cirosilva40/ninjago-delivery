@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -21,6 +21,12 @@ import { createPageUrl } from '@/utils';
 export default function AcessoUsuario() {
   const navigate = useNavigate();
   const [modo, setModo] = useState('login');
+
+  // Limpar sessão anterior ao acessar a página de login
+  React.useEffect(() => {
+    localStorage.removeItem('estabelecimento_logado');
+    localStorage.removeItem('pizzaria_id');
+  }, []);
   const [etapa, setEtapa] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
