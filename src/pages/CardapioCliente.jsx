@@ -517,6 +517,7 @@ export default function CardapioCliente() {
 
     try {
       const clientes = await base44.entities.Cliente.filter({ telefone: loginData.telefone, pizzaria_id: pizzariaId });
+      // Garante que o cliente pertence a este estabelecimento
       if (clientes.length === 0 || clientes[0].senha !== loginData.senha) {
         setLoginError('Telefone ou senha incorretos');
         return;

@@ -31,10 +31,13 @@ export default function AcessoCliente() {
     setLoading(true);
 
     try {
-      const clientes = await base44.entities.Cliente.filter({ email });
-      
+      // Filtrar pelo pizzaria_id atual para impedir login cruzado entre estabelecimentos
+      const pizzariaId = localStorage.getItem('pizzaria_id_atual');
+      const filtro = pizzariaId ? { email, pizzaria_id: pizzariaId } : { email };
+      const clientes = await base44.entities.Cliente.filter(filtro);
+
       if (clientes.length === 0) {
-        setError('Email não encontrado. Verifique se você já foi cadastrado.');
+        setError('Email não encontrado neste estabelecimento. Verifique se você já foi cadastrado aqui.');
         setLoading(false);
         return;
       }
