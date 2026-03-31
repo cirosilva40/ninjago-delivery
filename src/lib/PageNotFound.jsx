@@ -1,11 +1,23 @@
+import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+
+const LANDING_PAGE = 'https://ninjagodelivery.com.br/';
 
 
 export default function PageNotFound({}) {
     const location = useLocation();
     const pageName = location.pathname.substring(1);
+
+    useEffect(() => {
+        // Redirecionar para a landing page quando a rota não for encontrada
+        // e não estiver rodando no ambiente de desenvolvimento
+        const isDevEnv = window.location.hostname === 'localhost' || window.location.hostname.includes('base44');
+        if (!isDevEnv) {
+            window.location.replace(LANDING_PAGE);
+        }
+    }, []);
 
     const { data: authData, isFetched } = useQuery({
         queryKey: ['user'],

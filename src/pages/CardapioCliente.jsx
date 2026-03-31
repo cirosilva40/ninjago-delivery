@@ -112,6 +112,12 @@ export default function CardapioCliente() {
       const savedPizzariaId = localStorage.getItem('pizzaria_id_atual');
       if (savedPizzariaId) {
         setPizzariaId(savedPizzariaId);
+      } else {
+        // Sem pizzariaId: redirecionar para landing page em produção
+        const isDevEnv = window.location.hostname === 'localhost' || window.location.hostname.includes('base44');
+        if (!isDevEnv) {
+          window.location.replace('https://ninjagodelivery.com.br/');
+        }
       }
     }
   }, []);
