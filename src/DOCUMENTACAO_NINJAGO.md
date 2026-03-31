@@ -1511,3 +1511,134 @@ O sistema é **multi-tenant** — múltiplos estabelecimentos compartilham o mes
 
 *Documentação gerada em: 18/03/2026*
 *Versão do sistema: NinjaGO Delivery v1.x*
+
+---
+
+## 21. Ajustes de Segurança Multi-tenant — Sessão do Cliente (Atualização: 31/03/2026)
+
+Esta seção documenta os ajustes realizados após a documentação inicial, focados em reforçar o isolamento de sessão e navegação do cliente final em ambientes multi-tenant.
+
+---
+
+### 21.1 Problema Identificado
+
+O sistema original permitia situações onde um cliente autenticado em um estabelecimento (pizzaria A) poderia, em cenários de navegação direta por URL, acessar ou interagir com dados de outro estabelecimento (pizzaria B), pois o `pizzariaId` não era validado consistentemente durante a autenticação e a navegação entre páginas públicas.
+
+---
+
+### 21.2 Ajustes Realizados
+
+#### 21.2.1 Autenticação do Cliente com Escopo por Estabelecimento (`AcessoCliente`)
+
+**Antes:** O login buscava o cliente apenas por `telefone`, sem filtrar por `pizzaria_id`:
+```js
+// Comportamento anterior (vulnerável)
+const clientes = await base44.entities.Cliente.filter({ telefone: loginData.telefone });
+```
+
+**Depois:** A busca filtra obrigatoriamente pelo `pizzaria_id` ativo na sessão:
+```js
+// Comportamento corrigido
+const clientes = await base44.entities.Cliente.filter({ 
+  telefone: loginData.telefone, 
+  pizzaria_id: pizzariaId  // ← escopo de tenant obrigatório
+});
+```
+
+**Impacto:** Um cliente cadastrado na pizzaria A não consegue autenticar na pizzaria B, mesmo com as mesmas credenciais (telefone + senha).
+
+---
+
+#### 21.2.2 Login via Checkout também com Escopo (`CardapioCliente`)
+
+A mesma correção foi aplicada no fluxo de login embutido no checkout (`handleLogin` em `CardapioCliente.jsx`):
+
+```js
+// handleLogin no CardapioCliente
+const clientes = await base44.entities.Cliente.filter({ 
+  telefone: loginData.telefone, 
+  pizzaria_id: pizzariaId  // ← garante que o login é sempre do tenant correto
+});
+
+// Ao salvar no localStorage, inclui o pizzaria_id_atual
+const clienteComPizzaria = { ...cliente, pizzaria_id_atual: pizzariaId };
+localStorage.setItem('cliente_logado', JSON.stringify(clienteComPizzaria));
+```
+
+---
+
+#### 21.2.3 Propagação do `pizzariaId` via URL em Toda a Navegação Pública
+
+Todos os links de navegação entre páginas públicas foram atualizados para sempre incluir o `pizzariaId` como parâmetro de URL, garantindo que o contexto do estabelecimento nunca seja perdido.
+
+**Páginas afetadas e seus links:**
+
+| Origem | Destino | Parâmetro passado |
+|---|---|---|
+| `CardapioCliente` | `AcessoCliente` | `?pizzariaId=XXX` |
+| `CardapioCliente` | `PerfilCliente` | `?pizzariaId=XXX` |
+| `CardapioCliente` | `NotificacoesCliente` | `?pizzariaId=XXX` |
+| `AcessoCliente` | `CardapioCliente` | `?pizzariaId=XXX` |
+| `PerfilCliente` | `CardapioCliente` | `?pizzariaId=XXX` |
+| `PerfilCliente` | `ProgramaFidelidade` | `?pizzariaId=XXX` |
+
+**Exemplo de navegação correta:**
+```js
+// Botão de perfil no header do CardapioCliente
+onClick={() => navigate(createPageUrl('PerfilCliente') + `?pizzariaId=${pizzariaId}`)}
+
+// Botão de login no header do CardapioCliente
+onClick={() => navigate(createPageUrl('AcessoCliente') + `?pizzariaId=${pizzariaId}`)}
+```
+
+---
+
+#### 21.2.4 `PerfilCliente` — Prioridade do `pizzariaId` por URL
+
+A página `PerfilCliente` foi atualizada para priorizar o `pizzariaId` da URL ao invés do que estava salvo no localStorage, e sincronizá-lo:
+
+```js
+// Lógica de inicialização do PerfilCliente
+const urlParams = new URLSearchParams(window.location.search);
+const pizzariaIdFromUrl = urlParams.get('pizzariaId');
+
+if (pizzariaIdFromUrl) {
+  setPizzariaId(pizzariaIdFromUrl);
+  // Sincroniza com localStorage para manter consistência
+  localStorage.setItem('pizzaria_id_atual', pizzariaIdFromUrl);
+} else {
+  const savedId = localStorage.getItem('pizzaria_id_atual');
+  if (savedId) setPizzariaId(savedId);
+}
+```
+
+**Impacto:** Evita que um usuário com sessão de uma pizzaria acesse o perfil de outra, mesmo ao manipular a URL diretamente sem o parâmetro.
+
+---
+
+### 21.3 Resumo das Regras de Sessão do Cliente
+
+Após os ajustes, as seguintes regras estão em vigor:
+
+1. **Autenticação sempre com escopo:** Toda busca de `Cliente` para login inclui `pizzaria_id` como filtro obrigatório.
+2. **Navegação sempre contextualizada:** Todos os links entre páginas públicas passam `?pizzariaId=XXX` na URL.
+3. **URL tem prioridade:** O `pizzariaId` da URL sempre sobrescreve o valor do localStorage.
+4. **Sincronização de estado:** Após capturar o `pizzariaId` da URL, ele é sincronizado com `localStorage('pizzaria_id_atual')` para manter consistência em recarregamentos de página.
+5. **Dados do localStorage incluem tenant:** O objeto `cliente_logado` salvo no localStorage inclui `pizzaria_id_atual` para rastreabilidade.
+
+---
+
+### 21.4 Considerações para Migração
+
+Ao migrar para outra plataforma, os seguintes pontos devem ser observados:
+
+- **Filtro por tenant na autenticação:** O endpoint ou query de login do cliente DEVE sempre receber e aplicar o `pizzaria_id` como filtro. Não basta validar telefone + senha — a combinação de credenciais + tenant deve ser única.
+- **Parâmetros de URL obrigatórios:** O `pizzariaId` deve ser propagado em todas as rotas públicas do cliente. Sistemas de routing que não suportem query params simples devem usar route params (ex: `/menu/:pizzariaId`).
+- **Prioridade de resolução do tenant:** A ordem `URL param → localStorage → default` deve ser mantida ou adaptada conforme a nova plataforma.
+- **Isolamento no banco:** Todas as queries à entidade `Cliente` devem incluir `pizzaria_id` como condição obrigatória — nunca buscar clientes sem escopo de tenant.
+
+---
+
+*Documentação gerada em: 18/03/2026*
+*Atualização (seção 21): 31/03/2026*
+*Versão do sistema: NinjaGO Delivery v1.x*
