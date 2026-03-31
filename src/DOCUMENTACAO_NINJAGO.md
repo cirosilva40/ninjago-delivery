@@ -1642,3 +1642,45 @@ Ao migrar para outra plataforma, os seguintes pontos devem ser observados:
 *Documentação gerada em: 18/03/2026*
 *Atualização (seção 21): 31/03/2026*
 *Versão do sistema: NinjaGO Delivery v1.x*
+
+---
+
+## 22. Guia de Migração — Equivalência de Recursos Base44
+
+> Documentação completa de substituição no arquivo: **`GUIA_MIGRACAO.md`**
+
+Este arquivo detalha como substituir cada funcionalidade do Base44 SDK e infraestrutura por ferramentas e bibliotecas de mercado, incluindo exemplos de código completos.
+
+### Recursos cobertos no `GUIA_MIGRACAO.md`:
+
+| Funcionalidade Base44 | Substituto Recomendado |
+|---|---|
+| `base44.entities.*` (CRUD + real-time) | Supabase, Prisma + PostgreSQL, MongoDB |
+| Backend Functions (Deno) | Supabase Edge Functions, Hono, Express, Cloudflare Workers |
+| `base44.auth.*` + `useAuth()` | Supabase Auth, Clerk, JWT próprio |
+| `InvokeLLM` | OpenAI SDK, Google Gemini, Anthropic Claude |
+| `UploadFile` / `UploadPrivateFile` | Supabase Storage, AWS S3, Cloudflare R2 |
+| `CreateFileSignedUrl` | Supabase Signed URL, AWS S3 Presigned URL |
+| `SendEmail` | Resend, SendGrid, Nodemailer |
+| `GenerateImage` | OpenAI DALL-E 3, Stability AI |
+| `ExtractDataFromUploadedFile` | papaparse + xlsx + pdf-parse + LLM |
+| `base44.analytics.track()` | PostHog, Mixpanel, Amplitude |
+| Conectores OAuth | OAuth 2.0 manual, simple-oauth2, passport.js |
+| Automações Agendadas | node-cron, Vercel Cron, AWS EventBridge |
+| Automações de Entidade | DB Triggers, Supabase Realtime, Event Emitter |
+| Automações de Conector (webhooks) | Endpoints webhook próprios + validação de assinatura |
+| `@/api/base44Client` (frontend SDK) | Axios + lib/apiClient.js + lib/entities.js customizados |
+
+### Stack recomendada para migração com menor atrito:
+
+```
+Frontend:  React + Vite + Tailwind + shadcn/ui  (código atual quase sem mudanças)
+Backend:   Supabase Edge Functions (também Deno — código muito similar)
+Database:  Supabase (PostgreSQL + API REST + Realtime + Auth + Storage)
+Auth:      Supabase Auth ou Clerk
+E-mail:    Resend
+LLM:       OpenAI SDK
+Deploy:    Vercel (frontend) + Railway (backend)
+```
+
+> **Por que Supabase?** As Edge Functions do Supabase também rodam em Deno, com sintaxe quase idêntica às funções atuais do Base44. Grande parte do código de `functions/` pode ser migrada com adaptações mínimas.
