@@ -18,9 +18,15 @@ export default function Clientes() {
   const [senhasVisiveis, setSenhasVisiveis] = useState({});
 
   useEffect(() => {
-    const id = localStorage.getItem('pizzaria_id');
-    if (id) setPizzariaId(id);
-    else base44.auth.me().then(u => u?.pizzaria_id && setPizzariaId(u.pizzaria_id));
+    const urlParams = new URLSearchParams(window.location.search);
+    const idFromUrl = urlParams.get('pizzariaId');
+    if (idFromUrl) {
+      setPizzariaId(idFromUrl);
+    } else {
+      const id = localStorage.getItem('pizzaria_id');
+      if (id) setPizzariaId(id);
+      else base44.auth.me().then(u => u?.pizzaria_id && setPizzariaId(u.pizzaria_id));
+    }
   }, []);
 
   const { data: clientes = [], isLoading } = useQuery({
