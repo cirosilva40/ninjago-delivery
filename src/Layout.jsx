@@ -138,7 +138,9 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const handleLogout = () => {
-    base44.auth.logout();
+    localStorage.removeItem('estabelecimento_logado');
+    localStorage.removeItem('pizzaria_id');
+    window.location.href = createPageUrl('AcessoUsuario');
   };
 
   // Páginas sem layout padrão (públicas ou com layout próprio)
