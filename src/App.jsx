@@ -10,6 +10,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Integracoes from './pages/Integracoes';
+import Clientes from './pages/Clientes';
 import Estoque from './pages/Estoque';
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -66,6 +67,11 @@ const AuthenticatedApp = () => {
       <Route path="/Estoque" element={
         <LayoutWrapper currentPageName="Estoque">
           <Estoque />
+        </LayoutWrapper>
+      } />
+      <Route path="/Clientes" element={
+        <LayoutWrapper currentPageName="Clientes">
+          <Clientes />
         </LayoutWrapper>
       } />
       <Route path="*" element={<PageNotFound />} />

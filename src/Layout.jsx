@@ -42,6 +42,7 @@ const menuItems = [
   { name: 'Entregadores', icon: Bike, page: 'Entregadores' },
   { name: 'Financeiro', icon: BarChart3, page: 'Financeiro' },
   { name: 'Relatórios', icon: BarChart3, page: 'Relatorios' },
+  { name: 'Clientes', icon: Users, page: 'Clientes' },
   { name: 'Estoque', icon: Layers, page: 'Estoque' },
   { name: 'Integrações', icon: Plug, page: 'Integracoes' },
   { name: 'Configurações', icon: Settings, page: 'Configuracoes' },
