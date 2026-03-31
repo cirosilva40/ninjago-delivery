@@ -58,7 +58,8 @@ export default function AcessoCliente() {
 
       // Login bem-sucedido
       localStorage.setItem('cliente_logado', JSON.stringify(cliente));
-      navigate(createPageUrl('PerfilCliente'));
+      const pizzariaIdAtual = localStorage.getItem('pizzaria_id_atual');
+      navigate(createPageUrl('PerfilCliente') + (pizzariaIdAtual ? `?pizzariaId=${pizzariaIdAtual}` : ''));
     } catch (error) {
       setError('Erro ao fazer login. Tente novamente.');
     } finally {
@@ -152,7 +153,10 @@ export default function AcessoCliente() {
           {/* Link para voltar ao cardápio */}
           <div className="mt-6 pt-6 border-t border-white/10 text-center">
             <button
-              onClick={() => navigate(createPageUrl('CardapioCliente'))}
+              onClick={() => {
+              const pid = localStorage.getItem('pizzaria_id_atual');
+              navigate(createPageUrl('CardapioCliente') + (pid ? `?pizzariaId=${pid}` : ''));
+            }}
               className="text-sm text-slate-400 hover:text-slate-300"
             >
               Voltar para o cardápio

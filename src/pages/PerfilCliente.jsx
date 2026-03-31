@@ -29,22 +29,25 @@ export default function PerfilCliente() {
   const [pizzariaId, setPizzariaId] = useState('default');
 
   useEffect(() => {
+    // Prioridade: pizzariaId da URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const idFromUrl = urlParams.get('pizzariaId');
+    if (idFromUrl) {
+      setPizzariaId(idFromUrl);
+      localStorage.setItem('pizzaria_id_atual', idFromUrl);
+    }
+
     const clienteData = localStorage.getItem('cliente_logado');
     if (clienteData) {
       const cliente = JSON.parse(clienteData);
       setClienteLogado(cliente);
-      
-      // Obter pizzaria_id
-      if (cliente.pizzaria_id_atual) {
-        setPizzariaId(cliente.pizzaria_id_atual);
-      } else {
-        const savedPizzariaId = localStorage.getItem('pizzaria_id_atual');
-        if (savedPizzariaId) {
-          setPizzariaId(savedPizzariaId);
-        }
+      if (!idFromUrl) {
+        const saved = cliente.pizzaria_id_atual || localStorage.getItem('pizzaria_id_atual');
+        if (saved) setPizzariaId(saved);
       }
     } else {
-      navigate(createPageUrl('AcessoCliente'));
+      const redirectUrl = createPageUrl('AcessoCliente') + (idFromUrl ? `?pizzariaId=${idFromUrl}` : '');
+      navigate(redirectUrl);
     }
   }, [navigate]);
 
@@ -59,7 +62,7 @@ export default function PerfilCliente() {
 
   const handleLogout = () => {
     localStorage.removeItem('cliente_logado');
-    navigate(createPageUrl('CardapioCliente') + (pizzariaId ? `?pizzaria_id=${pizzariaId}` : ''));
+    navigate(createPageUrl('CardapioCliente') + (pizzariaId ? `?pizzariaId=${pizzariaId}` : ''));
   };
 
   if (!clienteLogado) return null;
@@ -81,7 +84,7 @@ export default function PerfilCliente() {
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
-              onClick={() => navigate(createPageUrl('CardapioCliente') + (pizzariaId ? `?pizzaria_id=${pizzariaId}` : ''))}
+              onClick={() => navigate(createPageUrl('CardapioCliente') + (pizzariaId ? `?pizzariaId=${pizzariaId}` : ''))}
               className="text-white"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />

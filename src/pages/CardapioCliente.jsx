@@ -739,7 +739,7 @@ export default function CardapioCliente() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate(createPageUrl('NotificacoesCliente'))}
+                  onClick={() => navigate(createPageUrl('NotificacoesCliente') + `?pizzariaId=${pizzariaId}`)}
                   className={`p-2 relative ${isLight ? 'text-gray-700' : 'text-white'}`}
                 >
                   <Bell className="w-5 h-5" />
@@ -749,7 +749,7 @@ export default function CardapioCliente() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate(createPageUrl('PerfilCliente'))}
+                  onClick={() => navigate(createPageUrl('PerfilCliente') + `?pizzariaId=${pizzariaId}`)}
                   className={`p-2 ${isLight ? 'text-gray-700' : 'text-white'}`}
                 >
                   <User className="w-5 h-5" />
@@ -758,7 +758,7 @@ export default function CardapioCliente() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate(createPageUrl('AcessoCliente'))}
+                  onClick={() => navigate(createPageUrl('AcessoCliente') + `?pizzariaId=${pizzariaId}`)}
                   className={`p-2 ${isLight ? 'text-gray-700' : 'text-white'}`}
                 >
                   <User className="w-5 h-5" />
