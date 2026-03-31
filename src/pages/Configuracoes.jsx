@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import {
   Settings,
@@ -48,6 +49,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import MapaRaioEntrega from '@/components/configuracoes/MapaRaioEntrega';
+import ClientesTab from '@/components/configuracoes/ClientesTab';
 import TestarMercadoPago from '@/components/configuracoes/TestarMercadoPago';
 import TestarWebhookMercadoPago from '@/components/configuracoes/TestarWebhookMercadoPago';
 import { createPageUrl } from '@/utils';
@@ -341,6 +343,10 @@ export default function Configuracoes() {
           <TabsTrigger value="fidelidade" className="data-[state=active]:bg-white/10">
             <Gift className="w-4 h-4 mr-2" />
             Programa de Fidelidade
+          </TabsTrigger>
+          <TabsTrigger value="clientes" className="data-[state=active]:bg-white/10">
+            <Users className="w-4 h-4 mr-2" />
+            Clientes
           </TabsTrigger>
         </TabsList>
 
@@ -1672,6 +1678,11 @@ export default function Configuracoes() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Tab Clientes */}
+        <TabsContent value="clientes">
+          <ClientesTab pizzariaId={pizzariaId} />
         </TabsContent>
       </Tabs>
 
