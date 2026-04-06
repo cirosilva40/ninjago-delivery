@@ -10,20 +10,27 @@ const pagamentoConfig = {
   cartao_debito: { label: 'Cartão Débito', icon: CreditCard, color: 'text-blue-400', bgColor: 'bg-blue-500/20' },
 };
 
+const FORMAS_DINHEIRO = ['dinheiro', 'pagar_na_entrega'];
+
 export default function PagamentoCard({ entrega }) {
-  const jaPago = entrega.forma_pagamento !== 'dinheiro';
-  const config = pagamentoConfig[entrega.forma_pagamento];
+  const ehDinheiro = FORMAS_DINHEIRO.includes(entrega.forma_pagamento);
+  // Pagamento pendente = dinheiro E ainda não foi entregue
+  const pagamentoPendente = ehDinheiro && entrega.status !== 'entregue';
+  const jaPago = !pagamentoPendente;
+  const config = pagamentoConfig[entrega.forma_pagamento] || pagamentoConfig['dinheiro'];
 
   return (
     <Card className={`${jaPago ? 'bg-emerald-500/10 border-emerald-500/40' : 'bg-yellow-500/10 border-yellow-500/50'} border-2 p-4 mb-6`}>
       {/* Badge PAGO / COBRAR DO CLIENTE */}
       <div className={`flex items-center justify-center gap-2 rounded-xl py-2 px-4 mb-4 font-bold text-lg ${
-        jaPago ? 'bg-emerald-500/20 text-emerald-300' : 'bg-yellow-500/20 text-yellow-300'
+        pagamentoPendente ? 'bg-yellow-500/20 text-yellow-300' : 'bg-emerald-500/20 text-emerald-300'
       }`}>
-        {jaPago ? (
+        {pagamentoPendente ? (
+          <><AlertTriangle className="w-5 h-5" /> PAGAMENTO PENDENTE</>
+        ) : jaPago && !ehDinheiro ? (
           <><CheckCircle2 className="w-5 h-5" /> PAGO</>
         ) : (
-          <><AlertTriangle className="w-5 h-5" /> COBRAR DO CLIENTE</>
+          <><CheckCircle2 className="w-5 h-5" /> DINHEIRO COLETADO</>
         )}
       </div>
 
