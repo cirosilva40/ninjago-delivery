@@ -315,40 +315,50 @@ export default function Configuracoes() {
       </div>
 
       <Tabs defaultValue="geral" className="space-y-6">
-        <TabsList className="bg-white/5 border border-white/10">
-          <TabsTrigger value="geral" className="data-[state=active]:bg-white/10">
+        <div className="overflow-x-auto pb-1 -mx-1 px-1">
+        <TabsList className="bg-white/5 border border-white/10 flex w-max min-w-full">
+          <TabsTrigger value="geral" className="data-[state=active]:bg-white/10 flex-shrink-0">
             <Store className="w-4 h-4 mr-2" />
-            Geral
+            <span className="hidden sm:inline">Geral</span>
+            <span className="sm:hidden">Geral</span>
           </TabsTrigger>
-          <TabsTrigger value="loja" className="data-[state=active]:bg-white/10">
-            <Pizza className="w-4 h-4 mr-2" />
-            Personalizar Minha Loja
+          <TabsTrigger value="loja" className="data-[state=active]:bg-white/10 flex-shrink-0">
+            <Pizza className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Personalizar Minha Loja</span>
+            <span className="sm:hidden">Loja</span>
           </TabsTrigger>
-          <TabsTrigger value="entrega" className="data-[state=active]:bg-white/10">
-            <Truck className="w-4 h-4 mr-2" />
-            Entrega
+          <TabsTrigger value="entrega" className="data-[state=active]:bg-white/10 flex-shrink-0">
+            <Truck className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Entrega</span>
+            <span className="sm:hidden">Entrega</span>
           </TabsTrigger>
-          <TabsTrigger value="pagamento" className="data-[state=active]:bg-white/10">
-            <CreditCard className="w-4 h-4 mr-2" />
-            Pagamento
+          <TabsTrigger value="pagamento" className="data-[state=active]:bg-white/10 flex-shrink-0">
+            <CreditCard className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Pagamento</span>
+            <span className="sm:hidden">Pag.</span>
           </TabsTrigger>
-          <TabsTrigger value="notificacoes" className="data-[state=active]:bg-white/10">
-            <Bell className="w-4 h-4 mr-2" />
-            Notificações
+          <TabsTrigger value="notificacoes" className="data-[state=active]:bg-white/10 flex-shrink-0">
+            <Bell className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Notificações</span>
+            <span className="sm:hidden">Notif.</span>
           </TabsTrigger>
-          <TabsTrigger value="aparencia" className="data-[state=active]:bg-white/10">
-            <Settings className="w-4 h-4 mr-2" />
-            Aparência
+          <TabsTrigger value="aparencia" className="data-[state=active]:bg-white/10 flex-shrink-0">
+            <Settings className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Aparência</span>
+            <span className="sm:hidden">Apar.</span>
           </TabsTrigger>
-          <TabsTrigger value="fidelidade" className="data-[state=active]:bg-white/10">
-            <Gift className="w-4 h-4 mr-2" />
-            Programa de Fidelidade
+          <TabsTrigger value="fidelidade" className="data-[state=active]:bg-white/10 flex-shrink-0">
+            <Gift className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Programa de Fidelidade</span>
+            <span className="sm:hidden">Fidelid.</span>
           </TabsTrigger>
-          <TabsTrigger value="clientes" className="data-[state=active]:bg-white/10">
-            <Users className="w-4 h-4 mr-2" />
-            Clientes
+          <TabsTrigger value="clientes" className="data-[state=active]:bg-white/10 flex-shrink-0">
+            <Users className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Clientes</span>
+            <span className="sm:hidden">Clientes</span>
           </TabsTrigger>
         </TabsList>
+        </div>
 
         {/* Tab Geral */}
         <TabsContent value="geral" className="space-y-6">
