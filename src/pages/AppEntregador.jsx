@@ -793,7 +793,7 @@ export default function AppEntregador() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-emerald-400">
-                    R$ {entregasConcluidas.reduce((acc, e) => acc + (e.taxa_entregador || 0), 0).toFixed(0)}
+                    R$ {entregasConcluidas.reduce((acc, e) => acc + (e.taxa_entregador || 0), 0).toFixed(2)}
                   </p>
                   <p className="text-xs text-slate-400">Ganhos</p>
                 </div>
