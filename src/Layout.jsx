@@ -59,7 +59,6 @@ const mobileNavItems = [
 export default function Layout({ children, currentPageName }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem('sidebar_collapsed') === 'true');
   const [user, setUser] = useState(null);
   const [notificacoes, setNotificacoes] = useState([]);
   const [pedidosNovosCount, setPedidosNovosCount] = useState(0);
@@ -138,14 +137,6 @@ export default function Layout({ children, currentPageName }) {
     }
   };
 
-  const toggleSidebarCollapsed = () => {
-    setSidebarCollapsed(prev => {
-      const next = !prev;
-      localStorage.setItem('sidebar_collapsed', String(next));
-      return next;
-    });
-  };
-
   const handleLogout = () => {
     localStorage.removeItem('estabelecimento_logado');
     localStorage.removeItem('pizzaria_id');
@@ -219,31 +210,16 @@ export default function Layout({ children, currentPageName }) {
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 z-40"
           onClick={() => setSidebarOpen(false)}
         />
       )}
-
-      {/* Collapse toggle button — desktop only, always visible */}
-      <button
-        onClick={toggleSidebarCollapsed}
-        className={`hidden lg:flex fixed top-20 z-[60] w-7 h-7 rounded-r-lg items-center justify-center shadow-md border-y border-r transition-all duration-300
-          ${sidebarCollapsed ? 'left-0' : 'left-72'}
-          ${isLight ? 'bg-white border-gray-200 text-gray-500 hover:text-gray-800' : 'bg-slate-800 border-slate-600 text-slate-400 hover:text-white'}`}
-        title={sidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className={`w-3 h-3 transition-transform duration-300 ${sidebarCollapsed ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
-      </button>
 
       {/* Sidebar */}
       <aside className={`
         fixed top-0 left-0 z-50 h-full w-72 glass-sidebar transform transition-all duration-300 ease-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        ${sidebarCollapsed ? 'lg:-translate-x-full' : 'lg:translate-x-0'}
       `}>
-        {/* Collapse toggle button — desktop only */}
-
-
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b border-white/5">
@@ -310,7 +286,7 @@ export default function Layout({ children, currentPageName }) {
       </aside>
 
       {/* Main Content */}
-      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-0' : 'lg:ml-72'}`}>
+      <div>
         {/* Top Bar */}
         <header className={`sticky top-0 z-30 glass-card border-b ${isLight ? 'border-gray-200' : 'border-white/5'}`}>
           <div className="flex items-center justify-between px-4 lg:px-8 h-16">
@@ -318,7 +294,7 @@ export default function Layout({ children, currentPageName }) {
               <Button
                 variant="ghost"
                 size="icon"
-                className={`lg:hidden ${isLight ? 'text-gray-700' : 'text-white'}`}
+                className={isLight ? 'text-gray-700' : 'text-white'}
                 onClick={() => setSidebarOpen(true)}
               >
                 <Menu className="w-6 h-6" />
