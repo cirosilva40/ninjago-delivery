@@ -1,0 +1,39 @@
+{
+  "name": "CupomDesconto",
+  "type": "object",
+  "properties": {
+    "pizzaria_id": {
+      "type": "string"
+    },
+    "codigo": {
+      "type": "string",
+      "description": "C\u00f3digo do cupom (ex: PROMO10)"
+    },
+    "descricao": {
+      "type": "string"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "valor",
+        "percentual"
+      ],
+      "default": "valor",
+      "description": "Tipo de desconto: valor fixo em R$ ou percentual %"
+    },
+    "valor": {
+      "type": "number",
+      "default": 0
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "pizzaria_id",
+    "codigo",
+    "tipo",
+    "valor"
+  ]
+}

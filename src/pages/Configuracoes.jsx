@@ -105,6 +105,9 @@ export default function Configuracoes() {
   const [saved, setSaved] = useState(false);
   const [showRecompensaModal, setShowRecompensaModal] = useState(false);
   const [recompensaEditando, setRecompensaEditando] = useState(null);
+  const [showCupomModal, setShowCupomModal] = useState(false);
+  const [cupomEditando, setCupomEditando] = useState(null);
+  const [formCupom, setFormCupom] = useState({ codigo: '', descricao: '', tipo: 'valor', valor: 0, ativo: true });
   const [formRecompensa, setFormRecompensa] = useState({
     titulo: '',
     descricao: '',
@@ -164,6 +167,12 @@ export default function Configuracoes() {
         return [];
       }
     },
+    enabled: !!pizzariaId,
+  });
+
+  const { data: cupons = [], refetch: refetchCupons } = useQuery({
+    queryKey: ['cupons', pizzariaId],
+    queryFn: () => pizzariaId ? base44.entities.CupomDesconto.filter({ pizzaria_id: pizzariaId }, '-created_date') : [],
     enabled: !!pizzariaId,
   });
 
@@ -279,6 +288,32 @@ export default function Configuracoes() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSaveCupom = async () => {
+    setLoading(true);
+    try {
+      const codigo = formCupom.codigo.toUpperCase().trim();
+      if (cupomEditando) {
+        await base44.entities.CupomDesconto.update(cupomEditando.id, { ...formCupom, codigo });
+      } else {
+        await base44.entities.CupomDesconto.create({ ...formCupom, codigo, pizzaria_id: pizzariaId });
+      }
+      refetchCupons();
+      setShowCupomModal(false);
+      setCupomEditando(null);
+      setFormCupom({ codigo: '', descricao: '', tipo: 'valor', valor: 0, ativo: true });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteCupom = async (id) => {
+    if (!confirm('Deseja excluir este cupom?')) return;
+    await base44.entities.CupomDesconto.delete(id);
+    refetchCupons();
   };
 
   const handleDeleteRecompensa = async (id) => {
@@ -1688,6 +1723,70 @@ export default function Configuracoes() {
               )}
             </CardContent>
           </Card>
+          {/* Cupons de Desconto */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Gift className="w-5 h-5 text-emerald-500" />
+                    Cupons de Desconto
+                  </CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Crie códigos de desconto para seus clientes usarem no checkout
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={() => {
+                    setCupomEditando(null);
+                    setFormCupom({ codigo: '', descricao: '', tipo: 'valor', valor: 0, ativo: true });
+                    setShowCupomModal(true);
+                  }}
+                  className="bg-gradient-to-r from-emerald-500 to-green-600"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo Cupom
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {cupons.length === 0 ? (
+                <div className="text-center py-10">
+                  <Gift className="w-14 h-14 mx-auto text-slate-600 mb-3" />
+                  <p className="text-slate-400">Nenhum cupom cadastrado</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {cupons.map((cupom) => (
+                    <div key={cupom.id} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/10">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono font-bold text-emerald-400 text-lg tracking-widest">{cupom.codigo}</span>
+                          {!cupom.ativo && <span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-300">Inativo</span>}
+                        </div>
+                        <p className="text-sm text-slate-400 mt-0.5">{cupom.descricao}</p>
+                        <p className="text-sm text-white mt-1">
+                          Desconto: <span className="text-emerald-400 font-semibold">
+                            {cupom.tipo === 'percentual' ? `${cupom.valor}%` : `R$ ${Number(cupom.valor).toFixed(2)}`}
+                          </span>
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" className="border-slate-600"
+                          onClick={() => { setCupomEditando(cupom); setFormCupom(cupom); setShowCupomModal(true); }}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="outline" className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                          onClick={() => handleDeleteCupom(cupom.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Tab Clientes */}
@@ -1695,6 +1794,50 @@ export default function Configuracoes() {
           <ClientesTab pizzariaId={pizzariaId} />
         </TabsContent>
       </Tabs>
+
+      {/* Modal de Cupom */}
+      <Dialog open={showCupomModal} onOpenChange={setShowCupomModal}>
+        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle>{cupomEditando ? 'Editar Cupom' : 'Novo Cupom de Desconto'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-slate-400">Código do Cupom</Label>
+              <Input value={formCupom.codigo} onChange={(e) => setFormCupom({ ...formCupom, codigo: e.target.value.toUpperCase() })} className="bg-slate-800 border-slate-700 text-white font-mono tracking-widest uppercase" placeholder="Ex: PROMO10" />
+              <p className="text-xs text-slate-500 mt-1">O cliente digitará este código no checkout</p>
+            </div>
+            <div>
+              <Label className="text-slate-400">Descrição (opcional)</Label>
+              <Input value={formCupom.descricao} onChange={(e) => setFormCupom({ ...formCupom, descricao: e.target.value })} className="bg-slate-800 border-slate-700 text-white" placeholder="Ex: Desconto de aniversário" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-slate-400">Tipo de Desconto</Label>
+                <Select value={formCupom.tipo} onValueChange={(v) => setFormCupom({ ...formCupom, tipo: v })}>
+                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="valor">Valor Fixo (R$)</SelectItem>
+                    <SelectItem value="percentual">Percentual (%)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-slate-400">{formCupom.tipo === 'percentual' ? 'Percentual (%)' : 'Valor (R$)'}</Label>
+                <Input type="number" step="0.01" min="0" value={formCupom.valor} onChange={(e) => setFormCupom({ ...formCupom, valor: parseFloat(e.target.value) || 0 })} className="bg-slate-800 border-slate-700 text-white" placeholder={formCupom.tipo === 'percentual' ? '10' : '5.00'} />
+              </div>
+            </div>
+            <div className="flex items-center justify-between p-4 rounded-xl bg-white/5">
+              <div><p className="font-medium text-white">Cupom Ativo</p><p className="text-sm text-slate-400">Disponível para uso pelos clientes</p></div>
+              <Switch checked={formCupom.ativo} onCheckedChange={(checked) => setFormCupom({ ...formCupom, ativo: checked })} />
+            </div>
+            <div className="flex gap-3 pt-2">
+              <Button variant="outline" onClick={() => setShowCupomModal(false)} className="flex-1 border-slate-600">Cancelar</Button>
+              <Button onClick={handleSaveCupom} disabled={loading || !formCupom.codigo} className="flex-1 bg-gradient-to-r from-emerald-500 to-green-600">{loading ? 'Salvando...' : 'Salvar Cupom'}</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal de Recompensa */}
       <Dialog open={showRecompensaModal} onOpenChange={setShowRecompensaModal}>
