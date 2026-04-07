@@ -1050,7 +1050,8 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
                   onFocus={() => clientesSugeridos.length > 0 && setShowClienteSugestoes(true)}
                   onBlur={() => setTimeout(() => setShowClienteSugestoes(false), 200)}
                   className="bg-slate-800 border-slate-700 text-white"
-                  />
+                />
+              </div>
             </div>
 
             {/* Endereço - Apenas para Delivery */}
