@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -133,7 +133,63 @@ export default function NovoPedido() {
   const [lojaTargetStatus, setLojaTargetStatus] = useState(null);
   const [produtoModalComplemento, setProdutoModalComplemento] = useState(null);
   const [complementosSelecionados, setComplementosSelecionados] = useState({});
+  const [clientesSugeridos, setClientesSugeridos] = useState([]);
+  const [showClienteSugestoes, setShowClienteSugestoes] = useState(false);
+  const [buscandoCliente, setBuscandoCliente] = useState(false);
+  const clienteBuscaTimer = useRef(null);
   const queryClient = useQueryClient();
+
+  const buscarClientes = async (termo, campo) => {
+    if (!pizzariaId || !termo || termo.replace(/\D/g, '').length < 2 && termo.length < 2) {
+      setClientesSugeridos([]);
+      return;
+    }
+    setBuscandoCliente(true);
+    try {
+      const todos = await base44.entities.Cliente.filter({ pizzaria_id: pizzariaId }, '-created_date', 200);
+      const t = termo.toLowerCase().replace(/\D/g, '') || termo.toLowerCase();
+      const filtrados = todos.filter(c => {
+        if (campo === 'nome') return c.nome?.toLowerCase().includes(termo.toLowerCase());
+        if (campo === 'telefone') return c.telefone?.replace(/\D/g, '').includes(termo.replace(/\D/g, ''));
+        return false;
+      });
+      setClientesSugeridos(filtrados.slice(0, 6));
+      setShowClienteSugestoes(filtrados.length > 0);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setBuscandoCliente(false);
+    }
+  };
+
+  const selecionarCliente = (cliente) => {
+    setForm(prev => ({
+      ...prev,
+      cliente_nome: cliente.nome || '',
+      cliente_telefone: cliente.telefone || '',
+      cliente_cep: cliente.cep || '',
+      cliente_endereco: cliente.endereco || '',
+      cliente_numero: cliente.numero || '',
+      cliente_bairro: cliente.bairro || '',
+      cliente_cidade: cliente.cidade || '',
+      cliente_estado: cliente.estado || '',
+      cliente_complemento: cliente.complemento || '',
+    }));
+    setClientesSugeridos([]);
+    setShowClienteSugestoes(false);
+  };
+
+  const onChangeClienteNome = (valor) => {
+    setForm(prev => ({ ...prev, cliente_nome: valor }));
+    clearTimeout(clienteBuscaTimer.current);
+    clienteBuscaTimer.current = setTimeout(() => buscarClientes(valor, 'nome'), 300);
+  };
+
+  const onChangeClienteTelefone = (valor) => {
+    setForm(prev => ({ ...prev, cliente_telefone: valor }));
+    clearTimeout(clienteBuscaTimer.current);
+    clienteBuscaTimer.current = setTimeout(() => buscarClientes(valor, 'telefone'), 300);
+  };
 
   const calcularLojaAberta = () => {
     const v = lojaAbertaLocal !== null ? lojaAbertaLocal : pizzaria.configuracoes?.loja_aberta;
@@ -954,23 +1010,47 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
               Dados do Cliente
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
+              <div className="relative">
                 <Label className="text-slate-400">Nome</Label>
                 <Input
                   value={form.cliente_nome}
-                  onChange={(e) => setForm({ ...form, cliente_nome: e.target.value })}
+                  onChange={(e) => onChangeClienteNome(e.target.value)}
+                  onFocus={() => clientesSugeridos.length > 0 && setShowClienteSugestoes(true)}
+                  onBlur={() => setTimeout(() => setShowClienteSugestoes(false), 200)}
                   className="bg-slate-800 border-slate-700 text-white"
                   placeholder="Nome do cliente"
+                  autoComplete="off"
                 />
+                {showClienteSugestoes && (
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-xl overflow-hidden">
+                    {clientesSugeridos.map(c => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onMouseDown={() => selecionarCliente(c)}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-white/10 transition-colors text-left"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+                          <span className="text-orange-400 text-xs font-bold">{c.nome?.charAt(0)?.toUpperCase()}</span>
+                        </div>
+                        <div>
+                          <p className="text-white text-sm font-medium">{c.nome}</p>
+                          <p className="text-slate-400 text-xs">{c.telefone}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div>
+              <div className="relative">
                 <Label className="text-slate-400">Telefone</Label>
                 <TelefoneInput
                   value={form.cliente_telefone}
-                  onChange={(e) => setForm({ ...form, cliente_telefone: e.target.value })}
+                  onChange={(e) => onChangeClienteTelefone(e.target.value)}
+                  onFocus={() => clientesSugeridos.length > 0 && setShowClienteSugestoes(true)}
+                  onBlur={() => setTimeout(() => setShowClienteSugestoes(false), 200)}
                   className="bg-slate-800 border-slate-700 text-white"
-                />
-              </div>
+                  />
             </div>
 
             {/* Endereço - Apenas para Delivery */}
