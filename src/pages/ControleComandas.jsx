@@ -101,6 +101,19 @@ export default function ControleComandas() {
       data_conferencia: new Date().toISOString(),
     };
 
+    // Se pagamento em dinheiro, marcar entrega como prestada para reduzir saldo do motoboy
+    const formasDinheiro = ['dinheiro', 'pagar_na_entrega'];
+    if (formasDinheiro.includes(selectedPedido.forma_pagamento)) {
+      try {
+        const entregas = await base44.entities.Entrega.filter({ pedido_id: selectedPedido.id });
+        for (const entrega of entregas) {
+          await base44.entities.Entrega.update(entrega.id, { dinheiro_prestado: true });
+        }
+      } catch (e) {
+        console.error('Erro ao marcar dinheiro como prestado:', e);
+      }
+    }
+
     finalizarPedidoMutation.mutate({ 
       pedidoId: selectedPedido.id, 
       data: updateData 

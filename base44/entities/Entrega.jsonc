@@ -1,0 +1,130 @@
+{
+  "name": "Entrega",
+  "type": "object",
+  "properties": {
+    "pizzaria_id": {
+      "type": "string"
+    },
+    "pedido_id": {
+      "type": "string"
+    },
+    "entregador_id": {
+      "type": "string"
+    },
+    "numero_pedido": {
+      "type": "string"
+    },
+    "cliente_nome": {
+      "type": "string"
+    },
+    "cliente_telefone": {
+      "type": "string"
+    },
+    "endereco_completo": {
+      "type": "string"
+    },
+    "bairro": {
+      "type": "string"
+    },
+    "latitude_destino": {
+      "type": "number"
+    },
+    "longitude_destino": {
+      "type": "number"
+    },
+    "valor_pedido": {
+      "type": "number"
+    },
+    "taxa_entregador": {
+      "type": "number",
+      "description": "Valor que o entregador receber\u00e1"
+    },
+    "forma_pagamento": {
+      "type": "string"
+    },
+    "troco_para": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "aceita",
+        "em_rota",
+        "entregue",
+        "recusada",
+        "cancelada"
+      ],
+      "default": "pendente"
+    },
+    "dinheiro_prestado": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o dinheiro coletado em esp\u00e9cie j\u00e1 foi prestado ao estabelecimento"
+    },
+    "horario_atribuicao": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "horario_aceite": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "horario_saida": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "horario_entrega": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tempo_entrega_minutos": {
+      "type": "number"
+    },
+    "distancia_km": {
+      "type": "number"
+    },
+    "observacoes": {
+      "type": "string"
+    },
+    "itens_resumo": {
+      "type": "string",
+      "description": "Resumo dos itens do pedido"
+    },
+    "assinatura_cliente": {
+      "type": "string",
+      "description": "URL da assinatura digital se houver"
+    },
+    "foto_comprovante": {
+      "type": "string",
+      "description": "URL da foto de comprovante"
+    },
+    "avaliacao_cliente": {
+      "type": "number"
+    },
+    "rota_log": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "pizzaria_id",
+    "pedido_id",
+    "entregador_id",
+    "endereco_completo",
+    "valor_pedido"
+  ]
+}

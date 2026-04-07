@@ -267,8 +267,9 @@ export default function AppEntregador() {
     );
     
     const ganhoHoje = entregasHoje.reduce((acc, e) => acc + (e.taxa_entregador || 0), 0);
+    // Apenas dinheiro ainda não prestado ao estabelecimento
     const valorColetadoHoje = entregasHoje
-      .filter(e => ['dinheiro', 'pagar_na_entrega'].includes(e.forma_pagamento))
+      .filter(e => ['dinheiro', 'pagar_na_entrega'].includes(e.forma_pagamento) && !e.dinheiro_prestado)
       .reduce((acc, e) => acc + (e.valor_pedido || 0), 0);
     
     const tempoMedio = entregasHoje.length > 0
