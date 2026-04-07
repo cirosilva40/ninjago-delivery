@@ -219,14 +219,14 @@ export default function CardapioCliente() {
   const verificarLojaAberta = () => {
     const config = pizzariaConfig.configuracoes || {};
 
-    // Override manual tem prioridade absoluta (suporta booleano e string)
-    if (config.loja_aberta === true || config.loja_aberta === 'true') return true;
-    if (config.loja_aberta === false || config.loja_aberta === 'false') return false;
+    // Override manual: o backend já normaliza para boolean ou null
+    if (config.loja_aberta === false) return false;
+    if (config.loja_aberta === true)  return true;
 
     const agora = new Date();
     const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
 
-    // Horários por dia da semana (configurados em Configurações)
+    // Horários por dia da semana
     const horariosSemana = config.horarios_semana;
     if (horariosSemana) {
       const diasKeys = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];

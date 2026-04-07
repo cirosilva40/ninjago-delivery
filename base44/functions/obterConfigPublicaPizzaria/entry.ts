@@ -40,7 +40,13 @@ Deno.serve(async (req) => {
       estado: pizzaria.estado,
       // Configurações: somente o que o frontend público precisa
       configuracoes: {
-        loja_aberta: pizzaria.configuracoes?.loja_aberta ?? null,
+        // Converter explicitamente para booleano ou null para evitar perda do valor false
+        loja_aberta: (() => {
+          const v = pizzaria.configuracoes?.loja_aberta;
+          if (v === false || v === 'false' || v === 'fechada') return false;
+          if (v === true  || v === 'true'  || v === 'aberta')  return true;
+          return null; // não definido → usa horário
+        })(),
         horarios_semana: pizzaria.configuracoes?.horarios_semana ?? null,
         tempo_medio_preparo: pizzaria.configuracoes?.tempo_medio_preparo,
         aceitar_pix: pizzaria.configuracoes?.aceitar_pix,
