@@ -131,6 +131,8 @@ export default function NovoPedido() {
   const [lojaAbertaLocal, setLojaAbertaLocal] = useState(null); // null = usa valor do servidor
   const [showConfirmLoja, setShowConfirmLoja] = useState(false);
   const [lojaTargetStatus, setLojaTargetStatus] = useState(null);
+  const [produtoModalComplemento, setProdutoModalComplemento] = useState(null);
+  const [complementosSelecionados, setComplementosSelecionados] = useState({});
   const queryClient = useQueryClient();
 
   const calcularLojaAberta = () => {
@@ -490,13 +492,92 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
     }, 250);
   };
 
+  // Modal complementos
+  const abrirComplementos = (produto) => {
+    if (produto.opcoes_personalizacao && produto.opcoes_personalizacao.length > 0) {
+      setComplementosSelecionados({});
+      setProdutoModalComplemento(produto);
+    } else {
+      addToCartDireto(produto, {}, '');
+    }
+  };
+
+  const addToCartDireto = (produto, selecoes, obsComplementos) => {
+    setCarrinho(prev => {
+      const existing = prev.find(i => i.produto_id === produto.id && !i._com_complemento);
+      const preco = calcularPrecoComComplementos(produto, selecoes);
+      if (existing && !obsComplementos) {
+        return prev.map(i =>
+          i.produto_id === produto.id && !i._com_complemento
+            ? { ...i, quantidade: i.quantidade + 1 }
+            : i
+        );
+      }
+      return [...prev, {
+        produto_id: produto.id,
+        nome: produto.nome,
+        preco_unitario: preco,
+        quantidade: 1,
+        observacao: obsComplementos,
+        _com_complemento: !!obsComplementos,
+      }];
+    });
+  };
+
+  const calcularPrecoComComplementos = (produto, selecoes) => {
+    let preco = produto.preco || 0;
+    Object.values(selecoes).forEach(itens => {
+      itens.forEach(item => { preco += item.preco_adicional || 0; });
+    });
+    return preco;
+  };
+
+  const confirmarComplementos = () => {
+    const produto = produtoModalComplemento;
+    // Validar obrigatórios
+    for (const grupo of produto.opcoes_personalizacao) {
+      if (grupo.obrigatorio) {
+        const selecionados = complementosSelecionados[grupo.nome_grupo] || [];
+        if (selecionados.length < (grupo.min_selecoes || 1)) {
+          alert(`Selecione pelo menos ${grupo.min_selecoes || 1} item(s) em "${grupo.nome_grupo}"`);
+          return;
+        }
+      }
+    }
+    const linhas = [];
+    Object.entries(complementosSelecionados).forEach(([grupo, itens]) => {
+      if (itens.length > 0) linhas.push(`${grupo}: ${itens.map(i => i.nome).join(', ')}`);
+    });
+    addToCartDireto(produto, complementosSelecionados, linhas.join(' | '));
+    setProdutoModalComplemento(null);
+    setComplementosSelecionados({});
+  };
+
+  const toggleComplemento = (nomeGrupo, item, maxSelecoes) => {
+    setComplementosSelecionados(prev => {
+      const atual = prev[nomeGrupo] || [];
+      const jatem = atual.find(i => i.nome === item.nome);
+      if (jatem) {
+        return { ...prev, [nomeGrupo]: atual.filter(i => i.nome !== item.nome) };
+      }
+      if (maxSelecoes && atual.length >= maxSelecoes) {
+        return { ...prev, [nomeGrupo]: [...atual.slice(1), item] };
+      }
+      return { ...prev, [nomeGrupo]: [...atual, item] };
+    });
+  };
+
   // Carrinho
   const addToCart = (produto) => {
+    abrirComplementos(produto);
+  };
+
+  const addToCartLegado = (produto) => {
     setCarrinho(prev => {
       const existing = prev.find(i => i.produto_id === produto.id);
       if (existing) {
-        return prev.map(i => 
-          i.produto_id === produto.id 
+        return prev.map(i =>
+          i.produto_id === produto.id
             ? { ...i, quantidade: i.quantidade + 1 }
             : i
         );
@@ -1212,6 +1293,78 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
               }`}
             >
               {lojaTargetStatus ? '✅ Sim, abrir a loja' : '🔒 Sim, fechar a loja'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Complementos */}
+      <Dialog open={!!produtoModalComplemento} onOpenChange={(open) => { if (!open) setProdutoModalComplemento(null); }}>
+        <DialogContent className="sm:max-w-lg bg-slate-900 border-slate-700 text-white max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl">{produtoModalComplemento?.nome}</DialogTitle>
+            <p className="text-slate-400 text-sm">R$ {produtoModalComplemento?.preco?.toFixed(2)}</p>
+          </DialogHeader>
+          <div className="space-y-5 py-2">
+            {produtoModalComplemento?.opcoes_personalizacao?.map((grupo) => {
+              const selecionados = complementosSelecionados[grupo.nome_grupo] || [];
+              return (
+                <div key={grupo.nome_grupo}>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold text-white">{grupo.nome_grupo}</h4>
+                    <div className="flex items-center gap-2">
+                      {grupo.obrigatorio && (
+                        <span className="text-xs bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full">Obrigatório</span>
+                      )}
+                      {grupo.max_selecoes && (
+                        <span className="text-xs text-slate-400">até {grupo.max_selecoes}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    {grupo.itens?.filter(i => i.disponivel !== false).map((item) => {
+                      const marcado = selecionados.some(s => s.nome === item.nome);
+                      return (
+                        <button
+                          key={item.nome}
+                          onClick={() => toggleComplemento(grupo.nome_grupo, item, grupo.max_selecoes)}
+                          className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all ${
+                            marcado
+                              ? 'bg-orange-500/15 border-orange-500/50'
+                              : 'bg-white/5 border-white/10 hover:bg-white/10'
+                          }`}
+                        >
+                          <span className={`text-sm font-medium ${marcado ? 'text-orange-400' : 'text-white'}`}>{item.nome}</span>
+                          <div className="flex items-center gap-3">
+                            {item.preco_adicional > 0 && (
+                              <span className="text-emerald-400 text-sm">+R$ {item.preco_adicional.toFixed(2)}</span>
+                            )}
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                              marcado ? 'bg-orange-500 border-orange-500' : 'border-slate-500'
+                            }`}>
+                              {marcado && <div className="w-2 h-2 bg-white rounded-full" />}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={() => setProdutoModalComplemento(null)}
+              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:bg-white/5 transition-all text-sm font-medium"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={confirmarComplementos}
+              className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 text-white font-semibold text-sm hover:opacity-90 transition-all"
+            >
+              Adicionar ao carrinho
             </button>
           </div>
         </DialogContent>
