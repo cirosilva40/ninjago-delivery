@@ -40,7 +40,8 @@ Deno.serve(async (req) => {
       estado: pizzaria.estado,
       // Configurações: somente o que o frontend público precisa
       configuracoes: {
-        loja_aberta: pizzaria.configuracoes?.loja_aberta,
+        loja_aberta: pizzaria.configuracoes?.loja_aberta ?? null,
+        horarios_semana: pizzaria.configuracoes?.horarios_semana ?? null,
         tempo_medio_preparo: pizzaria.configuracoes?.tempo_medio_preparo,
         aceitar_pix: pizzaria.configuracoes?.aceitar_pix,
         aceitar_cartao: pizzaria.configuracoes?.aceitar_cartao,
@@ -49,6 +50,8 @@ Deno.serve(async (req) => {
         mp_public_key: pizzaria.configuracoes?.mp_public_key,
         // mp_access_token é OMITIDO intencionalmente
       },
+      bairro: pizzaria.bairro,
+      numero: pizzaria.numero,
     };
 
     return Response.json({ success: true, pizzaria: dadosPublicos });

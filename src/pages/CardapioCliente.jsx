@@ -219,9 +219,9 @@ export default function CardapioCliente() {
   const verificarLojaAberta = () => {
     const config = pizzariaConfig.configuracoes || {};
 
-    // Override manual tem prioridade absoluta
-    if (config.loja_aberta === true) return true;
-    if (config.loja_aberta === false) return false;
+    // Override manual tem prioridade absoluta (suporta booleano e string)
+    if (config.loja_aberta === true || config.loja_aberta === 'true') return true;
+    if (config.loja_aberta === false || config.loja_aberta === 'false') return false;
 
     const agora = new Date();
     const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
