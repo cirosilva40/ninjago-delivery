@@ -1529,7 +1529,7 @@ export default function CardapioCliente() {
                       />
                     </div>
                     <div>
-                      <Label>Bairro</Label>
+                      <Label>Bairro <span className="text-red-400">*</span></Label>
                       <Input
                         value={formCliente.bairro}
                         onChange={(e) => setFormCliente({ ...formCliente, bairro: e.target.value })}
@@ -1586,6 +1586,11 @@ export default function CardapioCliente() {
 
                         if (!formCliente.cep || !formCliente.endereco || !formCliente.numero) {
                           alert('Preencha o endereço completo (CEP, endereço e número)');
+                          return;
+                        }
+
+                        if (!formCliente.bairro || !formCliente.bairro.trim()) {
+                          alert('O campo Bairro é obrigatório. Por favor, preencha o bairro.');
                           return;
                         }
 
