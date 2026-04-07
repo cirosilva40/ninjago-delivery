@@ -144,12 +144,14 @@ export default function NovoPedido() {
     setShowConfirmLoja(false);
     setSalvandoStatusLoja(true);
     const lojaAbertaAtual = lojaAbertaLocal !== null ? lojaAbertaLocal : (pizzaria.configuracoes?.loja_aberta ?? true);
+    // true = abrir = liberar override (null), false = fechar manualmente
+    const novoValor = lojaTargetStatus ? null : false;
     setLojaAbertaLocal(lojaTargetStatus);
     try {
       await base44.entities.Pizzaria.update(pizzaria.id, {
         configuracoes: {
           ...pizzaria.configuracoes,
-          loja_aberta: lojaTargetStatus,
+          loja_aberta: novoValor,
         }
       });
       await queryClient.refetchQueries({ queryKey: ['pizzarias', pizzariaId] });
