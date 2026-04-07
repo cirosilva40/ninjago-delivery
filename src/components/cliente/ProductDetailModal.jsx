@@ -7,7 +7,7 @@ import { Plus, X, Tag, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
-export default function ProductDetailModal({ produto, open, onClose, onAddToCart, tema = 'dark' }) {
+export default function ProductDetailModal({ produto, open, onClose, onAddToCart, tema = 'dark', lojaAberta = true }) {
   const [selecoes, setSelecoes] = useState({});
   const [precoTotal, setPrecoTotal] = useState(0);
 
@@ -274,12 +274,23 @@ export default function ProductDetailModal({ produto, open, onClose, onAddToCart
               </div>
             </div>
             <Button
-              onClick={handleAddToCart}
+              onClick={() => {
+                if (!lojaAberta) {
+                  alert('🔒 A loja está fechada no momento.');
+                  return;
+                }
+                handleAddToCart();
+              }}
               size="lg"
-              className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white text-base px-6 w-full h-12"
+              disabled={!lojaAberta}
+              className={`text-white text-base px-6 w-full h-12 ${
+                lojaAberta
+                  ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700'
+                  : 'bg-slate-600 cursor-not-allowed'
+              }`}
             >
               <Plus className="w-5 h-5 mr-2" />
-              Adicionar ao Carrinho
+              {lojaAberta ? 'Adicionar ao Carrinho' : '🔒 Loja Fechada'}
             </Button>
             {produto.disponivel && (
               <p className={`text-xs sm:text-sm text-center ${isLight ? 'text-green-600' : 'text-green-400'}`}>

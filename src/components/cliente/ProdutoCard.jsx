@@ -4,7 +4,7 @@ import { Plus, Star, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-export default function ProdutoCard({ produto, onAddCart, onClick, tema = 'dark', corPrimaria = '#f97316' }) {
+export default function ProdutoCard({ produto, onAddCart, onClick, tema = 'dark', corPrimaria = '#f97316', lojaAberta = true }) {
   const isLight = tema === 'light';
   
   // Extrair ingredientes da descrição (formato simples)
@@ -126,6 +126,10 @@ export default function ProdutoCard({ produto, onAddCart, onClick, tema = 'dark'
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
+                if (!lojaAberta) {
+                  alert('🔒 A loja está fechada no momento.');
+                  return;
+                }
                 if (produto.opcoes_personalizacao && produto.opcoes_personalizacao.length > 0) {
                   onClick?.(produto);
                 } else {
@@ -133,7 +137,8 @@ export default function ProdutoCard({ produto, onAddCart, onClick, tema = 'dark'
                 }
               }}
               className="flex-1 text-white"
-              style={{ backgroundColor: corPrimaria }}
+              style={{ backgroundColor: lojaAberta ? corPrimaria : '#64748b' }}
+              disabled={!lojaAberta}
             >
               <Plus className="w-4 h-4 mr-1" />
               Adicionar

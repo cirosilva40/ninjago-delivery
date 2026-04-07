@@ -711,6 +711,7 @@ export default function CardapioCliente() {
       onAddCart={adicionarAoCarrinho}
       tema={tema}
       corPrimaria={corPrimaria}
+      lojaAberta={lojaAberta}
     />
   );
 
@@ -1093,6 +1094,7 @@ export default function CardapioCliente() {
         }}
         onAddToCart={adicionarAoCarrinho}
         tema={tema}
+        lojaAberta={lojaAberta}
       />
 
       {/* Modal do Carrinho */}
