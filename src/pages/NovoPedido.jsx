@@ -144,8 +144,8 @@ export default function NovoPedido() {
     setShowConfirmLoja(false);
     setSalvandoStatusLoja(true);
     const lojaAbertaAtual = lojaAbertaLocal !== null ? lojaAbertaLocal : (pizzaria.configuracoes?.loja_aberta ?? true);
-    // true = abrir = liberar override (null), false = fechar manualmente
-    const novoValor = lojaTargetStatus ? null : false;
+    // true = forçar aberto, false = forçar fechado
+    const novoValor = lojaTargetStatus;
     setLojaAbertaLocal(lojaTargetStatus);
     try {
       await base44.entities.Pizzaria.update(pizzaria.id, {
