@@ -155,20 +155,18 @@ export default function NovoPedido() {
   const confirmarToggleLoja = async () => {
     setShowConfirmLoja(false);
     setSalvandoStatusLoja(true);
-    const lojaAbertaAtual = calcularLojaAberta();
-    const novoValor = lojaTargetStatus; // true = forçar aberto, false = forçar fechado
-    setLojaAbertaLocal(lojaTargetStatus);
+    const novoValor = lojaTargetStatus;
+    setLojaAbertaLocal(novoValor); // otimista
     try {
-      await base44.entities.Pizzaria.update(pizzaria.id, {
-        configuracoes: {
-          ...pizzaria.configuracoes,
-          loja_aberta: novoValor,
-        }
+      const { data } = await base44.functions.invoke('toggleStatusLoja', {
+        pizzariaId,
+        lojaAberta: novoValor,
       });
+      if (!data?.success) throw new Error(data?.error || 'Falha ao salvar');
       await queryClient.refetchQueries({ queryKey: ['pizzarias', pizzariaId] });
     } catch (e) {
       console.error(e);
-      setLojaAbertaLocal(null); // reverter ao estado do servidor
+      setLojaAbertaLocal(null); // reverter
     } finally {
       setSalvandoStatusLoja(false);
     }
