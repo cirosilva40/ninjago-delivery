@@ -23,6 +23,7 @@ import {
   X,
   Printer,
   Power,
+  AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,6 +40,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const categoriaConfig = {
   pizza: { label: 'Pizza', color: 'bg-red-500' },
@@ -122,25 +129,33 @@ export default function NovoPedido() {
   const [salvandoIntegracao, setSalvandoIntegracao] = useState(null);
   const [salvandoStatusLoja, setSalvandoStatusLoja] = useState(false);
   const [lojaAbertaLocal, setLojaAbertaLocal] = useState(null); // null = usa valor do servidor
+  const [showConfirmLoja, setShowConfirmLoja] = useState(false);
+  const [lojaTargetStatus, setLojaTargetStatus] = useState(null);
   const queryClient = useQueryClient();
 
-  const toggleStatusLoja = async () => {
+  const toggleStatusLoja = () => {
     if (!pizzaria.id) return;
+    const lojaAbertaAtual = lojaAbertaLocal !== null ? lojaAbertaLocal : (pizzaria.configuracoes?.loja_aberta ?? true);
+    setLojaTargetStatus(!lojaAbertaAtual);
+    setShowConfirmLoja(true);
+  };
+
+  const confirmarToggleLoja = async () => {
+    setShowConfirmLoja(false);
     setSalvandoStatusLoja(true);
     const lojaAbertaAtual = lojaAbertaLocal !== null ? lojaAbertaLocal : (pizzaria.configuracoes?.loja_aberta ?? true);
-    const novoValor = !lojaAbertaAtual;
-    setLojaAbertaLocal(novoValor); // atualiza imediatamente
+    setLojaAbertaLocal(lojaTargetStatus);
     try {
       await base44.entities.Pizzaria.update(pizzaria.id, {
         configuracoes: {
           ...pizzaria.configuracoes,
-          loja_aberta: novoValor,
+          loja_aberta: lojaTargetStatus,
         }
       });
       await queryClient.refetchQueries({ queryKey: ['pizzarias', pizzariaId] });
     } catch (e) {
       console.error(e);
-      setLojaAbertaLocal(lojaAbertaAtual); // reverte se falhar
+      setLojaAbertaLocal(lojaAbertaAtual);
     } finally {
       setSalvandoStatusLoja(false);
     }
@@ -1139,6 +1154,43 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
           </Card>
         </div>
       </div>
+
+      {/* Modal de Confirmação - Status da Loja */}
+      <Dialog open={showConfirmLoja} onOpenChange={setShowConfirmLoja}>
+        <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <AlertTriangle className={`w-6 h-6 ${lojaTargetStatus ? 'text-emerald-400' : 'text-red-400'}`} />
+              {lojaTargetStatus ? 'Abrir a Loja?' : 'Fechar a Loja?'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-slate-300 text-base">
+              {lojaTargetStatus
+                ? 'Tem certeza que deseja abrir a loja? Os clientes poderão realizar pedidos pelo cardápio online.'
+                : 'Tem certeza que deseja fechar a loja? Os clientes não conseguirão finalizar pedidos pelo cardápio online.'}
+            </p>
+          </div>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setShowConfirmLoja(false)}
+              className="px-4 py-2 rounded-xl border border-slate-600 text-slate-300 hover:bg-white/5 transition-all text-sm font-medium"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={confirmarToggleLoja}
+              className={`px-5 py-2 rounded-xl font-semibold text-white text-sm transition-all ${
+                lojaTargetStatus
+                  ? 'bg-gradient-to-r from-emerald-500 to-green-600 hover:opacity-90'
+                  : 'bg-gradient-to-r from-red-500 to-red-700 hover:opacity-90'
+              }`}
+            >
+              {lojaTargetStatus ? '✅ Sim, abrir a loja' : '🔒 Sim, fechar a loja'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
