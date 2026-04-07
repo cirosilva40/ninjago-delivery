@@ -12,8 +12,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'lojaAberta deve ser boolean ou null' }, { status: 400 });
     }
 
-    const pizzarias = await base44.asServiceRole.entities.Pizzaria.filter({ id: pizzariaId }, null, 1);
-    const pizzaria = pizzarias[0];
+    const pizzaria = await base44.asServiceRole.entities.Pizzaria.get(pizzariaId);
     if (!pizzaria) {
       return Response.json({ error: 'Pizzaria não encontrada' }, { status: 404 });
     }
