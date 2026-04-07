@@ -133,19 +133,30 @@ export default function NovoPedido() {
   const [lojaTargetStatus, setLojaTargetStatus] = useState(null);
   const queryClient = useQueryClient();
 
+  const calcularLojaAberta = () => {
+    const v = lojaAbertaLocal !== null ? lojaAbertaLocal : pizzaria.configuracoes?.loja_aberta;
+    if (v === true) return true;
+    if (v === false) return false;
+    // null/undefined: usar horário
+    const agora = new Date();
+    const min = agora.getHours() * 60 + agora.getMinutes();
+    if (!pizzaria.horario_abertura || !pizzaria.horario_fechamento) return true;
+    const [hA, mA] = pizzaria.horario_abertura.split(':').map(Number);
+    const [hF, mF] = pizzaria.horario_fechamento.split(':').map(Number);
+    return min >= (hA * 60 + mA) && min < (hF * 60 + mF);
+  };
+
   const toggleStatusLoja = () => {
     if (!pizzaria.id) return;
-    const lojaAbertaAtual = lojaAbertaLocal !== null ? lojaAbertaLocal : (pizzaria.configuracoes?.loja_aberta ?? true);
-    setLojaTargetStatus(!lojaAbertaAtual);
+    setLojaTargetStatus(!calcularLojaAberta());
     setShowConfirmLoja(true);
   };
 
   const confirmarToggleLoja = async () => {
     setShowConfirmLoja(false);
     setSalvandoStatusLoja(true);
-    const lojaAbertaAtual = lojaAbertaLocal !== null ? lojaAbertaLocal : (pizzaria.configuracoes?.loja_aberta ?? true);
-    // true = forçar aberto, false = forçar fechado
-    const novoValor = lojaTargetStatus;
+    const lojaAbertaAtual = calcularLojaAberta();
+    const novoValor = lojaTargetStatus; // true = forçar aberto, false = forçar fechado
     setLojaAbertaLocal(lojaTargetStatus);
     try {
       await base44.entities.Pizzaria.update(pizzaria.id, {
@@ -157,7 +168,7 @@ export default function NovoPedido() {
       await queryClient.refetchQueries({ queryKey: ['pizzarias', pizzariaId] });
     } catch (e) {
       console.error(e);
-      setLojaAbertaLocal(lojaAbertaAtual);
+      setLojaAbertaLocal(null); // reverter ao estado do servidor
     } finally {
       setSalvandoStatusLoja(false);
     }
@@ -677,7 +688,21 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
         <div className="flex items-center gap-3">
           {/* Toggle Loja Aberta/Fechada */}
           {(() => {
-            const lojaAberta = lojaAbertaLocal !== null ? lojaAbertaLocal : (pizzaria.configuracoes?.loja_aberta ?? true);
+            const v = lojaAbertaLocal !== null ? lojaAbertaLocal : pizzaria.configuracoes?.loja_aberta;
+            let lojaAberta;
+            if (v === true) lojaAberta = true;
+            else if (v === false) lojaAberta = false;
+            else {
+              const agora = new Date();
+              const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+              if (!pizzaria.horario_abertura || !pizzaria.horario_fechamento) {
+                lojaAberta = true;
+              } else {
+                const [hA, mA] = pizzaria.horario_abertura.split(':').map(Number);
+                const [hF, mF] = pizzaria.horario_fechamento.split(':').map(Number);
+                lojaAberta = minutosAgora >= (hA * 60 + mA) && minutosAgora < (hF * 60 + mF);
+              }
+            }
             return (
               <button
                 onClick={toggleStatusLoja}
