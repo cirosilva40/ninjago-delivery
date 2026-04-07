@@ -10,7 +10,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'pizzariaId obrigatório' }, { status: 400 });
     }
 
-    const pizzaria = await base44.asServiceRole.entities.Pizzaria.get(pizzariaId);
+    const pizzarias = await base44.asServiceRole.entities.Pizzaria.filter({ id: pizzariaId }, null, 1);
+    const pizzaria = pizzarias[0];
     if (!pizzaria) {
       return Response.json({ error: 'Pizzaria não encontrada' }, { status: 404 });
     }
