@@ -127,10 +127,6 @@ export default function NovoPedido() {
   const [calculandoTaxa, setCalculandoTaxa] = useState(false);
   const [distanciaCalculada, setDistanciaCalculada] = useState(null);
   const [salvandoIntegracao, setSalvandoIntegracao] = useState(null);
-  const [salvandoStatusLoja, setSalvandoStatusLoja] = useState(false);
-  const [lojaAbertaLocal, setLojaAbertaLocal] = useState(null); // null = usa valor do servidor
-  const [showConfirmLoja, setShowConfirmLoja] = useState(false);
-  const [lojaTargetStatus, setLojaTargetStatus] = useState(null);
   const [produtoModalComplemento, setProdutoModalComplemento] = useState(null);
   const [complementosSelecionados, setComplementosSelecionados] = useState({});
   const [clientesSugeridos, setClientesSugeridos] = useState([]);
@@ -191,44 +187,6 @@ export default function NovoPedido() {
     clienteBuscaTimer.current = setTimeout(() => buscarClientes(valor, 'telefone'), 300);
   };
 
-  const calcularLojaAberta = () => {
-    const v = lojaAbertaLocal !== null ? lojaAbertaLocal : pizzaria.configuracoes?.loja_aberta;
-    if (v === true) return true;
-    if (v === false) return false;
-    // null/undefined: usar horário
-    const agora = new Date();
-    const min = agora.getHours() * 60 + agora.getMinutes();
-    if (!pizzaria.horario_abertura || !pizzaria.horario_fechamento) return true;
-    const [hA, mA] = pizzaria.horario_abertura.split(':').map(Number);
-    const [hF, mF] = pizzaria.horario_fechamento.split(':').map(Number);
-    return min >= (hA * 60 + mA) && min < (hF * 60 + mF);
-  };
-
-  const toggleStatusLoja = () => {
-    if (!pizzaria.id) return;
-    setLojaTargetStatus(!calcularLojaAberta());
-    setShowConfirmLoja(true);
-  };
-
-  const confirmarToggleLoja = async () => {
-    setShowConfirmLoja(false);
-    setSalvandoStatusLoja(true);
-    const novoValor = lojaTargetStatus;
-    setLojaAbertaLocal(novoValor); // otimista
-    try {
-      const { data } = await base44.functions.invoke('toggleStatusLoja', {
-        pizzariaId,
-        lojaAberta: novoValor,
-      });
-      if (!data?.success) throw new Error(data?.error || 'Falha ao salvar');
-      await queryClient.refetchQueries({ queryKey: ['pizzarias', pizzariaId] });
-    } catch (e) {
-      console.error(e);
-      setLojaAbertaLocal(null); // reverter
-    } finally {
-      setSalvandoStatusLoja(false);
-    }
-  };
 
 
   const { data: produtos = [], isLoading: loadingProdutos } = useQuery({
@@ -821,43 +779,7 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
           <p className="text-slate-400 mt-1">Cadastre um novo pedido</p>
         </div>
         <div className="flex items-center gap-3">
-          {/* Toggle Loja Aberta/Fechada */}
-          {(() => {
-            const v = lojaAbertaLocal !== null ? lojaAbertaLocal : pizzaria.configuracoes?.loja_aberta;
-            let lojaAberta;
-            if (v === true) lojaAberta = true;
-            else if (v === false) lojaAberta = false;
-            else {
-              const agora = new Date();
-              const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
-              if (!pizzaria.horario_abertura || !pizzaria.horario_fechamento) {
-                lojaAberta = true;
-              } else {
-                const [hA, mA] = pizzaria.horario_abertura.split(':').map(Number);
-                const [hF, mF] = pizzaria.horario_fechamento.split(':').map(Number);
-                lojaAberta = minutosAgora >= (hA * 60 + mA) && minutosAgora < (hF * 60 + mF);
-              }
-            }
-            return (
-              <button
-                onClick={toggleStatusLoja}
-                disabled={salvandoStatusLoja}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all font-medium text-sm ${
-                  lojaAberta
-                    ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
-                    : 'bg-red-500/20 border-red-500/50 text-red-400'
-                }`}
-              >
-                {salvandoStatusLoja ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Power className={`w-4 h-4 ${lojaAberta ? 'text-emerald-400' : 'text-red-400'}`} />
-                )}
-                Loja {lojaAberta ? 'Aberta' : 'Fechada'}
-              </button>
-            );
-          })()}
-          {/* Toggle iFood */}
+          {/* Toggle iFood */
           <button
             onClick={() => toggleIntegracao('ifood')}
             disabled={salvandoIntegracao === 'ifood'}
@@ -1341,43 +1263,6 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
           </Card>
         </div>
       </div>
-
-      {/* Modal de Confirmação - Status da Loja */}
-      <Dialog open={showConfirmLoja} onOpenChange={setShowConfirmLoja}>
-        <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-xl flex items-center gap-2">
-              <AlertTriangle className={`w-6 h-6 ${lojaTargetStatus ? 'text-emerald-400' : 'text-red-400'}`} />
-              {lojaTargetStatus ? 'Abrir a Loja?' : 'Fechar a Loja?'}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-slate-300 text-base">
-              {lojaTargetStatus
-                ? 'Tem certeza que deseja abrir a loja? Os clientes poderão realizar pedidos pelo cardápio online.'
-                : 'Tem certeza que deseja fechar a loja? Os clientes não conseguirão finalizar pedidos pelo cardápio online.'}
-            </p>
-          </div>
-          <div className="flex justify-end gap-3">
-            <button
-              onClick={() => setShowConfirmLoja(false)}
-              className="px-4 py-2 rounded-xl border border-slate-600 text-slate-300 hover:bg-white/5 transition-all text-sm font-medium"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={confirmarToggleLoja}
-              className={`px-5 py-2 rounded-xl font-semibold text-white text-sm transition-all ${
-                lojaTargetStatus
-                  ? 'bg-gradient-to-r from-emerald-500 to-green-600 hover:opacity-90'
-                  : 'bg-gradient-to-r from-red-500 to-red-700 hover:opacity-90'
-              }`}
-            >
-              {lojaTargetStatus ? '✅ Sim, abrir a loja' : '🔒 Sim, fechar a loja'}
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Modal de Complementos */}
       <Dialog open={!!produtoModalComplemento} onOpenChange={(open) => { if (!open) setProdutoModalComplemento(null); }}>

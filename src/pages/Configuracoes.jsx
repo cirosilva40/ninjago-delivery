@@ -11,7 +11,6 @@ import {
   DollarSign,
   Bell,
   Users,
-  Shield,
   Save,
   Upload,
   CreditCard,
@@ -26,6 +25,9 @@ import {
   Globe,
   Copy,
   CheckCircle,
+  Power,
+  AlertTriangle,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,8 +52,7 @@ import {
 } from '@/components/ui/dialog';
 import MapaRaioEntrega from '@/components/configuracoes/MapaRaioEntrega';
 import ClientesTab from '@/components/configuracoes/ClientesTab';
-import TestarMercadoPago from '@/components/configuracoes/TestarMercadoPago';
-import TestarWebhookMercadoPago from '@/components/configuracoes/TestarWebhookMercadoPago';
+import PagamentoTab from '@/components/configuracoes/PagamentoTab';
 import { createPageUrl } from '@/utils';
 
 class ErrorBoundary extends React.Component {
@@ -107,6 +108,9 @@ export default function Configuracoes() {
   const [recompensaEditando, setRecompensaEditando] = useState(null);
   const [showCupomModal, setShowCupomModal] = useState(false);
   const [cupomEditando, setCupomEditando] = useState(null);
+  const [salvandoStatusLoja, setSalvandoStatusLoja] = useState(false);
+  const [showConfirmLoja, setShowConfirmLoja] = useState(false);
+  const [lojaTargetStatus, setLojaTargetStatus] = useState(null);
   const [formCupom, setFormCupom] = useState({ codigo: '', descricao: '', tipo: 'valor', valor: 0, ativo: true });
   const [formRecompensa, setFormRecompensa] = useState({
     titulo: '',
@@ -326,6 +330,57 @@ export default function Configuracoes() {
     }
   };
 
+  const calcularLojaAberta = () => {
+    const v = pizzaria.configuracoes?.loja_aberta;
+    if (v === true) return true;
+    if (v === false) return false;
+    const agora = new Date();
+    const diasSemana = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
+    const diaKey = diasSemana[agora.getDay()];
+    const horarios = pizzaria.configuracoes?.horarios_semana || {};
+    const dia = horarios[diaKey];
+    if (dia?.fechado) return false;
+    const abertura = dia?.abertura || pizzaria.horario_abertura;
+    const fechamento = dia?.fechamento || pizzaria.horario_fechamento;
+    if (!abertura || !fechamento) return true;
+    const min = agora.getHours() * 60 + agora.getMinutes();
+    const [hA, mA] = abertura.split(':').map(Number);
+    const [hF, mF] = fechamento.split(':').map(Number);
+    return min >= (hA * 60 + mA) && min < (hF * 60 + mF);
+  };
+
+  const toggleStatusLoja = () => {
+    setLojaTargetStatus(!calcularLojaAberta());
+    setShowConfirmLoja(true);
+  };
+
+  const confirmarToggleLoja = async () => {
+    setShowConfirmLoja(false);
+    setSalvandoStatusLoja(true);
+    const novoValor = lojaTargetStatus;
+    try {
+      const novaConfig = { ...pizzaria.configuracoes, loja_aberta: novoValor };
+      if (pizzarias.length > 0) {
+        await base44.entities.Pizzaria.update(pizzarias[0].id, { configuracoes: novaConfig });
+      }
+      setPizzaria(prev => ({ ...prev, configuracoes: novaConfig }));
+      await base44.entities.Notificacao.create({
+        pizzaria_id: pizzariaId,
+        tipo: novoValor ? 'sistema' : 'alerta',
+        titulo: novoValor ? '🟢 Loja aberta manualmente' : '🔴 Loja fechada manualmente',
+        mensagem: novoValor
+          ? 'O cardápio foi liberado fora do horário programado. Novos pedidos serão aceitos.'
+          : 'A loja foi fechada manualmente. Novos pedidos estão bloqueados mesmo em horário de funcionamento.',
+        lida: false,
+      });
+      await refetch();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSalvandoStatusLoja(false);
+    }
+  };
+
   const getWebhookUrl = () => {
     const resolvedAppId = base44.app_id || '6925e1fdd6376091844799ad';
     return `https://app.base44.app/api/apps/${resolvedAppId}/functions/webhookMercadoPago?pizzaria_id=${pizzarias[0]?.id || ''}`;
@@ -448,10 +503,34 @@ export default function Configuracoes() {
 
                 {/* Horário de Funcionamento */}
                 <div className="pt-4 border-t border-white/10">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Clock className="w-4 h-4 text-blue-400" />
-                    <p className="text-sm font-semibold text-white">Horário de Funcionamento</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-blue-400" />
+                      <p className="text-sm font-semibold text-white">Horário de Funcionamento</p>
+                    </div>
+                    <button
+                      onClick={toggleStatusLoja}
+                      disabled={salvandoStatusLoja}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all font-medium text-sm ${
+                        calcularLojaAberta()
+                          ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
+                          : 'bg-red-500/20 border-red-500/50 text-red-400'
+                      }`}
+                    >
+                      {salvandoStatusLoja ? <Loader2 className="w-4 h-4 animate-spin" /> : <Power className="w-4 h-4" />}
+                      Loja {calcularLojaAberta() ? 'Aberta' : 'Fechada'}
+                    </button>
                   </div>
+                  {pizzaria.configuracoes?.loja_aberta === true && (
+                    <div className="mb-3 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300 flex items-center gap-2">
+                      <Power className="w-3 h-3" /> Loja aberta manualmente — sobrepõe o horário programado
+                    </div>
+                  )}
+                  {pizzaria.configuracoes?.loja_aberta === false && (
+                    <div className="mb-3 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-xs text-red-300 flex items-center gap-2">
+                      <Power className="w-3 h-3" /> Loja fechada manualmente — bloqueando novos pedidos mesmo em horário de funcionamento
+                    </div>
+                  )}
                   <div className="space-y-2">
                     {[
                       { key: 'seg', label: 'Segunda-feira' },
@@ -501,6 +580,16 @@ export default function Configuracoes() {
                       );
                     })}
                   </div>
+                  {pizzaria.configuracoes?.loja_aberta !== undefined && (
+                    <button onClick={() => {
+                      const novaConfig = { ...pizzaria.configuracoes };
+                      delete novaConfig.loja_aberta;
+                      setPizzaria(prev => ({ ...prev, configuracoes: novaConfig }));
+                      if (pizzarias.length > 0) base44.entities.Pizzaria.update(pizzarias[0].id, { configuracoes: novaConfig });
+                    }} className="mt-2 text-xs text-slate-400 hover:text-slate-200 underline">
+                      ↩ Voltar ao controle automático por horário
+                    </button>
+                  )}
                   <div className="mt-4 grid grid-cols-2 gap-4">
                     <div>
                       <Label className="text-slate-400">Tempo Médio Preparo (min)</Label>
@@ -1205,268 +1294,16 @@ export default function Configuracoes() {
         </TabsContent>
 
         {/* Tab Pagamento */}
-        <TabsContent value="pagamento" className="space-y-6">
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-blue-500" />
-                Formas de Pagamento
-              </CardTitle>
-              <CardDescription className="text-slate-400">
-                Configure as formas de pagamento aceitas
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-xl bg-white/5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                      <DollarSign className="w-5 h-5 text-green-500" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-white">Dinheiro</p>
-                      <p className="text-sm text-slate-400">Pagamento em espécie</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={pizzaria.configuracoes?.aceitar_dinheiro}
-                    onCheckedChange={(checked) => updateConfig('aceitar_dinheiro', checked)}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-4 rounded-xl bg-white/5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-                      <span className="text-cyan-500 font-bold text-sm">PIX</span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-white">PIX</p>
-                      <p className="text-sm text-slate-400">Transferência instantânea</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={pizzaria.configuracoes?.aceitar_pix}
-                    onCheckedChange={(checked) => updateConfig('aceitar_pix', checked)}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-4 rounded-xl bg-white/5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                      <CreditCard className="w-5 h-5 text-purple-500" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-white">Cartão</p>
-                      <p className="text-sm text-slate-400">Crédito ou débito na entrega</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={pizzaria.configuracoes?.aceitar_cartao}
-                    onCheckedChange={(checked) => updateConfig('aceitar_cartao', checked)}
-                  />
-                </div>
-              </div>
-
-              {/* Taxas de Pagamento */}
-              <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30">
-                <h4 className="font-medium text-white mb-1 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-amber-400" />
-                  Taxas por Forma de Pagamento
-                </h4>
-                <p className="text-xs text-slate-400 mb-4">
-                  Defina a taxa percentual cobrada pela operadora. Serão usadas no cálculo real de lucro e CMV.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <Label className="text-slate-400">Taxa PIX (%)</Label>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="100"
-                        value={pizzaria.configuracoes?.taxa_pix ?? 0.99}
-                        onChange={(e) => updateConfig('taxa_pix', parseFloat(e.target.value) || 0)}
-                        className="bg-slate-800 border-slate-700 text-white pr-8"
-                        placeholder="0.99"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-1">Ex: 0,99%</p>
-                  </div>
-                  <div>
-                    <Label className="text-slate-400">Taxa Débito (%)</Label>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="100"
-                        value={pizzaria.configuracoes?.taxa_debito ?? 1.5}
-                        onChange={(e) => updateConfig('taxa_debito', parseFloat(e.target.value) || 0)}
-                        className="bg-slate-800 border-slate-700 text-white pr-8"
-                        placeholder="1.50"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-1">Ex: 1,50%</p>
-                  </div>
-                  <div>
-                    <Label className="text-slate-400">Taxa Crédito (%)</Label>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="100"
-                        value={pizzaria.configuracoes?.taxa_credito ?? 2.5}
-                        onChange={(e) => updateConfig('taxa_credito', parseFloat(e.target.value) || 0)}
-                        className="bg-slate-800 border-slate-700 text-white pr-8"
-                        placeholder="2.50"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">%</span>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-1">Ex: 2,50%</p>
-                  </div>
-                </div>
-                <div className="mt-3 p-3 rounded-lg bg-white/5 text-xs text-slate-400">
-                  💡 <strong className="text-slate-300">Dinheiro</strong> não tem taxa. Os valores acima serão deduzidos no cálculo de lucro real por pedido.
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Configuração de Pagamento Online */}
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-emerald-500" />
-                Recebimento de Pagamentos Online
-              </CardTitle>
-              <CardDescription className="text-slate-400">
-                Configure sua conta do Mercado Pago para receber pagamentos online dos clientes
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-start gap-3">
-                <span className="text-xl">💡</span>
-                <div className="text-sm text-blue-300">
-                  <p className="font-medium mb-1">Como funciona?</p>
-                  <p className="text-slate-400">Os clientes pagam online no cardápio e o dinheiro vai diretamente para sua conta do Mercado Pago. Acesse <a href="https://www.mercadopago.com.br/developers/pt/docs" target="_blank" rel="noreferrer" className="text-blue-400 underline">mercadopago.com.br/developers</a> para obter suas chaves.</p>
-                </div>
-              </div>
-
-              {/* URL do Webhook */}
-              {pizzarias[0]?.id && (
-                <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-3">
-                  <div>
-                    <p className="font-semibold text-amber-400 flex items-center gap-2 mb-1">
-                      🔗 URL do Webhook (Notificações)
-                    </p>
-                    <p className="text-xs text-slate-400 mb-3">
-                      Configure esta URL no painel do Mercado Pago em <strong>Seu negócio → Configurações → Notificações</strong> para receber confirmações de pagamento automáticas.
-                    </p>
-                    <div className="flex gap-2">
-                      <Input
-                        value={getWebhookUrl()}
-                        readOnly
-                        className="bg-slate-900 border-slate-700 text-amber-300 font-mono text-xs"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => {
-                          navigator.clipboard.writeText(getWebhookUrl());
-                          alert('✅ URL copiada!');
-                        }}
-                        className="border-slate-600 text-slate-300 hover:bg-white/10 shrink-0"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <TestarWebhookMercadoPago
-                    webhookUrl={getWebhookUrl()}
-                    pizzariaId={pizzarias[0].id}
-                  />
-                </div>
-              )}
-
-              {pizzaria.configuracoes?.mp_credenciais_salvas ? (
-                <div className="space-y-3">
-                  <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-emerald-400 text-lg">✅</span>
-                      <div>
-                        <p className="font-semibold text-emerald-400">Mercado Pago conectado</p>
-                        <p className="text-xs text-slate-400">Credenciais salvas e ocultas por segurança</p>
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => updateConfig('mp_credenciais_salvas', false)}
-                      className="border-slate-600 text-slate-300 hover:bg-white/10 text-xs"
-                    >
-                      Alterar credenciais
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-slate-400">Chave Pública (Public Key)</Label>
-                      <Input
-                        value={pizzaria.configuracoes?.mp_public_key || ''}
-                        onChange={(e) => updateConfig('mp_public_key', e.target.value)}
-                        className="bg-slate-800 border-slate-700 text-white font-mono text-sm"
-                        placeholder="APP_USR-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                      />
-                      <p className="text-xs text-slate-500 mt-1">Usada no frontend para inicializar o checkout</p>
-                    </div>
-
-                    <div>
-                      <Label className="text-slate-400">Access Token (Chave Privada)</Label>
-                      <Input
-                        value={pizzaria.configuracoes?.mp_access_token || ''}
-                        onChange={(e) => updateConfig('mp_access_token', e.target.value)}
-                        className="bg-slate-800 border-slate-700 text-white font-mono text-sm"
-                        placeholder="APP_USR-xxxxxxxxxxxx-xxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx-xxxxxxxxx"
-                      />
-                      <p className="text-xs text-slate-500 mt-1">Chave secreta para processar pagamentos no servidor</p>
-                    </div>
-                  </div>
-
-                  {pizzaria.configuracoes?.mp_access_token && (
-                    <TestarMercadoPago
-                      accessToken={pizzaria.configuracoes.mp_access_token}
-                      onSalvarCredenciais={async () => {
-                        const configAtualizada = {
-                          ...pizzaria.configuracoes,
-                          mp_credenciais_salvas: true,
-                        };
-                        const updated = {
-                          ...pizzaria,
-                          configuracoes: configAtualizada,
-                        };
-                        const idParaSalvar = pizzaria.id || pizzarias[0]?.id;
-                        if (!idParaSalvar) {
-                          throw new Error('ID da pizzaria não encontrado');
-                        }
-                        await base44.entities.Pizzaria.update(idParaSalvar, updated);
-                        setPizzaria(updated);
-                        await refetch();
-                      }}
-                    />
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
+        <TabsContent value="pagamento">
+          <PagamentoTab
+            pizzaria={pizzaria}
+            pizzarias={pizzarias}
+            updateConfig={updateConfig}
+            setPizzaria={setPizzaria}
+            setLoading={setLoading}
+            refetch={refetch}
+            getWebhookUrl={getWebhookUrl}
+          />
         </TabsContent>
 
         {/* Tab Notificações */}
@@ -1794,6 +1631,31 @@ export default function Configuracoes() {
           <ClientesTab pizzariaId={pizzariaId} />
         </TabsContent>
       </Tabs>
+
+      {/* Modal Confirmar Status Loja */}
+      <Dialog open={showConfirmLoja} onOpenChange={setShowConfirmLoja}>
+        <DialogContent className="sm:max-w-md bg-slate-900 border-slate-700 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <AlertTriangle className={`w-6 h-6 ${lojaTargetStatus ? 'text-emerald-400' : 'text-red-400'}`} />
+              {lojaTargetStatus ? 'Abrir a Loja?' : 'Fechar a Loja?'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-slate-300">
+              {lojaTargetStatus
+                ? 'A loja ficará aberta e aceitará novos pedidos, mesmo fora do horário programado.'
+                : 'A loja ficará fechada e bloqueará novos pedidos, mesmo dentro do horário programado. Os clientes verão o cardápio como fechado.'}
+            </p>
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setShowConfirmLoja(false)} className="border-slate-600">Cancelar</Button>
+            <Button onClick={confirmarToggleLoja} className={lojaTargetStatus ? 'bg-gradient-to-r from-emerald-500 to-green-600' : 'bg-gradient-to-r from-red-500 to-red-700'}>
+              {lojaTargetStatus ? '✅ Sim, abrir a loja' : '🔒 Sim, fechar a loja'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal de Cupom */}
       <Dialog open={showCupomModal} onOpenChange={setShowCupomModal}>
