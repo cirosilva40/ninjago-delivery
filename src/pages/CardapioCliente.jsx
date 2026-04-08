@@ -668,6 +668,12 @@ export default function CardapioCliente() {
 
   // Confirmar pedido na tela de revisão — cria pedido e avança para pagamento ou redireciona
   const confirmarPedido = async () => {
+    // Verificação final: loja pode ter fechado enquanto o cliente preenchia o checkout
+    if (!verificarLojaAberta()) {
+      alert('🔒 A loja está fechada no momento. Não é possível finalizar o pedido.');
+      setShowCheckout(false);
+      return;
+    }
     setProcessandoPagamento(true);
     try {
       const clienteOk = await salvarCliente();
