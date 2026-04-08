@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingCart,
@@ -181,16 +181,30 @@ export default function CardapioCliente() {
     enabled: !!pizzariaId,
   });
 
-  const { data: pizzariaConfigData, isLoading: loadingPizzaria } = useQuery({
+  const queryClient = useQueryClient();
+
+  const { data: pizzariaConfigData, isLoading: loadingPizzaria, refetch: refetchConfig } = useQuery({
     queryKey: ['pizzaria-config', pizzariaId],
     queryFn: async () => {
       const { data } = await base44.functions.invoke('obterConfigPublicaPizzaria', { pizzariaId });
       return data?.pizzaria || null;
     },
     enabled: !!pizzariaId,
-    refetchInterval: 10000,
+    refetchInterval: 5000,
     refetchOnWindowFocus: true,
   });
+
+  // Assinatura em tempo real: quando a pizzaria for atualizada (ex: admin fecha a loja),
+  // invalida o cache imediatamente sem esperar o intervalo de polling
+  useEffect(() => {
+    if (!pizzariaId) return;
+    const unsubscribe = base44.entities.Pizzaria.subscribe((event) => {
+      if (event.id === pizzariaId || event.data?.id === pizzariaId) {
+        queryClient.invalidateQueries({ queryKey: ['pizzaria-config', pizzariaId] });
+      }
+    });
+    return unsubscribe;
+  }, [pizzariaId]);
 
   const pizzariaConfig = pizzariaConfigData || {};
   const pizzarias = pizzariaConfig.id ? [pizzariaConfig] : [];
