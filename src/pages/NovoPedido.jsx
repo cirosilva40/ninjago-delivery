@@ -779,7 +779,7 @@ Retorne APENAS a distância em km considerando as rotas reais de carro.`,
           <p className="text-slate-400 mt-1">Cadastre um novo pedido</p>
         </div>
         <div className="flex items-center gap-3">
-          {/* Toggle iFood */
+          {/* Toggle iFood */}
           <button
             onClick={() => toggleIntegracao('ifood')}
             disabled={salvandoIntegracao === 'ifood'}
