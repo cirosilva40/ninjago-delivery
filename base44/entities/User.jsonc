@@ -1,0 +1,24 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "pizzaria_id": {
+      "type": "string",
+      "description": "ID da pizzaria vinculada ao usu\u00e1rio (apenas para usu\u00e1rios de estabelecimento)"
+    },
+    "tipo_usuario": {
+      "type": "string",
+      "enum": [
+        "admin_global",
+        "estabelecimento",
+        "entregador",
+        "cliente"
+      ],
+      "default": "estabelecimento",
+      "description": "Tipo de usu\u00e1rio no sistema"
+    }
+  },
+  "required": [
+    "pizzaria_id"
+  ]
+}

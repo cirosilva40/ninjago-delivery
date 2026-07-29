@@ -1,0 +1,57 @@
+{
+  "name": "ResgatePontos",
+  "type": "object",
+  "properties": {
+    "cliente_id": {
+      "type": "string",
+      "description": "ID do cliente"
+    },
+    "recompensa_id": {
+      "type": "string",
+      "description": "ID da recompensa resgatada"
+    },
+    "pontos_gastos": {
+      "type": "number",
+      "description": "Quantidade de pontos utilizados"
+    },
+    "codigo_cupom": {
+      "type": "string",
+      "description": "C\u00f3digo \u00fanico do cupom gerado"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativo",
+        "usado",
+        "expirado"
+      ],
+      "default": "ativo",
+      "description": "Status do cupom"
+    },
+    "data_resgate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data do resgate"
+    },
+    "data_uso": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data que o cupom foi usado"
+    },
+    "data_validade": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data de validade do cupom"
+    },
+    "pedido_id": {
+      "type": "string",
+      "description": "ID do pedido onde foi usado"
+    }
+  },
+  "required": [
+    "cliente_id",
+    "recompensa_id",
+    "pontos_gastos",
+    "codigo_cupom"
+  ]
+}

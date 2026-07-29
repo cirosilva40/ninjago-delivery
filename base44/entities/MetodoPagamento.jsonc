@@ -1,0 +1,37 @@
+{
+  "name": "MetodoPagamento",
+  "type": "object",
+  "properties": {
+    "restaurante_id": {
+      "type": "string"
+    },
+    "nome": {
+      "type": "string"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "dinheiro",
+        "cartao_credito",
+        "cartao_debito",
+        "pix",
+        "online",
+        "vale_refeicao",
+        "outro"
+      ],
+      "default": "dinheiro"
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    },
+    "instrucoes": {
+      "type": "string",
+      "description": "Instru\u00e7\u00f5es para o cliente ou entregador"
+    }
+  },
+  "required": [
+    "nome",
+    "tipo"
+  ]
+}

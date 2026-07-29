@@ -1,0 +1,117 @@
+{
+  "name": "Produto",
+  "type": "object",
+  "properties": {
+    "restaurante_id": {
+      "type": "string",
+      "description": "ID do restaurante/estabelecimento"
+    },
+    "nome": {
+      "type": "string"
+    },
+    "descricao": {
+      "type": "string"
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "pizza",
+        "esfiha",
+        "lanche",
+        "bebida",
+        "acai",
+        "combo",
+        "sobremesa",
+        "porcao",
+        "salgado",
+        "doce",
+        "outro"
+      ],
+      "default": "outro"
+    },
+    "preco": {
+      "type": "number"
+    },
+    "preco_original": {
+      "type": "number",
+      "description": "Pre\u00e7o original antes da promo\u00e7\u00e3o"
+    },
+    "em_promocao": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se o produto est\u00e1 em promo\u00e7\u00e3o"
+    },
+    "imagem_url": {
+      "type": "string"
+    },
+    "disponivel": {
+      "type": "boolean",
+      "default": true
+    },
+    "destaque": {
+      "type": "boolean",
+      "default": false
+    },
+    "ordem": {
+      "type": "number",
+      "default": 9999,
+      "description": "Posi\u00e7\u00e3o de exibi\u00e7\u00e3o dentro da categoria"
+    },
+    "opcoes_personalizacao": {
+      "type": "array",
+      "description": "Grupos de complementos e adicionais para o produto",
+      "items": {
+        "type": "object",
+        "properties": {
+          "nome_grupo": {
+            "type": "string",
+            "description": "Nome do grupo (ex: Complementos Gr\u00e1tis, Adicionais)"
+          },
+          "obrigatorio": {
+            "type": "boolean",
+            "default": false,
+            "description": "Se o cliente deve obrigatoriamente escolher itens deste grupo"
+          },
+          "min_selecoes": {
+            "type": "number",
+            "default": 0,
+            "description": "M\u00ednimo de itens a escolher"
+          },
+          "max_selecoes": {
+            "type": "number",
+            "description": "M\u00e1ximo de itens a escolher (ex: at\u00e9 3)"
+          },
+          "permite_precificacao": {
+            "type": "boolean",
+            "default": false,
+            "description": "Se os itens podem ter pre\u00e7o adicional"
+          },
+          "itens": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "nome": {
+                  "type": "string"
+                },
+                "preco_adicional": {
+                  "type": "number",
+                  "default": 0
+                },
+                "disponivel": {
+                  "type": "boolean",
+                  "default": true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "nome",
+    "preco",
+    "categoria"
+  ]
+}

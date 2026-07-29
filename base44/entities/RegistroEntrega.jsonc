@@ -1,0 +1,43 @@
+{
+  "name": "RegistroEntrega",
+  "type": "object",
+  "properties": {
+    "entregador_id": {
+      "type": "string"
+    },
+    "entrega_id": {
+      "type": "string"
+    },
+    "pedido_id": {
+      "type": "string"
+    },
+    "distancia_km": {
+      "type": "number"
+    },
+    "tempo_minutos": {
+      "type": "number"
+    },
+    "taxa_base": {
+      "type": "number"
+    },
+    "taxa_ajuste": {
+      "type": "number",
+      "default": 0,
+      "description": "Ajustes manuais (b\u00f4nus, desconto, corre\u00e7\u00e3o)"
+    },
+    "taxa_total": {
+      "type": "number"
+    },
+    "motivo_ajuste": {
+      "type": "string"
+    },
+    "data_entrega": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "entregador_id",
+    "entrega_id"
+  ]
+}

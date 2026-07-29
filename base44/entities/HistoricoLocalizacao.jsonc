@@ -1,0 +1,32 @@
+{
+  "name": "HistoricoLocalizacao",
+  "type": "object",
+  "properties": {
+    "entregador_id": {
+      "type": "string"
+    },
+    "entrega_id": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "velocidade": {
+      "type": "number"
+    },
+    "precisao": {
+      "type": "number"
+    },
+    "bateria": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "entregador_id",
+    "latitude",
+    "longitude"
+  ]
+}

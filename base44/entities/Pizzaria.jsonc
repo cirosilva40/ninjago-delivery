@@ -1,0 +1,222 @@
+{
+  "name": "Pizzaria",
+  "type": "object",
+  "properties": {
+    "nome": {
+      "type": "string",
+      "description": "Nome da pizzaria"
+    },
+    "cnpj": {
+      "type": "string"
+    },
+    "telefone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "endereco": {
+      "type": "string"
+    },
+    "numero": {
+      "type": "string"
+    },
+    "complemento": {
+      "type": "string"
+    },
+    "bairro": {
+      "type": "string"
+    },
+    "cidade": {
+      "type": "string"
+    },
+    "estado": {
+      "type": "string"
+    },
+    "cep": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "nome_exibicao_cliente": {
+      "type": "string"
+    },
+    "tema_cliente": {
+      "type": "string",
+      "enum": [
+        "light",
+        "dark"
+      ],
+      "default": "dark"
+    },
+    "cor_primaria_cliente": {
+      "type": "string",
+      "default": "#f97316"
+    },
+    "horario_abertura": {
+      "type": "string"
+    },
+    "horario_fechamento": {
+      "type": "string"
+    },
+    "taxa_entrega_base": {
+      "type": "number"
+    },
+    "raio_entrega_km": {
+      "type": "number"
+    },
+    "raio_maximo_atendimento_km": {
+      "type": "number",
+      "default": 0,
+      "description": "Raio m\u00e1ximo de atendimento em km. Pedidos fora deste raio n\u00e3o s\u00e3o aceitos. 0 = sem limite."
+    },
+    "taxa_adicional_por_km": {
+      "type": "number",
+      "default": 0
+    },
+    "valor_minimo_entrega_gratis": {
+      "type": "number",
+      "default": 0
+    },
+    "entrega_gratis_dentro_raio_base": {
+      "type": "boolean",
+      "default": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativa",
+        "inativa",
+        "suspensa"
+      ],
+      "default": "ativa"
+    },
+    "plano": {
+      "type": "string",
+      "enum": [
+        "basico",
+        "profissional",
+        "enterprise"
+      ],
+      "default": "basico"
+    },
+    "configuracoes": {
+      "type": "object",
+      "properties": {
+        "aceitar_pix": {
+          "type": "boolean"
+        },
+        "aceitar_cartao": {
+          "type": "boolean"
+        },
+        "aceitar_dinheiro": {
+          "type": "boolean"
+        },
+        "tempo_medio_preparo": {
+          "type": "number"
+        },
+        "mp_public_key": {
+          "type": "string"
+        },
+        "mp_access_token": {
+          "type": "string"
+        },
+        "mp_credenciais_salvas": {
+          "type": "boolean",
+          "default": false
+        },
+        "dominio_personalizado": {
+          "type": "string"
+        },
+        "ifood_ativo": {
+          "type": "boolean",
+          "default": false
+        },
+        "99food_ativo": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "ifood_client_id": {
+      "type": "string",
+      "description": "Client ID da aplica\u00e7\u00e3o iFood"
+    },
+    "ifood_client_secret": {
+      "type": "string",
+      "description": "Client Secret da aplica\u00e7\u00e3o iFood"
+    },
+    "ifood_merchant_id": {
+      "type": "string",
+      "description": "ID do estabelecimento no iFood"
+    },
+    "ifood_access_token": {
+      "type": "string",
+      "description": "Access token OAuth atual do iFood"
+    },
+    "ifood_token_expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ifood_polling_ativo": {
+      "type": "boolean",
+      "default": false
+    },
+    "dados_bancarios": {
+      "type": "object",
+      "properties": {
+        "banco_nome": {
+          "type": "string"
+        },
+        "banco_numero": {
+          "type": "string"
+        },
+        "agencia": {
+          "type": "string"
+        },
+        "conta": {
+          "type": "string"
+        },
+        "tipo_conta": {
+          "type": "string",
+          "enum": [
+            "corrente",
+            "poupanca"
+          ]
+        },
+        "pix_tipo": {
+          "type": "string",
+          "enum": [
+            "cpf",
+            "cnpj",
+            "email",
+            "telefone",
+            "chave_aleatoria"
+          ]
+        },
+        "pix_chave": {
+          "type": "string"
+        }
+      }
+    },
+    "senha": {
+      "type": "string"
+    },
+    "eh_senha_temporaria": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "nome",
+    "telefone",
+    "endereco"
+  ]
+}

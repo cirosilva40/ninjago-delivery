@@ -1,0 +1,44 @@
+{
+  "name": "Notificacao",
+  "type": "object",
+  "properties": {
+    "pizzaria_id": {
+      "type": "string"
+    },
+    "destinatario_id": {
+      "type": "string",
+      "description": "ID do usu\u00e1rio ou entregador"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "nova_entrega",
+        "entrega_aceita",
+        "entrega_concluida",
+        "mensagem",
+        "alerta",
+        "sistema"
+      ]
+    },
+    "titulo": {
+      "type": "string"
+    },
+    "mensagem": {
+      "type": "string"
+    },
+    "dados": {
+      "type": "object"
+    },
+    "lida": {
+      "type": "boolean",
+      "default": false
+    },
+    "url_acao": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "titulo",
+    "mensagem"
+  ]
+}

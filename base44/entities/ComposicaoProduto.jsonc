@@ -1,0 +1,62 @@
+{
+  "name": "ComposicaoProduto",
+  "type": "object",
+  "properties": {
+    "pizzaria_id": {
+      "type": "string"
+    },
+    "produto_id": {
+      "type": "string",
+      "description": "ID do produto do card\u00e1pio"
+    },
+    "produto_nome": {
+      "type": "string",
+      "description": "Nome do produto (snapshot)"
+    },
+    "itens": {
+      "type": "array",
+      "description": "Itens de estoque consumidos para produzir 1 unidade deste produto",
+      "items": {
+        "type": "object",
+        "properties": {
+          "estoque_item_id": {
+            "type": "string"
+          },
+          "estoque_item_nome": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          },
+          "unidade_medida": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "custo_producao": {
+      "type": "number",
+      "default": 0,
+      "description": "Custo total calculado para produzir 1 unidade"
+    },
+    "preco_venda": {
+      "type": "number",
+      "default": 0,
+      "description": "Pre\u00e7o de venda do produto"
+    },
+    "margem_percentual": {
+      "type": "number",
+      "default": 0,
+      "description": "Margem de lucro em %"
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "pizzaria_id",
+    "produto_id",
+    "produto_nome"
+  ]
+}

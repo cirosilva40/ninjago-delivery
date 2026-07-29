@@ -1,0 +1,178 @@
+{
+  "name": "Pedido",
+  "type": "object",
+  "properties": {
+    "pizzaria_id": {
+      "type": "string"
+    },
+    "numero_pedido": {
+      "type": "string",
+      "description": "N\u00famero sequencial do pedido"
+    },
+    "tipo_pedido": {
+      "type": "string",
+      "enum": [
+        "delivery",
+        "balcao"
+      ],
+      "default": "delivery"
+    },
+    "cliente_nome": {
+      "type": "string"
+    },
+    "cliente_telefone": {
+      "type": "string"
+    },
+    "cliente_cep": {
+      "type": "string"
+    },
+    "cliente_endereco": {
+      "type": "string"
+    },
+    "cliente_numero": {
+      "type": "string"
+    },
+    "cliente_bairro": {
+      "type": "string"
+    },
+    "cliente_cidade": {
+      "type": "string"
+    },
+    "cliente_estado": {
+      "type": "string"
+    },
+    "cliente_complemento": {
+      "type": "string"
+    },
+    "cliente_referencia": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "itens": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "produto_id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "quantidade": {
+            "type": "number"
+          },
+          "preco_unitario": {
+            "type": "number"
+          },
+          "observacao": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "valor_produtos": {
+      "type": "number"
+    },
+    "taxa_entrega": {
+      "type": "number"
+    },
+    "desconto": {
+      "type": "number",
+      "default": 0
+    },
+    "valor_total": {
+      "type": "number"
+    },
+    "forma_pagamento": {
+      "type": "string",
+      "enum": [
+        "dinheiro",
+        "pix",
+        "cartao_credito",
+        "cartao_debito",
+        "vale_refeicao",
+        "online",
+        "outro"
+      ],
+      "default": "dinheiro"
+    },
+    "status_pagamento": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "pago",
+        "receber_depois",
+        "cancelado"
+      ],
+      "default": "pendente"
+    },
+    "troco_para": {
+      "type": "number",
+      "description": "Valor para troco se pagamento em dinheiro"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "novo",
+        "em_preparo",
+        "pronto",
+        "em_entrega",
+        "entregue",
+        "finalizada",
+        "cancelado"
+      ],
+      "default": "novo"
+    },
+    "observacoes": {
+      "type": "string"
+    },
+    "observacoes_financeiras": {
+      "type": "string",
+      "description": "Observa\u00e7\u00f5es do time financeiro"
+    },
+    "comprovante_url": {
+      "type": "string",
+      "description": "URL do comprovante de pagamento"
+    },
+    "conferido_por": {
+      "type": "string",
+      "description": "Email do usu\u00e1rio que conferiu o pedido"
+    },
+    "data_conferencia": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Data da confer\u00eancia financeira"
+    },
+    "horario_pedido": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "horario_pronto": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "origem": {
+      "type": "string",
+      "enum": [
+        "balcao",
+        "telefone",
+        "whatsapp",
+        "ifood",
+        "app",
+        "site"
+      ],
+      "default": "balcao"
+    }
+  },
+  "required": [
+    "cliente_nome",
+    "cliente_telefone",
+    "valor_total"
+  ]
+}

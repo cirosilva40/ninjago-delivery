@@ -1,0 +1,97 @@
+{
+  "name": "Entregador",
+  "type": "object",
+  "properties": {
+    "pizzaria_id": {
+      "type": "string",
+      "description": "ID da pizzaria vinculada"
+    },
+    "nome": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "telefone": {
+      "type": "string"
+    },
+    "cpf": {
+      "type": "string"
+    },
+    "foto_url": {
+      "type": "string"
+    },
+    "veiculo": {
+      "type": "string",
+      "enum": [
+        "moto",
+        "carro",
+        "bicicleta",
+        "a_pe"
+      ],
+      "default": "moto"
+    },
+    "placa_veiculo": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "disponivel",
+        "em_entrega",
+        "offline",
+        "pausado"
+      ],
+      "default": "offline"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "ultima_localizacao": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "saldo_taxas": {
+      "type": "number",
+      "default": 0,
+      "description": "Saldo acumulado de taxas a receber"
+    },
+    "total_entregas": {
+      "type": "number",
+      "default": 0
+    },
+    "avaliacao_media": {
+      "type": "number",
+      "default": 5
+    },
+    "ativo": {
+      "type": "boolean",
+      "default": true
+    },
+    "dados_bancarios": {
+      "type": "object",
+      "properties": {
+        "banco": {
+          "type": "string"
+        },
+        "agencia": {
+          "type": "string"
+        },
+        "conta": {
+          "type": "string"
+        },
+        "pix": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "pizzaria_id",
+    "nome",
+    "telefone"
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "name": "Cliente",
+  "type": "object",
+  "properties": {
+    "pizzaria_id": {
+      "type": "string",
+      "description": "ID do estabelecimento/pizzaria"
+    },
+    "nome": {
+      "type": "string",
+      "description": "Nome completo do cliente"
+    },
+    "telefone": {
+      "type": "string",
+      "description": "Telefone do cliente"
+    },
+    "senha": {
+      "type": "string",
+      "description": "Senha do cliente para login"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email do cliente"
+    },
+    "cep": {
+      "type": "string"
+    },
+    "endereco": {
+      "type": "string"
+    },
+    "numero": {
+      "type": "string"
+    },
+    "complemento": {
+      "type": "string"
+    },
+    "bairro": {
+      "type": "string"
+    },
+    "cidade": {
+      "type": "string"
+    },
+    "estado": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "total_pedidos": {
+      "type": "number",
+      "default": 0
+    },
+    "pontos_fidelidade": {
+      "type": "number",
+      "default": 0,
+      "description": "Pontos acumulados no programa de fidelidade"
+    }
+  },
+  "required": [
+    "pizzaria_id",
+    "nome",
+    "telefone",
+    "senha"
+  ]
+}

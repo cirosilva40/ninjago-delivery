@@ -1,0 +1,50 @@
+{
+  "name": "Pagamento",
+  "type": "object",
+  "properties": {
+    "pizzaria_id": {
+      "type": "string"
+    },
+    "entregador_id": {
+      "type": "string"
+    },
+    "valor": {
+      "type": "number"
+    },
+    "periodo_inicio": {
+      "type": "string",
+      "format": "date"
+    },
+    "periodo_fim": {
+      "type": "string",
+      "format": "date"
+    },
+    "quantidade_entregas": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "pago",
+        "cancelado"
+      ],
+      "default": "pendente"
+    },
+    "data_pagamento": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "comprovante_url": {
+      "type": "string"
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "pizzaria_id",
+    "entregador_id",
+    "valor"
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "name": "Custo",
+  "type": "object",
+  "properties": {
+    "pizzaria_id": {
+      "type": "string",
+      "description": "ID da pizzaria"
+    },
+    "descricao": {
+      "type": "string",
+      "description": "Descri\u00e7\u00e3o do custo"
+    },
+    "valor": {
+      "type": "number",
+      "description": "Valor do custo"
+    },
+    "data": {
+      "type": "string",
+      "format": "date",
+      "description": "Data do custo"
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "operacional",
+        "marketing",
+        "salarios",
+        "insumos",
+        "aluguel",
+        "energia",
+        "agua",
+        "internet",
+        "manutencao",
+        "impostos",
+        "outros"
+      ],
+      "default": "outros",
+      "description": "Categoria do custo"
+    },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "fixo",
+        "variavel"
+      ],
+      "default": "variavel",
+      "description": "Tipo de custo"
+    },
+    "recorrente": {
+      "type": "boolean",
+      "default": false,
+      "description": "Se \u00e9 um custo recorrente"
+    },
+    "observacoes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "pizzaria_id",
+    "descricao",
+    "valor",
+    "data",
+    "categoria"
+  ]
+}
